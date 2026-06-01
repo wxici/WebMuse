@@ -26,5 +26,4 @@ jobs:
         run: dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
 
       - name: Foundation self-test
-        run: dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj
-
+        run: dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj

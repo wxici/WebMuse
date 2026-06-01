@@ -141,3 +141,34 @@
 - Project run: WPF UI was not manually launched. Console FoundationSelfTest was run.
 - Tests passed: `dotnet restore WebRebuildRecorder.slnx` passed. `dotnet build WebRebuildRecorder.slnx` passed with 0 warnings and 0 errors. `dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed.
 - Next recommendation: Commit and push this OSS foundation, then create 6-10 real GitHub Issues, prepare `v0.1.0-alpha`, add a README architecture diagram, finalize the OSS application short answer, and request an external public-readiness review.
+
+## Interruption / Error Record
+
+- Time: 2026-06-01 13:05:02 +08:00
+- Stage: Remote GitHub Actions verification after initial push.
+- Files in progress: `.github/workflows/build.yml`, `.github/workflows/webrebuildrecorder-foundation.yml`.
+- Completed part: Initial commit `0a59fa5` was pushed to `origin/main`; local restore/build/FoundationSelfTest passed.
+- Incomplete part: Remote CI did not pass.
+- Error symptom: The `build` workflow passed restore/build but failed the Foundation self-test step.
+- Error message: `The system cannot find the file specified` for `WebRebuildRecorder.FoundationSelfTest\bin\Debug\net8.0-windows\WebRebuildRecorder.FoundationSelfTest.exe`.
+- Initial judgment: The workflow builds Release but runs `dotnet run --no-build` without `--configuration Release`, so `dotnet run` looks for Debug output that CI did not build.
+- Must check before continuing: Update both workflow self-test commands to use Release configuration, rerun local Release build/self-test, commit and push a CI fix.
+- Suggested next step: Patch workflow self-test commands to `dotnet run --configuration Release --no-build --project ...`.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 13:08:59 +08:00
+- Current task: OSS Readiness Round 0: Public Repository Foundation.
+- Current stage: CI fix verified locally; second commit pending.
+- Completed: Patched `.github/workflows/build.yml` and `.github/workflows/webrebuildrecorder-foundation.yml` so Foundation self-test runs with `--configuration Release --no-build`; verified `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` passed with 0 warnings and 0 errors; verified Release FoundationSelfTest passed.
+- In progress: Staging and committing the CI workflow fix.
+- Not completed: Push CI fix, watch remote workflows, final report.
+- Modified files: `.github/workflows/build.yml`, `.github/workflows/webrebuildrecorder-foundation.yml`, `docs/OSS_MIGRATION_AUDIT.md`, `PROJECT_STATUS.md`, `CODEX_CHECKPOINT.md`.
+- Added files: None.
+- Deleted files: None.
+- Can currently run: Yes.
+- Tested: Yes.
+- Test result: Release build and Release FoundationSelfTest passed.
+- Current errors/warnings: Remote CI failure root cause identified as Release/Debug mismatch in `dotnet run --no-build`; local Release verification now passes.
+- If interrupted, continue from: `git add .github/workflows/build.yml .github/workflows/webrebuildrecorder-foundation.yml docs/OSS_MIGRATION_AUDIT.md PROJECT_STATUS.md CODEX_CHECKPOINT.md`, commit the CI fix, push, and watch GitHub Actions.
+- Notes: This is a CI command correction only.

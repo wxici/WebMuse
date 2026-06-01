@@ -108,7 +108,10 @@ build passed
 0 errors
 ```
 
-One migration-only path fix was required before the final self-test pass: the foundation workflow lookup now checks the current repository root first and falls back to the historical parent-root layout.
+Two migration-only CI fixes were required before final verification:
+
+- the foundation workflow lookup now checks the current repository root first and falls back to the historical parent-root layout;
+- GitHub Actions self-test steps now run with `--configuration Release` because the workflows build Release output before using `--no-build`.
 
 ## FoundationSelfTest result
 
@@ -127,6 +130,15 @@ Foundation self-check passed.
 ```
 
 The first self-test attempt exceeded the short command timeout. A direct rerun showed a migration path issue: the harness and readiness gate were still looking for `.github/workflows/webrebuildrecorder-foundation.yml` in the parent of the repository root. The fix was limited to workflow path resolution.
+
+After the first push, remote GitHub Actions failed because Release build output was followed by a default Debug `dotnet run --no-build`. The workflow fix was verified locally with:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
+dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Both passed.
 
 ## Known risks
 

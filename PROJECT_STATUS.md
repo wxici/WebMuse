@@ -31,7 +31,7 @@ This round prepares the public OSS foundation. It does not add product features.
 - Skipped generated build outputs, runtime artifacts, local FFmpeg binaries, archive/media patterns, and credential-like filename patterns.
 - Added public OSS documentation, workflow files, and issue templates.
 - Ran restore and build successfully.
-- Ran FoundationSelfTest successfully after one migration-only workflow path fix.
+- Ran FoundationSelfTest successfully after migration-only workflow path fixes.
 
 ## Migrated Source
 
@@ -82,7 +82,10 @@ Results:
 - build passed with 0 warnings and 0 errors
 - FoundationSelfTest passed
 
-One targeted migration fix was made so workflow path checks work when WebMuse is cloned as a standalone repository instead of under the historical parent layout.
+Targeted migration fixes:
+
+- workflow path checks now work when WebMuse is cloned as a standalone repository instead of under the historical parent layout;
+- GitHub Actions self-test steps use Release configuration to match the Release build output.
 
 ## Known Risks
 
