@@ -211,3 +211,60 @@
 - Project run: WPF UI was not launched. Console FoundationSelfTest was run.
 - Tests passed: `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` passed with 0 warnings and 0 errors. `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed.
 - Next recommendation: Create 6-10 GitHub issues, add a README architecture diagram, prepare `v0.1.0-alpha` after review, and finalize the Codex for OSS application answer.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-01 14:24:51 +08:00
+- Previous task status: Completed. Latest local commit is `57e41ee Clean public status files after OSS foundation setup`; root `CODEX_CHECKPOINT.md` was moved to `docs/project-memory/CODEX_CHECKPOINT.md`; latest remote workflows were green after that commit.
+- Confirmed complete: Yes.
+- Remaining issues: Public maintainer backlog issues and README workflow diagram are still pending.
+- Can this task begin: Yes. The requested Round 0.2 is low-risk maintainer backlog and documentation work only.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 14:24:51 +08:00
+- Current task: OSS Readiness Round 0.2: Real Maintainer Backlog and README Architecture Diagram.
+- Current stage: Startup checks completed; issue creation starting.
+- Completed: Read required startup files; confirmed working tree is clean; confirmed repository is `wxici/WebMuse`, default branch `main`, visibility public; confirmed GitHub CLI authentication.
+- In progress: Checking labels and creating 8 real maintainer backlog issues.
+- Not completed: Issue creation, README Mermaid diagram, status/audit updates, Release build, FoundationSelfTest, commit, push, final report.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None.
+- Deleted files: None.
+- Can currently run: Expected yes; no source changes yet.
+- Tested: No Round 0.2 build/test yet.
+- Test result: Pending.
+- Current errors/warnings: None.
+- If interrupted, continue from: Check existing GitHub labels, create the 8 specified maintainer backlog issues, then update README and status docs.
+- Notes: No product source, UI, Codex execution, OpenAI API, WebView2, release binary, screenshots, recordings, frames, zips, customer materials, namespace rename, or solution rename work is authorized.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 14:35:00 +08:00
+- Current task: OSS Readiness Round 0.2: Real Maintainer Backlog and README Architecture Diagram.
+- Current stage: Issues and documentation updates completed; verification pending.
+- Completed: Created 8 real maintainer backlog issues (#1-#8); added README Mermaid workflow diagram; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, and `docs/OSS_MIGRATION_AUDIT.md` for Round 0.2.
+- In progress: Running required Release build and FoundationSelfTest.
+- Not completed: Verification, final checkpoint completion marker, commit, push, final report.
+- Modified files: `README.md`, `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `docs/OSS_MIGRATION_AUDIT.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None.
+- Deleted files: None.
+- Can currently run: Expected yes; verification pending.
+- Tested: No Round 0.2 verification yet.
+- Test result: Pending.
+- Current errors/warnings: None.
+- If interrupted, continue from: Run `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` and `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj`.
+- Notes: No product source, UI, real Codex execution, OpenAI API, WebView2, release binary, screenshots, recordings, frames, zips, customer materials, generated output, namespace rename, or solution rename work was performed.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Created 8 real maintainer backlog GitHub Issues; added the README Mermaid workflow diagram; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, and `docs/OSS_MIGRATION_AUDIT.md`; verified Release build and FoundationSelfTest.
+- Modified files this task: `README.md`, `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `docs/OSS_MIGRATION_AUDIT.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: None.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No product source code, UI, real Codex execution, OpenAI API calls, WebView2 integration, website generation, release binary, screenshots, recordings, frames, zips, customer materials, generated output, namespace rename, or solution rename work was performed.
+- Known issues: WebMuse remains early alpha; real Codex execution, OpenAI API calls, website generation, WebView2 preview, and tuning panel are not complete.
+- Project run: WPF UI was not launched. Console FoundationSelfTest was run.
+- Tests passed: `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` passed with 0 warnings and 0 errors. `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed.
+- Next recommendation: External review, then prepare the final Codex for OSS application answer.

@@ -2,7 +2,7 @@
 
 ## Snapshot Time
 
-2026-06-01 14:06 +08:00.
+2026-06-01 14:35 +08:00.
 
 ## Public Repository
 
@@ -10,45 +10,33 @@
 - Local path: `E:\GitHub\WebMuse`
 - Default branch: `main`
 - Visibility: public
-- Latest completed commit: `fb5ea3776b42721a5ff483ad49368dbac9f149e5`
-- Latest completed commit message: `Fix WebMuse CI self-test configuration`
+- Latest completed foundation commit: `fb5ea3776b42721a5ff483ad49368dbac9f149e5`
+- Latest completed foundation commit message: `Fix WebMuse CI self-test configuration`
 
 ## Current Round
 
 ```text
-OSS Readiness Round 0: Public Repository Foundation
+OSS Readiness Round 0.2: Real Maintainer Backlog and README Architecture Diagram
 ```
 
 Status: completed.
 
-This round prepared the public OSS foundation. It did not add product features.
+This round made real maintainer backlog work public and added a README workflow diagram. It did not add product features.
 
-## Completed In OSS Readiness Round 0
+## Completed In OSS Readiness Round 0.2
 
-- Verified `wxici/WebMuse` metadata through GitHub CLI.
-- Cloned the public repository to `E:\GitHub\WebMuse`.
-- Confirmed the historical source path at `E:\GitHub\codex\WebRebuildRecorder`.
-- Migrated allowed source files with filtering.
-- Skipped generated build outputs, runtime artifacts, local FFmpeg binaries, archive/media patterns, and credential-like filename patterns.
-- Added public OSS documentation, workflow files, and issue templates.
-- Fixed standalone repository workflow path checks.
-- Fixed GitHub Actions Release self-test configuration.
-- Committed and pushed:
-  - `0a59fa5 Initialize WebMuse OSS repository foundation`
-  - `fb5ea37 Fix WebMuse CI self-test configuration`
-
-## Migrated Source
-
-- `WebRebuildRecorder.slnx`
-- `WebRebuildRecorder.App/`
-- `WebRebuildRecorder.FoundationSelfTest/`
-- `PROJECT_BLUEPRINT.md`
-- `PROJECT_ROADMAP.md`
-- `CODEX_CONSTRUCTION_RULES.md`
-- `REVIEW_PACKAGE_RULES.md`
-- `docs/project-memory/`
-
-Internal source names still use `WebRebuildRecorder`. This is intentional for the current public OSS phase.
+- Created 8 real maintainer backlog GitHub Issues:
+  - #1 Add a README architecture diagram for the WebMuse safety-first workflow
+  - #2 Document SandboxPathPolicy examples and forbidden write targets
+  - #3 Add tests for sensitive-file and local-path scan behavior
+  - #4 Create a v0.1.0-alpha release checklist without publishing binaries
+  - #5 Prepare an application-ready Codex for OSS summary
+  - #6 Add a small sample project manifest without third-party assets
+  - #7 Clarify manual fallback workflow in public documentation
+  - #8 Review root-level documentation for public-facing clarity
+- Added a lightweight Mermaid workflow diagram to `README.md`.
+- Updated public status and migration audit documents.
+- Added no product code, UI changes, generated output, screenshots, recordings, frames, zips, customer materials, or release binaries.
 
 ## Current Implementation Status
 
@@ -57,7 +45,7 @@ Implemented or present:
 - WPF desktop application source under `WebRebuildRecorder.App/`.
 - Foundation self-test harness under `WebRebuildRecorder.FoundationSelfTest/`.
 - Project manifest, V2 directory, project lock, sandbox path, package, dry-run, snapshot, readiness, export, and scan foundation services.
-- Public README, security policy, roadmap, contributing guide, changelog, architecture notes, OSS application notes, manual PoC history, CI workflows, and issue templates.
+- Public README, security policy, roadmap, contributing guide, changelog, architecture notes, OSS application notes, manual PoC history, CI workflows, issue templates, and real maintainer backlog issues.
 
 Not enabled:
 
@@ -72,16 +60,14 @@ Not enabled:
 
 ## Verification Status
 
-Local verification passed:
+Round 0.2 local verification passed:
 
 ```powershell
-dotnet restore WebRebuildRecorder.slnx
-dotnet build WebRebuildRecorder.slnx
 dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
 dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-Remote GitHub Actions latest runs are green:
+Latest remote GitHub Actions runs before Round 0.2 were green for:
 
 - `build`
 - `webrebuildrecorder-foundation`
@@ -101,10 +87,5 @@ Earlier red workflow runs belong to the initial `0a59fa5` commit and are histori
 
 ## Next Step
 
-Public readiness polish:
-
-1. Create 6-10 GitHub issues.
-2. Add a README architecture diagram.
-3. Prepare `v0.1.0-alpha` after review.
-4. Finalize the Codex for OSS application answer.
+External review, then prepare the final Codex for OSS application answer.
 

@@ -114,6 +114,27 @@ reference insight
   -> export
 ```
 
+### Workflow diagram
+
+```mermaid
+flowchart TD
+    A[Reference inspiration] --> B[Observation package]
+    B --> C[Construction package]
+    C --> D[Codex task package]
+    D --> E[Sandbox validation]
+    E --> F[Dry-run]
+    F --> G[Proof-check]
+    G --> H[Approval gate]
+    H --> I{Execution path}
+    I --> J[Controlled execution<br/>future]
+    I --> K[Manual fallback<br/>current safe path]
+    J --> L[Validation]
+    K --> L
+    L --> M[Export]
+```
+
+Real AI execution is not enabled in the current alpha. The controlled execution path is shown as a future gated path.
+
 ## Safety-first engineering direction
 
 WebMuse treats AI website construction as a controlled workflow rather than a one-shot prompt.
@@ -191,4 +212,3 @@ SECURITY.md
 ## License
 
 MIT License.
-

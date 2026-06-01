@@ -14,7 +14,7 @@ Prepare WebMuse as a clean, credible, auditable public OSS repository for an ear
 
 ## Current Architecture
 
-WebMuse is now a public OSS repository at `wxici/WebMuse`.
+WebMuse is a public OSS repository at `wxici/WebMuse`.
 
 The repository contains selected migrated source from the historical `WebRebuildRecorder` project. Internal solution, project, namespace, and folder names still use `WebRebuildRecorder`; this is intentional for now to avoid unnecessary build risk.
 
@@ -25,6 +25,8 @@ The repository contains selected migrated source from the historical `WebRebuild
 - OSS documentation created.
 - GitHub Actions workflows created and passing.
 - Issue templates created.
+- 8 real maintainer backlog GitHub Issues created.
+- README Mermaid workflow diagram added.
 - Build passes.
 - FoundationSelfTest passes.
 - Migration audit created.
@@ -32,11 +34,10 @@ The repository contains selected migrated source from the historical `WebRebuild
 
 ## Unfinished Modules
 
-- 6-10 public GitHub issues have not been created yet.
-- README architecture diagram has not been added yet.
 - `v0.1.0-alpha` release/tag has not been prepared yet.
 - Codex for OSS application answer is not finalized yet.
 - External public-readiness review is still pending.
+- README architecture details may still need review after the first external pass.
 
 ## Current Key Issues
 
@@ -54,26 +55,28 @@ The repository contains selected migrated source from the historical `WebRebuild
 - Historical internal source names may remain `WebRebuildRecorder`.
 - Real AI execution comes after safety gates, not before them.
 - WebMuse is not a clone, copy, imitation, or drag-and-drop website builder.
-- Do not commit generated media, local runtime artifacts, secrets, customer materials, recordings, screenshots, extracted frames, zips, or local configuration.
+- Do not commit generated media, local runtime artifacts, secrets, customer materials, recordings, screenshots, extracted frames, zips, release binaries, or local configuration.
 
 ## Recent Modification Summary
 
-2026-06-01: Completed OSS Readiness Round 0. Migrated filtered source files, created public OSS documentation, added CI and issue templates, fixed standalone repository workflow path checks, fixed Release CI self-test configuration, verified local Release build and FoundationSelfTest, and confirmed latest remote GitHub Actions runs are green.
+2026-06-01: Completed OSS Readiness Round 0.2. Created 8 real maintainer backlog GitHub Issues, added a README Mermaid workflow diagram, updated status and migration audit documents, and verified Release build and FoundationSelfTest. No product features, UI changes, real Codex execution, OpenAI API calls, WebView2, release binaries, screenshots, recordings, frames, zips, customer materials, or generated site output were added.
 
-Completed commits:
+Round 0.2 issues:
 
-```text
-0a59fa5 Initialize WebMuse OSS repository foundation
-fb5ea37 Fix WebMuse CI self-test configuration
-```
+- https://github.com/wxici/WebMuse/issues/1
+- https://github.com/wxici/WebMuse/issues/2
+- https://github.com/wxici/WebMuse/issues/3
+- https://github.com/wxici/WebMuse/issues/4
+- https://github.com/wxici/WebMuse/issues/5
+- https://github.com/wxici/WebMuse/issues/6
+- https://github.com/wxici/WebMuse/issues/7
+- https://github.com/wxici/WebMuse/issues/8
 
 ## Next Priorities
 
-1. Create 6-10 GitHub issues.
-2. Add a README architecture diagram.
+1. External public-readiness review.
+2. Prepare the final Codex for OSS application answer.
 3. Prepare `v0.1.0-alpha` after review.
-4. Finalize the Codex for OSS application answer.
-5. Request an external public-readiness review.
 
 ## Known Risks
 

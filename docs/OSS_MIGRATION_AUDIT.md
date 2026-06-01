@@ -160,6 +160,29 @@ Remote GitHub Actions latest runs are now green:
 
 The earlier red workflow runs belong to the initial `0a59fa5` commit and are historical only.
 
+## Round 0.2 public backlog update
+
+OSS Readiness Round 0.2 created real maintainer backlog issues and added a lightweight README workflow diagram.
+
+Issues created:
+
+- https://github.com/wxici/WebMuse/issues/1
+- https://github.com/wxici/WebMuse/issues/2
+- https://github.com/wxici/WebMuse/issues/3
+- https://github.com/wxici/WebMuse/issues/4
+- https://github.com/wxici/WebMuse/issues/5
+- https://github.com/wxici/WebMuse/issues/6
+- https://github.com/wxici/WebMuse/issues/7
+- https://github.com/wxici/WebMuse/issues/8
+
+README update:
+
+- Added a Mermaid workflow diagram near `## Core workflow`.
+- The diagram marks controlled execution as future and manual fallback as the current safe path.
+- The README explicitly states that real AI execution is not enabled in the current alpha.
+
+No product features, UI changes, real Codex execution, OpenAI API calls, WebView2 integration, website generation, release binaries, screenshots, recordings, extracted frames, zip files, customer materials, or generated output were added in Round 0.2.
+
 ## Known risks
 
 - WebMuse is still early alpha.
@@ -173,8 +196,6 @@ The earlier red workflow runs belong to the initial `0a59fa5` commit and are his
 
 ## Next steps
 
-1. Create 6-10 GitHub issues.
-2. Add a README architecture diagram.
+1. External public-readiness review.
+2. Prepare the final Codex for OSS application answer.
 3. Prepare `v0.1.0-alpha` after review.
-4. Finalize the Codex for OSS application answer.
-5. Request an external public-readiness review.

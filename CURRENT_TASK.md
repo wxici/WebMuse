@@ -2,60 +2,55 @@
 
 ## Task Name
 
-OSS Readiness Round 0: Public Repository Foundation.
+OSS Readiness Round 0.2: Real Maintainer Backlog and README Architecture Diagram.
 
 ## Task Type
 
-Public OSS repository initialization, safe source migration, documentation, CI setup, verification, migration audit, commit, and push.
+Low-risk public maintainer backlog and documentation cleanup.
 
 ## Status
 
 Completed on 2026-06-01.
 
-## Completed Commits
+## Goal
 
-```text
-0a59fa5 Initialize WebMuse OSS repository foundation
-fb5ea37 Fix WebMuse CI self-test configuration
-```
+Make the next real WebMuse maintenance tasks public, structured, and reviewable without pretending there is external community demand or product maturity.
 
-Latest full commit:
-
-```text
-fb5ea3776b42721a5ff483ad49368dbac9f149e5
-```
+This round did not implement product features. It only created real maintainer backlog issues, added a README Mermaid workflow diagram, and updated public status files.
 
 ## Completed Result
 
-OSS Readiness Round 0 established `wxici/WebMuse` as a public OSS repository foundation.
-
 Completed:
 
-1. Verified `wxici/WebMuse` as a public GitHub repository with default branch `main`.
-2. Migrated allowed source files and project memory from the historical `WebRebuildRecorder` project.
-3. Kept internal `WebRebuildRecorder` source names unchanged.
-4. Created public OSS documentation:
-   - `README.md`
-   - `LICENSE`
-   - `SECURITY.md`
-   - `CONTRIBUTING.md`
-   - `ROADMAP.md`
-   - `CHANGELOG.md`
-   - `docs/ARCHITECTURE.md`
-   - `docs/OPEN_SOURCE_APPLICATION_NOTES.md`
-   - `docs/OSS_MIGRATION_AUDIT.md`
-   - `docs/case-studies/manual-poc-history.md`
-5. Created GitHub Actions workflows and issue templates.
-6. Skipped forbidden generated, sensitive, binary, customer/private, recording, screenshot, frame, zip, and local configuration files.
-7. Verified local restore, Release build, and FoundationSelfTest.
-8. Fixed standalone repository workflow path checks.
-9. Fixed GitHub Actions Release self-test configuration.
-10. Confirmed latest remote GitHub Actions runs are green for:
-    - `build`
-    - `webrebuildrecorder-foundation`
+1. Created 8 real maintainer backlog GitHub Issues:
+   - #1 Add a README architecture diagram for the WebMuse safety-first workflow
+   - #2 Document SandboxPathPolicy examples and forbidden write targets
+   - #3 Add tests for sensitive-file and local-path scan behavior
+   - #4 Create a v0.1.0-alpha release checklist without publishing binaries
+   - #5 Prepare an application-ready Codex for OSS summary
+   - #6 Add a small sample project manifest without third-party assets
+   - #7 Clarify manual fallback workflow in public documentation
+   - #8 Review root-level documentation for public-facing clarity
+2. Added a lightweight Mermaid workflow diagram to `README.md`.
+3. Updated `CURRENT_TASK.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, and `docs/OSS_MIGRATION_AUDIT.md`.
+4. Preserved public positioning: WebMuse is early alpha and real AI execution is not enabled.
+5. Added no generated artifacts, binaries, screenshots, recordings, extracted frames, zips, customer materials, or release assets.
+
+## Issue Links
+
+- https://github.com/wxici/WebMuse/issues/1
+- https://github.com/wxici/WebMuse/issues/2
+- https://github.com/wxici/WebMuse/issues/3
+- https://github.com/wxici/WebMuse/issues/4
+- https://github.com/wxici/WebMuse/issues/5
+- https://github.com/wxici/WebMuse/issues/6
+- https://github.com/wxici/WebMuse/issues/7
+- https://github.com/wxici/WebMuse/issues/8
 
 ## Explicitly Out Of Scope
 
+- fake users, fake contributions, fake community feedback, fake stars, fake forks, fake downloads
+- product feature implementation
 - real Codex CLI execution
 - OpenAI API calls
 - Ollama calls
@@ -72,10 +67,8 @@ Completed:
 - mouse automation changes
 - page editor
 - drag-and-drop editor
-- automatic model downloader
-- installer or dependency bootstrapper
-- customer acquisition features
-- commercial customer workflow
+- release binaries
+- screenshots, recordings, extracted frames, zips, customer materials, or generated site output
 - namespace-wide rename
 - solution-wide rename
 - mass refactor
@@ -89,19 +82,9 @@ dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
 dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-Remote verification passed:
+Commit hash for this round is recorded in the final Round 0.2 report.
 
-```text
-GitHub Actions build: green
-GitHub Actions webrebuildrecorder-foundation: green
-```
+## Next Recommended Step
 
-Earlier red workflow runs belong to the initial `0a59fa5` commit and are historical only.
-
-## Next Recommended Tasks
-
-1. Create 6-10 GitHub issues.
-2. Add a README architecture diagram.
-3. Prepare `v0.1.0-alpha` after review.
-4. Finalize the Codex for OSS application answer.
+External review, then prepare the final Codex for OSS application answer.
 
