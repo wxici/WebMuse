@@ -10,20 +10,31 @@ Public OSS repository initialization, safe source migration, documentation, CI s
 
 ## Status
 
-In progress on 2026-06-01.
+Completed on 2026-06-01.
 
-## Goal
+## Completed Commits
 
-Make `wxici/WebMuse` a clean, credible, auditable public OSS repository for the early-alpha WebMuse project.
+```text
+0a59fa5 Initialize WebMuse OSS repository foundation
+fb5ea37 Fix WebMuse CI self-test configuration
+```
 
-This round is not product feature development. It does not implement real Codex execution, OpenAI API calls, website generation, WebView2 preview, tuning UI, UI redesign, or namespace-wide rename.
+Latest full commit:
 
-## Allowed Changes
+```text
+fb5ea3776b42721a5ff483ad49368dbac9f149e5
+```
 
-1. Clone and verify `wxici/WebMuse`.
-2. Migrate only allowed source and project memory files from `E:\GitHub\codex\WebRebuildRecorder`.
-3. Keep internal `WebRebuildRecorder` names unchanged.
-4. Create public OSS docs:
+## Completed Result
+
+OSS Readiness Round 0 established `wxici/WebMuse` as a public OSS repository foundation.
+
+Completed:
+
+1. Verified `wxici/WebMuse` as a public GitHub repository with default branch `main`.
+2. Migrated allowed source files and project memory from the historical `WebRebuildRecorder` project.
+3. Kept internal `WebRebuildRecorder` source names unchanged.
+4. Created public OSS documentation:
    - `README.md`
    - `LICENSE`
    - `SECURITY.md`
@@ -34,10 +45,14 @@ This round is not product feature development. It does not implement real Codex 
    - `docs/OPEN_SOURCE_APPLICATION_NOTES.md`
    - `docs/OSS_MIGRATION_AUDIT.md`
    - `docs/case-studies/manual-poc-history.md`
-5. Create GitHub workflow and issue templates.
-6. Run restore, build, and FoundationSelfTest.
-7. Audit staged files for generated artifacts and sensitive content.
-8. Commit and push to `main` if verification passes.
+5. Created GitHub Actions workflows and issue templates.
+6. Skipped forbidden generated, sensitive, binary, customer/private, recording, screenshot, frame, zip, and local configuration files.
+7. Verified local restore, Release build, and FoundationSelfTest.
+8. Fixed standalone repository workflow path checks.
+9. Fixed GitHub Actions Release self-test configuration.
+10. Confirmed latest remote GitHub Actions runs are green for:
+    - `build`
+    - `webrebuildrecorder-foundation`
 
 ## Explicitly Out Of Scope
 
@@ -65,33 +80,28 @@ This round is not product feature development. It does not implement real Codex 
 - solution-wide rename
 - mass refactor
 
-## Required Verification
+## Verification Result
+
+Local verification passed:
 
 ```powershell
-Set-Location "E:\GitHub\WebMuse"
-git status
-dotnet restore WebRebuildRecorder.slnx
-dotnet build WebRebuildRecorder.slnx
-dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
+dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-## Completion Criteria
+Remote verification passed:
 
-1. Required OSS docs exist.
-2. Allowed source files are migrated.
-3. Forbidden/generated/sensitive file categories are not migrated.
-4. Build passes.
-5. FoundationSelfTest passes.
-6. Git staged diff contains no generated artifacts, customer/private materials, local configuration, keys, tokens, or login files.
-7. Commit `Initialize WebMuse OSS repository foundation` is pushed to `origin/main`.
-8. Final OSS Readiness Round 0 report is returned.
+```text
+GitHub Actions build: green
+GitHub Actions webrebuildrecorder-foundation: green
+```
 
-## Next Recommended Tasks After Completion
+Earlier red workflow runs belong to the initial `0a59fa5` commit and are historical only.
 
-1. Create 6-10 real GitHub Issues.
-2. Create a `v0.1.0-alpha` tag/release.
-3. Add a README architecture diagram.
-4. Finalize the under-500-character OSS application answer.
-5. Ask for an external review of the public repository.
-6. Decide whether to submit the Codex for OSS application.
+## Next Recommended Tasks
+
+1. Create 6-10 GitHub issues.
+2. Add a README architecture diagram.
+3. Prepare `v0.1.0-alpha` after review.
+4. Finalize the Codex for OSS application answer.
 

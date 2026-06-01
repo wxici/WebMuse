@@ -42,11 +42,11 @@
 - `CODEX_GLOBAL_RULES.md`
 - `README_FOR_CODEX.md`
 - `PROJECT_STATE.md`
-- `CODEX_CHECKPOINT.md`
 - `docs/ARCHITECTURE.md`
 - `docs/OPEN_SOURCE_APPLICATION_NOTES.md`
 - `docs/OSS_MIGRATION_AUDIT.md`
 - `docs/case-studies/manual-poc-history.md`
+- `docs/project-memory/CODEX_CHECKPOINT.md`
 - `.github/workflows/build.yml`
 - `.github/workflows/webrebuildrecorder-foundation.yml`
 - `.github/ISSUE_TEMPLATE/bug_report.md`
@@ -91,6 +91,19 @@ Content-pattern scans found only expected documentation text and self-test senti
 ## Build result
 
 Passed.
+
+Completed commits:
+
+```text
+0a59fa5 Initialize WebMuse OSS repository foundation
+fb5ea37 Fix WebMuse CI self-test configuration
+```
+
+Latest full commit:
+
+```text
+fb5ea3776b42721a5ff483ad49368dbac9f149e5
+```
 
 Commands run from `E:\GitHub\WebMuse`:
 
@@ -140,6 +153,13 @@ dotnet run --configuration Release --no-build --project WebRebuildRecorder.Found
 
 Both passed.
 
+Remote GitHub Actions latest runs are now green:
+
+- `build`
+- `webrebuildrecorder-foundation`
+
+The earlier red workflow runs belong to the initial `0a59fa5` commit and are historical only.
+
 ## Known risks
 
 - WebMuse is still early alpha.
@@ -153,8 +173,8 @@ Both passed.
 
 ## Next steps
 
-1. Run `dotnet restore WebRebuildRecorder.slnx`.
-2. Run `dotnet build WebRebuildRecorder.slnx`.
-3. Run `dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj`.
-4. Run a pre-commit audit for generated artifacts and sensitive patterns.
-5. Commit and push if verification passes.
+1. Create 6-10 GitHub issues.
+2. Add a README architecture diagram.
+3. Prepare `v0.1.0-alpha` after review.
+4. Finalize the Codex for OSS application answer.
+5. Request an external public-readiness review.

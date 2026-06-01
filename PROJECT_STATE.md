@@ -14,29 +14,39 @@ Prepare WebMuse as a clean, credible, auditable public OSS repository for an ear
 
 ## Current Architecture
 
-The public repository was just cloned from `wxici/WebMuse` and initially contained only a short `README.md`.
+WebMuse is now a public OSS repository at `wxici/WebMuse`.
 
-This round will migrate selected source and project memory from the historical `WebRebuildRecorder` project while preserving internal source names.
+The repository contains selected migrated source from the historical `WebRebuildRecorder` project. Internal solution, project, namespace, and folder names still use `WebRebuildRecorder`; this is intentional for now to avoid unnecessary build risk.
 
 ## Completed Modules
 
-- GitHub repository exists as `wxici/WebMuse`.
-- Default branch is `main`.
-- Repository visibility is public.
+- Public OSS foundation completed.
+- Source migration completed.
+- OSS documentation created.
+- GitHub Actions workflows created and passing.
+- Issue templates created.
+- Build passes.
+- FoundationSelfTest passes.
+- Migration audit created.
+- Sensitive/generated artifact filtering completed for the initial migration.
 
 ## Unfinished Modules
 
-- Source migration is not complete.
-- OSS documentation is not complete.
-- CI workflow is not complete.
-- Build and FoundationSelfTest verification have not yet run in this repository.
-- No commit or push has been made for this round.
+- 6-10 public GitHub issues have not been created yet.
+- README architecture diagram has not been added yet.
+- `v0.1.0-alpha` release/tag has not been prepared yet.
+- Codex for OSS application answer is not finalized yet.
+- External public-readiness review is still pending.
 
 ## Current Key Issues
 
-- The target repository starts nearly empty.
-- The historical source includes generated and private-risk categories that must not be migrated.
-- Internal source names still use `WebRebuildRecorder` and should remain unchanged in this round.
+- The project is early alpha and should not be described as mature.
+- Real Codex execution is not enabled.
+- OpenAI API calls are not enabled.
+- Website generation is not complete.
+- WebView2 preview is not complete.
+- Tuning panel is not complete.
+- Internal source names still use `WebRebuildRecorder`.
 
 ## Important Design Principles
 
@@ -44,26 +54,34 @@ This round will migrate selected source and project memory from the historical `
 - Historical internal source names may remain `WebRebuildRecorder`.
 - Real AI execution comes after safety gates, not before them.
 - WebMuse is not a clone, copy, imitation, or drag-and-drop website builder.
-- Do not migrate generated media, local runtime artifacts, secrets, or customer/private materials.
+- Do not commit generated media, local runtime artifacts, secrets, customer materials, recordings, screenshots, extracted frames, zips, or local configuration.
 
 ## Recent Modification Summary
 
-2026-06-01: Started OSS Readiness Round 0. Confirmed `wxici/WebMuse` is public, default branch is `main`, cloned the repository, created target-local Codex continuity files, migrated filtered source files, wrote public OSS documentation, added CI and issue templates, and verified restore/build/FoundationSelfTest.
+2026-06-01: Completed OSS Readiness Round 0. Migrated filtered source files, created public OSS documentation, added CI and issue templates, fixed standalone repository workflow path checks, fixed Release CI self-test configuration, verified local Release build and FoundationSelfTest, and confirmed latest remote GitHub Actions runs are green.
+
+Completed commits:
+
+```text
+0a59fa5 Initialize WebMuse OSS repository foundation
+fb5ea37 Fix WebMuse CI self-test configuration
+```
 
 ## Next Priorities
 
-1. Audit staged files for generated artifacts and sensitive content.
-2. Commit with `Initialize WebMuse OSS repository foundation`.
-3. Push to `origin/main`.
-4. Create 6-10 real GitHub Issues.
-5. Prepare `v0.1.0-alpha` tag/release after external review.
+1. Create 6-10 GitHub issues.
+2. Add a README architecture diagram.
+3. Prepare `v0.1.0-alpha` after review.
+4. Finalize the Codex for OSS application answer.
+5. Request an external public-readiness review.
 
 ## Known Risks
 
 - WebMuse is early alpha.
 - Real Codex execution is not enabled.
 - OpenAI API calls are not enabled.
-- WebView2 preview is not implemented.
-- Website generation is not implemented.
-- Tuning panel is not implemented.
+- Website generation is not complete.
+- WebView2 preview is not complete.
+- Tuning panel is not complete.
 - Public docs must avoid overstating maturity.
+

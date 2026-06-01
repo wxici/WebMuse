@@ -172,3 +172,42 @@
 - Current errors/warnings: Remote CI failure root cause identified as Release/Debug mismatch in `dotnet run --no-build`; local Release verification now passes.
 - If interrupted, continue from: `git add .github/workflows/build.yml .github/workflows/webrebuildrecorder-foundation.yml docs/OSS_MIGRATION_AUDIT.md PROJECT_STATUS.md CODEX_CHECKPOINT.md`, commit the CI fix, push, and watch GitHub Actions.
 - Notes: This is a CI command correction only.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-01 14:06:08 +08:00
+- Previous task status: Completed. Latest commit is `fb5ea3776b42721a5ff483ad49368dbac9f149e5` with message `Fix WebMuse CI self-test configuration`.
+- Confirmed complete: Yes. Latest remote GitHub Actions runs for `build` and `webrebuildrecorder-foundation` are green.
+- Remaining issues: Public status files still contained stale "in progress" and pending commit/push language; root `CODEX_CHECKPOINT.md` was still exposed.
+- Can this task begin: Yes. This task is status cleanup only and does not implement product features.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 14:06:08 +08:00
+- Current task: OSS Readiness Round 0.1: Public Status Cleanup.
+- Current stage: Status files updated; verification pending.
+- Completed: Moved root `CODEX_CHECKPOINT.md` to `docs/project-memory/CODEX_CHECKPOINT.md`; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `README_FOR_CODEX.md`, `CODEX_GLOBAL_RULES.md`, and `docs/OSS_MIGRATION_AUDIT.md` to reflect completed Round 0 status and current checkpoint location.
+- In progress: Running required Release build and FoundationSelfTest.
+- Not completed: Verification, final checkpoint completion marker, git commit.
+- Modified files: `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `README_FOR_CODEX.md`, `CODEX_GLOBAL_RULES.md`, `docs/OSS_MIGRATION_AUDIT.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: `docs/project-memory/CODEX_CHECKPOINT.md` as the moved checkpoint path.
+- Deleted files: Root `CODEX_CHECKPOINT.md`.
+- Can currently run: Expected yes; verification is pending.
+- Tested: Not yet for this cleanup commit.
+- Test result: Pending.
+- Current errors/warnings: None.
+- If interrupted, continue from: Run Release build and Release FoundationSelfTest, then append the final completion marker and commit with `Clean public status files after OSS foundation setup`.
+- Notes: No product source, UI, Codex execution, OpenAI API, WebView2, generated output, binary, or namespace/solution rename work was performed.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Cleaned public status files after the successful OSS foundation migration and CI fix; changed `CURRENT_TASK.md` to completed; updated `PROJECT_STATUS.md` and `PROJECT_STATE.md` to remove stale pending language; updated `docs/OSS_MIGRATION_AUDIT.md` with final CI fix commit and green workflow status; moved checkpoint history from root to `docs/project-memory/CODEX_CHECKPOINT.md`; updated `README_FOR_CODEX.md` and `CODEX_GLOBAL_RULES.md` to point to the moved checkpoint.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `README_FOR_CODEX.md`, `CODEX_GLOBAL_RULES.md`, `docs/OSS_MIGRATION_AUDIT.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: `docs/project-memory/CODEX_CHECKPOINT.md` as the moved checkpoint path.
+- Deleted files this task: Root `CODEX_CHECKPOINT.md`.
+- Existing functionality preserved: Yes. No application product code, UI, real Codex execution, OpenAI API call, WebView2 integration, website generation, generated output, binary, namespace, solution, or project-file rename work was performed.
+- Known issues: WebMuse remains early alpha; real Codex execution, OpenAI API calls, website generation, WebView2 preview, and tuning panel are not complete.
+- Project run: WPF UI was not launched. Console FoundationSelfTest was run.
+- Tests passed: `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` passed with 0 warnings and 0 errors. `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed.
+- Next recommendation: Create 6-10 GitHub issues, add a README architecture diagram, prepare `v0.1.0-alpha` after review, and finalize the Codex for OSS application answer.

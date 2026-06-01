@@ -11,10 +11,18 @@ It helps organize observation packages, construction packages, sandbox validatio
 Current task:
 
 ```text
-OSS Readiness Round 0: Public Repository Foundation
+OSS Readiness Round 0.1: Public Status Cleanup
 ```
 
-This round is limited to public repository initialization, minimal source migration, OSS documentation, CI/build setup, safety boundary documentation, migration audit, and verification.
+Round 0 is complete. Round 0.1 only cleans up public status files after the successful OSS foundation migration and CI fix.
+
+Checkpoint history is stored at:
+
+```text
+docs/project-memory/CODEX_CHECKPOINT.md
+```
+
+Do not keep `CODEX_CHECKPOINT.md` in the repository root.
 
 ## Run Method
 
@@ -22,9 +30,9 @@ Expected commands after source migration:
 
 ```powershell
 dotnet restore WebRebuildRecorder.slnx
-dotnet build WebRebuildRecorder.slnx
+dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore
 dotnet run --project WebRebuildRecorder.App/WebRebuildRecorder.App.csproj
-dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj
+dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
 The application is Windows-specific and requires the .NET 8 SDK with WPF desktop support.
@@ -59,4 +67,4 @@ When source is migrated, preserve existing behavior unless a future task explici
 - Do not migrate generated workspaces, recordings, screenshots, extracted frames, logs, zips, secrets, customer materials, or local configuration.
 - Do not implement real AI execution or website generation in this round.
 - Record migration findings in `docs/OSS_MIGRATION_AUDIT.md`.
-
+- Read and update the checkpoint at `docs/project-memory/CODEX_CHECKPOINT.md` for future multi-file work.

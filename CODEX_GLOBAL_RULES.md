@@ -9,7 +9,7 @@ Before changing application code or repository structure, read these files in or
 1. `CODEX_GLOBAL_RULES.md`
 2. `README_FOR_CODEX.md`
 3. `PROJECT_STATE.md`
-4. `CODEX_CHECKPOINT.md`
+4. `docs/project-memory/CODEX_CHECKPOINT.md`
 
 If any file is missing, create a minimal accurate version before broad edits.
 
@@ -38,11 +38,10 @@ Do not describe WebMuse as a clone, copy, imitation, or page-editor tool. It is 
 
 ## Checkpoints
 
-Update `CODEX_CHECKPOINT.md` during multi-file edits, migrations, verification failures, or task completion.
+Update `docs/project-memory/CODEX_CHECKPOINT.md` during multi-file edits, migrations, verification failures, or task completion.
 
 Do not mark work complete unless build/test status and known risks are recorded.
 
 ## Repository Hygiene
 
 Do not commit customer materials, recordings, screenshots, extracted frames, logs, review zips, generated output sites, secrets, local machine configuration, API keys, tokens, cookies, or OpenAI/Codex login files.
-
