@@ -268,3 +268,60 @@
 - Project run: WPF UI was not launched. Console FoundationSelfTest was run.
 - Tests passed: `dotnet build WebRebuildRecorder.slnx --configuration Release --no-restore` passed with 0 warnings and 0 errors. `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed.
 - Next recommendation: External review, then prepare the final Codex for OSS application answer.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-01 14:44:40 +08:00
+- Previous task status: Completed. Latest local commit is `fbe298d Add WebMuse maintainer backlog and workflow diagram`; Round 0.2 created 8 real maintainer backlog issues and added the README Mermaid workflow diagram.
+- Confirmed complete: Yes.
+- Remaining issues: Final Codex for OSS application answer needs to be fixed in repository documentation.
+- Can this task begin: Yes. Round 0.3 is Markdown-only and does not implement product features.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 14:44:40 +08:00
+- Current task: OSS Readiness Round 0.3: Final Codex for OSS Application Text.
+- Current stage: Startup checks completed; writing final application text document.
+- Completed: Read required startup files; confirmed working tree is clean; confirmed only Markdown documentation updates are needed.
+- In progress: Creating `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md` and lightly updating status files.
+- Not completed: Git status verification, commit, final report.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Yes.
+- Tested: `git status --short --branch` showed clean working tree before edits.
+- Test result: Build not required because this task is Markdown-only.
+- Current errors/warnings: None.
+- If interrupted, continue from: Finish `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`, update `CURRENT_TASK.md`, `PROJECT_STATUS.md`, and `PROJECT_STATE.md`, then run `git status`.
+- Notes: No product code, release binaries, releases, screenshots, recordings, extracted frames, zips, customer materials, generated sites, fake community claims, fake adoption claims, or additional issues are authorized.
+
+## Current Checkpoint
+
+- Update time: 2026-06-01 14:46:38 +08:00
+- Current task: OSS Readiness Round 0.3: Final Codex for OSS Application Text.
+- Current stage: Final application text and status updates completed; git status verification pending.
+- Completed: Created `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, and `PROJECT_STATE.md`; kept changes Markdown-only.
+- In progress: Running `git status` verification.
+- Not completed: Final commit and final report.
+- Modified files: `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`.
+- Deleted files: None.
+- Can currently run: Yes.
+- Tested: Build not run because only Markdown files changed.
+- Test result: `git status` pending.
+- Current errors/warnings: None.
+- If interrupted, continue from: Run `git status`, commit with `Add final Codex for OSS application text`, then report changed files and commit hash.
+- Notes: No product code, binaries, screenshots, recordings, extracted frames, zips, customer materials, generated sites, secrets, private account information, or product features were added.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Created `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md` with final short answers for the Codex for OSS application; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, and `PROJECT_STATE.md` lightly for Round 0.3.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No product code, UI, real Codex execution, OpenAI API calls, WebView2 integration, website generation, release binaries, screenshots, recordings, extracted frames, zips, customer materials, generated sites, secrets, or private account information were added.
+- Known issues: WebMuse remains early alpha; real Codex execution, OpenAI API calls, website generation, WebView2 preview, and tuning panel are not complete.
+- Project run: Not run. This task changed only Markdown files.
+- Tests passed: `git status` was run. Build was not required because only Markdown files changed.
+- Next recommendation: User manually submits the Codex for OSS application form.

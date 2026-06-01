@@ -27,6 +27,7 @@ The repository contains selected migrated source from the historical `WebRebuild
 - Issue templates created.
 - 8 real maintainer backlog GitHub Issues created.
 - README Mermaid workflow diagram added.
+- Final Codex for OSS application text created at `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`.
 - Build passes.
 - FoundationSelfTest passes.
 - Migration audit created.
@@ -35,7 +36,7 @@ The repository contains selected migrated source from the historical `WebRebuild
 ## Unfinished Modules
 
 - `v0.1.0-alpha` release/tag has not been prepared yet.
-- Codex for OSS application answer is not finalized yet.
+- Manual Codex for OSS application submission is not completed yet.
 - External public-readiness review is still pending.
 - README architecture details may still need review after the first external pass.
 
@@ -61,6 +62,8 @@ The repository contains selected migrated source from the historical `WebRebuild
 
 2026-06-01: Completed OSS Readiness Round 0.2. Created 8 real maintainer backlog GitHub Issues, added a README Mermaid workflow diagram, updated status and migration audit documents, and verified Release build and FoundationSelfTest. No product features, UI changes, real Codex execution, OpenAI API calls, WebView2, release binaries, screenshots, recordings, frames, zips, customer materials, or generated site output were added.
 
+2026-06-01: Completed OSS Readiness Round 0.3. Created `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md` with final Codex for OSS application text and updated public status files lightly. No product code, UI changes, binaries, screenshots, recordings, zips, customer materials, generated sites, secrets, or private account information were added.
+
 Round 0.2 issues:
 
 - https://github.com/wxici/WebMuse/issues/1
@@ -74,8 +77,8 @@ Round 0.2 issues:
 
 ## Next Priorities
 
-1. External public-readiness review.
-2. Prepare the final Codex for OSS application answer.
+1. Manually submit the Codex for OSS application form.
+2. External public-readiness review.
 3. Prepare `v0.1.0-alpha` after review.
 
 ## Known Risks
@@ -87,4 +90,3 @@ Round 0.2 issues:
 - WebView2 preview is not complete.
 - Tuning panel is not complete.
 - Public docs must avoid overstating maturity.
-

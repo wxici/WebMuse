@@ -2,7 +2,7 @@
 
 ## Snapshot Time
 
-2026-06-01 14:35 +08:00.
+2026-06-01 14:46 +08:00.
 
 ## Public Repository
 
@@ -16,12 +16,18 @@
 ## Current Round
 
 ```text
-OSS Readiness Round 0.2: Real Maintainer Backlog and README Architecture Diagram
+OSS Readiness Round 0.3: Final Codex for OSS Application Text
 ```
 
 Status: completed.
 
-This round made real maintainer backlog work public and added a README workflow diagram. It did not add product features.
+This round created the final Codex for OSS application text in `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`. It did not add product features.
+
+## Completed In OSS Readiness Round 0.3
+
+- Created `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md` for direct application form entry.
+- Updated public status documents lightly.
+- Added no product code, UI changes, generated output, screenshots, recordings, frames, zips, customer materials, release binaries, secrets, or private account information.
 
 ## Completed In OSS Readiness Round 0.2
 
@@ -46,6 +52,7 @@ Implemented or present:
 - Foundation self-test harness under `WebRebuildRecorder.FoundationSelfTest/`.
 - Project manifest, V2 directory, project lock, sandbox path, package, dry-run, snapshot, readiness, export, and scan foundation services.
 - Public README, security policy, roadmap, contributing guide, changelog, architecture notes, OSS application notes, manual PoC history, CI workflows, issue templates, and real maintainer backlog issues.
+- Final Codex for OSS application text under `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md`.
 
 Not enabled:
 
@@ -74,6 +81,8 @@ Latest remote GitHub Actions runs before Round 0.2 were green for:
 
 Earlier red workflow runs belong to the initial `0a59fa5` commit and are historical only.
 
+Round 0.3 is Markdown-only. No build was required.
+
 ## Known Risks
 
 - WebMuse is still early alpha.
@@ -87,5 +96,4 @@ Earlier red workflow runs belong to the initial `0a59fa5` commit and are histori
 
 ## Next Step
 
-External review, then prepare the final Codex for OSS application answer.
-
+User manually submits the Codex for OSS application form.
