@@ -1,0 +1,88 @@
+<Window x:Class="WebRebuildRecorder.App.Views.NewProjectWizardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="新建网页观察项目"
+        Width="720"
+        Height="430"
+        MinWidth="680"
+        MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#F6F8FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="新建网页观察项目"
+                       FontSize="22"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="填写必填项后，程序会创建独立项目目录并进入主工作区。"
+                       Foreground="#57606A"
+                       Margin="0,6,0,16" />
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                Background="White"
+                BorderBrush="#D0D7DE"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="项目名称：" VerticalAlignment="Center" Margin="0,0,10,10" />
+                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" x:Name="ProjectNameBox" TextChanged="Input_TextChanged" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="参考网站链接：" VerticalAlignment="Center" Margin="0,0,10,10" />
+                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" x:Name="ReferenceUrlBox" TextChanged="Input_TextChanged" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="项目根目录：" VerticalAlignment="Center" Margin="0,0,10,10" />
+                <TextBox Grid.Row="2" Grid.Column="1" x:Name="RootDirectoryBox" TextChanged="Input_TextChanged" Margin="0,0,8,10" />
+                <Button Grid.Row="2" Grid.Column="2" Content="浏览..." Click="BrowseRootButton_Click" Padding="10,4" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="最终项目目录：" VerticalAlignment="Top" Margin="0,0,10,10" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="ProjectDirectoryPreviewText" Text="--" TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="源码项目目录：" VerticalAlignment="Center" Margin="0,0,10,10" />
+                <TextBox Grid.Row="4" Grid.Column="1" x:Name="LocalCodePathBox" Margin="0,0,8,10" />
+                <Button Grid.Row="4" Grid.Column="2" Content="浏览..." Click="BrowseLocalCodeButton_Click" Padding="10,4" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="素材目录：" VerticalAlignment="Center" Margin="0,0,10,10" />
+                <TextBox Grid.Row="5" Grid.Column="1" x:Name="AssetDirectoryBox" Margin="0,0,8,10" />
+                <Button Grid.Row="5" Grid.Column="2" Content="浏览..." Click="BrowseAssetsButton_Click" Padding="10,4" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" x:Name="ValidationText" Foreground="#B42318" TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0">
+            <Button Content="创建项目"
+                    Click="CreateButton_Click"
+                    Padding="16,6"
+                    Margin="0,0,8,0" />
+            <Button Content="取消"
+                    Click="CancelButton_Click"
+                    Padding="16,6" />
+        </StackPanel>
+    </Grid>
+</Window>

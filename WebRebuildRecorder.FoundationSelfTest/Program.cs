@@ -1,0 +1,2499 @@
+using System.Text;
+using System.Text.Json;
+using WebRebuildRecorder.App.Core.Logging;
+using WebRebuildRecorder.App.Core.ProjectSystem;
+using WebRebuildRecorder.App.Core.Security;
+using WebRebuildRecorder.App.Core.Serialization;
+using WebRebuildRecorder.App.Core.State;
+using WebRebuildRecorder.App.Services;
+
+var failures = new List<string>();
+var tempRoot = Path.Combine(
+    Path.GetTempPath(),
+    "WebRebuildRecorderFoundationSelfTest",
+    Guid.NewGuid().ToString("N"));
+
+try
+{
+    var logger = new AppLogger();
+    var projectService = new ProjectService(logger);
+    var project = await projectService.CreateNewProjectAsync(new()
+    {
+        ProjectName = "Foundation Self Check",
+        ReferenceUrl = "https://example.com/",
+        RootDirectory = tempRoot
+    });
+
+    CheckV2Directories(project.ProjectDirectory, failures);
+    await CheckManifestAsync(project.ProjectDirectory, failures);
+    await CheckStatePreservedAsync(projectService, project.ProjectDirectory, failures);
+    await CheckInvalidManifestPathsAsync(project.ProjectDirectory, failures);
+    CheckLegacyDoubleWrite(project.ProjectDirectory, failures);
+    CheckProjectLock(project.ProjectDirectory, project.ProjectId, failures);
+    CheckSandboxPolicy(project.ProjectDirectory, failures);
+    CheckReparsePointPolicy(project.ProjectDirectory, failures);
+    await CheckEnvironmentStubAsync(project.ProjectDirectory, failures);
+    await CheckP1DataFoundationsAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP12PackageScaffoldsAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP13ContentGenerationAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP14SnapshotRestoreAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP15ConstructionReadinessAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP16DryRunOrchestratorAsync(project.ProjectDirectory, project.ProjectId, failures);
+
+    if (failures.Count > 0)
+    {
+        Console.Error.WriteLine("Foundation self-check failed:");
+        foreach (var failure in failures)
+        {
+            Console.Error.WriteLine($"- {failure}");
+        }
+
+        return 1;
+    }
+
+    Console.WriteLine("Foundation self-check passed.");
+    Console.WriteLine("Verified P0/P1 project manifest, V2 directories, lock, sandbox, reparse, and environment stubs.");
+    Console.WriteLine("Verified P1.1 assets/theme/content-map/snapshot/log/export/secret scan foundations.");
+    Console.WriteLine("Verified P1.2 observation package, construction package, Codex task package, run records, failure classification, package validation, and no real Codex execution.");
+    Console.WriteLine("[P1.3] Legacy observation bridge verified.");
+    Console.WriteLine("[P1.3] Construction context builder verified.");
+    Console.WriteLine("[P1.3] Task run queued transition verified.");
+    Console.WriteLine("[P1.3] Strict package validation verified.");
+    Console.WriteLine("[P1.4] Snapshot listing verified.");
+    Console.WriteLine("[P1.4] Snapshot validation verified.");
+    Console.WriteLine("[P1.4] Hash mismatch detection verified.");
+    Console.WriteLine("[P1.4] Safety snapshot before restore verified.");
+    Console.WriteLine("[P1.4] Restore result report verified.");
+    Console.WriteLine("[P1.4] Forbidden restore paths blocked.");
+    Console.WriteLine("[P1.5] Draft readiness verified.");
+    Console.WriteLine("[P1.5] Strict readiness verified.");
+    Console.WriteLine("[P1.5] PreCodexDryRun readiness verified.");
+    Console.WriteLine("[P1.5] Readiness report files verified.");
+    Console.WriteLine("[P1.5] Package-index hash mismatch blocked.");
+    Console.WriteLine("[P1.5] Secret/local path blocked.");
+    Console.WriteLine("[P1.5] Rollback availability verified.");
+    Console.WriteLine("[P1.5] Context freshness warning/error verified.");
+    Console.WriteLine("[P1.5] Readiness-probe snapshot semantics verified.");
+    Console.WriteLine("[P1.5] Output surface writable check verified without requiring generated index.html.");
+    Console.WriteLine("[P1.5] AI engine missing is warning, not blocker.");
+    Console.WriteLine("[P1.5] Reference-site asset approval is blocked.");
+    Console.WriteLine("[P1.5] Optional design-context awareness verified.");
+    Console.WriteLine("[P1.5] Readiness report sanitizer verified.");
+    Console.WriteLine("[P1.5] Blocking reasons map to failure categories.");
+    Console.WriteLine("[P1.6] Dry-run orchestrator verified.");
+    Console.WriteLine("[P1.6] PreCodexDryRun readiness integration verified.");
+    Console.WriteLine("[P1.6] Task package missing blocks dry-run.");
+    Console.WriteLine("[P1.6] Instructions safety boundary check verified.");
+    Console.WriteLine("[P1.6] Allowed write roots check verified.");
+    Console.WriteLine("[P1.6] Dry-run reports verified.");
+    Console.WriteLine("[P1.6] Non-execution flags verified.");
+    Console.WriteLine("[P1.6] Output-site untouched verified.");
+    Console.WriteLine("[P1.6] Report sanitizer verified.");
+    Console.WriteLine("[P1.6] Dry-run logs verified.");
+    Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
+    return 0;
+}
+finally
+{
+    TryDeleteTempRoot(tempRoot);
+}
+
+static void CheckV2Directories(string projectRoot, List<string> failures)
+{
+    var required = new[]
+    {
+        ProjectDirectoryV2.Input,
+        ProjectDirectoryV2.Assets,
+        ProjectDirectoryV2.Theme,
+        ProjectDirectoryV2.Observation,
+        ProjectDirectoryV2.CodexTask,
+        ProjectDirectoryV2.OutputCurrent,
+        ProjectDirectoryV2.Tune,
+        ProjectDirectoryV2.Maps,
+        ProjectDirectoryV2.Exports,
+        ProjectDirectoryV2.Logs,
+        ProjectDirectoryV2.Versions
+    };
+
+    foreach (var relativePath in required)
+    {
+        var fullPath = Path.Combine(projectRoot, relativePath);
+        if (!Directory.Exists(fullPath))
+        {
+            failures.Add($"Missing V2 directory: {relativePath}");
+        }
+    }
+}
+
+static async Task CheckManifestAsync(string projectRoot, List<string> failures)
+{
+    var manifestPath = ProjectManifestService.GetManifestPath(projectRoot);
+    if (!File.Exists(manifestPath))
+    {
+        failures.Add("project.wrbproj was not created.");
+        return;
+    }
+
+    await using var stream = File.OpenRead(manifestPath);
+    using var document = await JsonDocument.ParseAsync(stream);
+    if (!document.RootElement.TryGetProperty("state", out var stateElement)
+        || stateElement.ValueKind != JsonValueKind.String)
+    {
+        failures.Add("project.wrbproj state is not serialized as a string.");
+    }
+
+    var manifest = await new ProjectManifestService().LoadAsync(projectRoot);
+    if (string.IsNullOrWhiteSpace(manifest.ProjectId))
+    {
+        failures.Add("project.wrbproj has no projectId.");
+    }
+
+    if (Path.IsPathRooted(manifest.Paths.OutputCurrent))
+    {
+        failures.Add("project.wrbproj contains an absolute outputCurrent path.");
+    }
+}
+
+static async Task CheckStatePreservedAsync(
+    ProjectService projectService,
+    string projectRoot,
+    List<string> failures)
+{
+    var manifestService = new ProjectManifestService();
+    await manifestService.SetProjectStateAsync(projectRoot, ProjectState.ObservationReady);
+
+    await projectService.OpenProjectAsync(projectRoot);
+    await projectService.SaveCurrentProjectAsync();
+
+    var reloaded = await manifestService.LoadAsync(projectRoot);
+    if (reloaded.State != ProjectState.ObservationReady)
+    {
+        failures.Add($"ProjectState was reset during save. Expected ObservationReady, got {reloaded.State}.");
+    }
+}
+
+static async Task CheckInvalidManifestPathsAsync(string projectRoot, List<string> failures)
+{
+    var manifestService = new ProjectManifestService();
+    var originalManifest = await manifestService.LoadAsync(projectRoot);
+    var manifestPath = ProjectManifestService.GetManifestPath(projectRoot);
+
+    var traversalManifest = CloneManifest(originalManifest);
+    traversalManifest.Paths.OutputCurrent = "../other-project";
+    await WriteRawManifestAsync(manifestPath, traversalManifest);
+    await ExpectInvalidManifestAsync(
+        manifestService,
+        projectRoot,
+        "ProjectManifestService allowed outputCurrent='../other-project'.",
+        failures);
+
+    var absoluteManifest = CloneManifest(originalManifest);
+    absoluteManifest.Paths.Logs = @"C:/Users/test/.ssh";
+    await WriteRawManifestAsync(manifestPath, absoluteManifest);
+    await ExpectInvalidManifestAsync(
+        manifestService,
+        projectRoot,
+        "ProjectManifestService allowed logs='C:/Users/test/.ssh'.",
+        failures);
+
+    await manifestService.SaveAsync(projectRoot, originalManifest);
+}
+
+static WrbProjectManifest CloneManifest(WrbProjectManifest manifest)
+{
+    var json = JsonSerializer.Serialize(manifest, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<WrbProjectManifest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone manifest for self-check.");
+}
+
+static async Task WriteRawManifestAsync(string manifestPath, WrbProjectManifest manifest)
+{
+    await using var stream = File.Create(manifestPath);
+    await JsonSerializer.SerializeAsync(stream, manifest, WrbJsonOptions.Default);
+}
+
+static async Task ExpectInvalidManifestAsync(
+    ProjectManifestService manifestService,
+    string projectRoot,
+    string failureMessage,
+    List<string> failures)
+{
+    try
+    {
+        await manifestService.LoadAsync(projectRoot);
+        failures.Add(failureMessage);
+    }
+    catch (InvalidDataException)
+    {
+    }
+    catch (InvalidOperationException)
+    {
+    }
+}
+
+static void CheckLegacyDoubleWrite(string projectRoot, List<string> failures)
+{
+    if (!File.Exists(Path.Combine(projectRoot, "project.json")))
+    {
+        failures.Add("Legacy project.json was not written.");
+    }
+
+    if (!File.Exists(Path.Combine(projectRoot, "project-info.json")))
+    {
+        failures.Add("Legacy project-info.json was not written.");
+    }
+}
+
+static void CheckProjectLock(string projectRoot, string projectId, List<string> failures)
+{
+    var lockService = new ProjectLockService();
+    var firstLock = lockService.CreateLock(projectRoot, "self-check", projectId, "Foundation harness check");
+    if (!lockService.IsLocked(projectRoot))
+    {
+        failures.Add("ProjectLockService did not report the first lock.");
+    }
+
+    try
+    {
+        lockService.CreateLock(projectRoot, "duplicate", projectId, "Duplicate check");
+        failures.Add("ProjectLockService allowed duplicate locking.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    var lockPath = ProjectLockService.GetLockFilePath(projectRoot);
+    using (var document = JsonDocument.Parse(File.ReadAllText(lockPath)))
+    {
+        if (!document.RootElement.TryGetProperty("processId", out _)
+            || !document.RootElement.TryGetProperty("machineName", out _)
+            || !document.RootElement.TryGetProperty("projectId", out _))
+        {
+            failures.Add("project.lock JSON is missing expected fields.");
+        }
+    }
+
+    if (string.IsNullOrWhiteSpace(firstLock.TaskId))
+    {
+        failures.Add("ProjectLockService returned an empty taskId.");
+    }
+
+    lockService.ReleaseLock(projectRoot);
+    if (lockService.IsLocked(projectRoot))
+    {
+        failures.Add("ProjectLockService still reports locked after release.");
+    }
+
+    lockService.CreateLock(projectRoot, "self-check-reacquire", projectId, "Reacquire check");
+    lockService.ReleaseLock(projectRoot);
+}
+
+static void CheckSandboxPolicy(string projectRoot, List<string> failures)
+{
+    var allowed = new[]
+    {
+        Path.Combine(projectRoot, "output-site", "current", "index.html"),
+        Path.Combine(projectRoot, "logs", "run.log"),
+        Path.Combine(projectRoot, "theme", "theme.generated.css")
+    };
+
+    foreach (var path in allowed)
+    {
+        if (!SandboxPathPolicy.ValidateCodexWritePath(projectRoot, path).IsAllowed)
+        {
+            failures.Add($"SandboxPathPolicy rejected an allowed path: {path}");
+        }
+    }
+
+    var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+    var forbidden = new List<string>
+    {
+        Path.Combine(projectRoot, "..", "other-project", "file.txt"),
+        Path.Combine(projectRoot, ".git", "config")
+    };
+
+    if (!string.IsNullOrWhiteSpace(windows))
+    {
+        forbidden.Add(Path.Combine(windows, "notepad.exe"));
+    }
+
+    if (!string.IsNullOrWhiteSpace(userProfile))
+    {
+        forbidden.Add(Path.Combine(userProfile, ".ssh", "id_rsa"));
+        forbidden.Add(Path.Combine(userProfile, ".codex", "config.json"));
+    }
+
+    var sourceRoot = FindSourceRoot();
+    if (!string.IsNullOrWhiteSpace(sourceRoot))
+    {
+        forbidden.Add(Path.Combine(sourceRoot, "PROJECT_STATUS.md"));
+    }
+
+    forbidden.Add(Path.Combine(AppContext.BaseDirectory, "codex-workspace", "should-not-write.txt"));
+
+    foreach (var path in forbidden)
+    {
+        if (SandboxPathPolicy.ValidateCodexWritePath(projectRoot, path).IsAllowed)
+        {
+            failures.Add($"SandboxPathPolicy allowed a forbidden path: {path}");
+        }
+    }
+
+    var appBaseProjectRoot = Path.Combine(AppContext.BaseDirectory, "project-root-under-app-base");
+    if (SandboxPathPolicy.ValidateProjectRoot(appBaseProjectRoot).IsAllowed)
+    {
+        failures.Add($"SandboxPathPolicy allowed a project root under AppContext.BaseDirectory: {appBaseProjectRoot}");
+    }
+}
+
+static void CheckReparsePointPolicy(string projectRoot, List<string> failures)
+{
+    if (!OperatingSystem.IsWindows())
+    {
+        Console.WriteLine("ReparsePoint self-check skipped: non-Windows runtime.");
+        return;
+    }
+
+    var externalTarget = Path.Combine(projectRoot, "runtime", "reparse-target");
+    var linkPath = Path.Combine(projectRoot, ProjectDirectoryV2.CodexWorkspace, "reparse-link");
+    Directory.CreateDirectory(externalTarget);
+
+    try
+    {
+        Directory.CreateSymbolicLink(linkPath, externalTarget);
+    }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+    {
+        Console.WriteLine($"ReparsePoint self-check skipped: could not create a local symbolic link ({ex.GetType().Name}). Policy code rejects existing ReparsePoint directories.");
+        return;
+    }
+
+    var attributes = File.GetAttributes(linkPath);
+    if ((attributes & FileAttributes.ReparsePoint) != FileAttributes.ReparsePoint)
+    {
+        failures.Add("ReparsePoint self-check could not create a detectable reparse point.");
+        return;
+    }
+
+    var linkedWritePath = Path.Combine(linkPath, "escape.txt");
+    if (SandboxPathPolicy.ValidateCodexWritePath(projectRoot, linkedWritePath).IsAllowed)
+    {
+        failures.Add("SandboxPathPolicy allowed a Codex write path through a reparse point.");
+    }
+}
+
+static async Task CheckEnvironmentStubAsync(string projectRoot, List<string> failures)
+{
+    var result = await new EnvironmentCheckService().CheckAsync(projectRoot);
+    if (result.Items.Count == 0)
+    {
+        failures.Add("EnvironmentCheckService returned no items.");
+        return;
+    }
+
+    var json = JsonSerializer.Serialize(result, WrbJsonOptions.Default);
+    if (!json.Contains("\"status\": \"skipped\"", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("EnvironmentCheckService status enum did not serialize as a string.");
+    }
+}
+
+static async Task CheckP1DataFoundationsAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    await CheckExportIntegrityMissingAsync(projectRoot, failures);
+    await CheckAssetsManifestAsync(projectRoot, projectId, failures);
+    await CheckThemeManifestAsync(projectRoot, projectId, failures);
+    await CheckContentMapAsync(projectRoot, projectId, failures);
+    await CheckLayeredLogsAsync(projectRoot, failures);
+    await CheckExportIntegrityCleanAsync(projectRoot, failures);
+    await CheckSecretAndLocalPathScanAsync(projectRoot, failures);
+    await CheckSnapshotScaffoldAsync(projectRoot, failures);
+}
+
+static async Task CheckAssetsManifestAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new AssetsManifestService();
+    var manifest = await service.CreateNewAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, manifest);
+
+    var assetRelativePath = "input/assets/test-logo.txt";
+    var assetPath = Path.Combine(projectRoot, assetRelativePath);
+    await File.WriteAllTextAsync(assetPath, "test asset", Encoding.UTF8);
+    await service.AddOrUpdateItemAsync(
+        projectRoot,
+        new AssetManifestItem
+        {
+            AssetId = "asset-test-logo",
+            Kind = "image",
+            Role = "brandLogo",
+            RelativePath = assetRelativePath,
+            OriginalFileName = @"C:\Users\test\logo.txt",
+            SourceType = "userUpload",
+            IsUserProvided = true,
+            IsApprovedForExport = true,
+            Tags = ["brand", "test"]
+        });
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    var item = reloaded.Assets.SingleOrDefault(asset => asset.AssetId == "asset-test-logo");
+    if (item is null)
+    {
+        failures.Add("AssetsManifestService did not persist the test asset.");
+        return;
+    }
+
+    if (Path.IsPathRooted(item.RelativePath) || item.RelativePath.Contains("..", StringComparison.Ordinal))
+    {
+        failures.Add($"Assets manifest stored an unsafe path: {item.RelativePath}");
+    }
+
+    if (item.OriginalFileName != "logo.txt")
+    {
+        failures.Add("Assets manifest did not reduce originalFileName to a safe file name.");
+    }
+
+    if (string.IsNullOrWhiteSpace(item.Sha256) || item.SizeBytes is null or <= 0)
+    {
+        failures.Add("Assets manifest did not populate hash/size for the test asset.");
+    }
+
+    var json = await File.ReadAllTextAsync(AssetsManifestService.GetManifestPath(projectRoot));
+    if (!json.Contains("\"sourceType\": \"userUpload\"", StringComparison.Ordinal))
+    {
+        failures.Add("Assets manifest did not write stable string sourceType text.");
+    }
+}
+
+static async Task CheckThemeManifestAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new ThemeManifestService();
+    var theme = await service.CreateDefaultAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, theme);
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    if (reloaded.CurrentPalette.Colors.Count == 0)
+    {
+        failures.Add("ThemeManifestService did not persist default colors.");
+    }
+
+    if (!string.Equals(
+            reloaded.CurrentPalette.Colors.First().Hex,
+            "#FFFFFF",
+            StringComparison.Ordinal))
+    {
+        failures.Add("ThemeManifestService did not preserve normalized #RRGGBB colors.");
+    }
+
+    var invalid = CloneThemeManifest(reloaded);
+    invalid.CurrentPalette.Colors[0].Hex = "not-a-color";
+    try
+    {
+        await service.SaveAsync(projectRoot, invalid);
+        failures.Add("ThemeManifestService allowed an invalid hex color.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    await service.SaveAsync(projectRoot, reloaded);
+}
+
+static ThemeManifest CloneThemeManifest(ThemeManifest manifest)
+{
+    var json = JsonSerializer.Serialize(manifest, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<ThemeManifest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone theme manifest.");
+}
+
+static async Task CheckContentMapAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new ContentMapService();
+    var contentMap = await service.CreateDefaultAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, contentMap);
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    if (reloaded.Pages.Count == 0
+        || reloaded.Pages[0].Sections.Count == 0
+        || reloaded.Pages[0].Sections[0].Elements.Count == 0)
+    {
+        failures.Add("ContentMapService default map does not include a page, section, and element.");
+        return;
+    }
+
+    var tuneIds = reloaded.Pages
+        .SelectMany(page => page.Sections)
+        .Select(section => section.DataTuneId)
+        .Concat(reloaded.Pages.SelectMany(page => page.Sections).SelectMany(section => section.Elements).Select(element => element.DataTuneId))
+        .ToList();
+    if (tuneIds.Any(string.IsNullOrWhiteSpace))
+    {
+        failures.Add("Content map contains an empty DataTuneId.");
+    }
+
+    if (tuneIds.Count != tuneIds.Distinct(StringComparer.OrdinalIgnoreCase).Count())
+    {
+        failures.Add("Content map contains duplicate DataTuneId values.");
+    }
+
+    var duplicate = CloneContentMap(reloaded);
+    duplicate.Pages[0].Sections[0].Elements[0].DataTuneId = duplicate.Pages[0].Sections[0].DataTuneId;
+    try
+    {
+        await service.SaveAsync(projectRoot, duplicate);
+        failures.Add("ContentMapService allowed duplicate DataTuneId values.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    await service.SaveAsync(projectRoot, reloaded);
+}
+
+static ContentMap CloneContentMap(ContentMap contentMap)
+{
+    var json = JsonSerializer.Serialize(contentMap, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<ContentMap>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone content map.");
+}
+
+static async Task CheckLayeredLogsAsync(string projectRoot, List<string> failures)
+{
+    var service = new ProjectLogService();
+    await service.WriteAsync(projectRoot, "app", "app message", ProjectLogLevel.Info);
+    await service.WriteAsync(projectRoot, "project", "project message", ProjectLogLevel.Warning);
+    await service.WriteAsync(projectRoot, "security", "token=abc123", ProjectLogLevel.Error);
+
+    foreach (var fileName in new[] { "app.log", "project.log", "security.log" })
+    {
+        var path = Path.Combine(projectRoot, ProjectDirectoryV2.Logs, fileName);
+        if (!File.Exists(path))
+        {
+            failures.Add($"ProjectLogService did not create {fileName}.");
+            continue;
+        }
+
+        var content = await File.ReadAllTextAsync(path);
+        if (!content.Contains("\"level\":", StringComparison.Ordinal)
+            || !content.Contains("\"channel\":", StringComparison.Ordinal))
+        {
+            failures.Add($"ProjectLogService wrote malformed log content in {fileName}.");
+        }
+
+        if (fileName == "security.log" && content.Contains("abc123", StringComparison.Ordinal))
+        {
+            failures.Add("ProjectLogService did not redact a token-like log message.");
+        }
+
+        if (!SandboxPathPolicy.ValidateProjectPath(projectRoot, path).IsAllowed)
+        {
+            failures.Add($"ProjectLogService wrote outside sandbox: {path}");
+        }
+    }
+}
+
+static async Task CheckExportIntegrityMissingAsync(string projectRoot, List<string> failures)
+{
+    var result = await new ExportIntegrityCheckService().CheckAsync(projectRoot);
+    if (result.IsOk)
+    {
+        failures.Add("ExportIntegrityCheckService reported OK before P1 manifest files existed.");
+    }
+
+    if (!result.Items.Any(item =>
+            string.Equals(item.Key, "themeManifest", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(item.Status, "error", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("ExportIntegrityCheckService did not report missing theme/theme.json.");
+    }
+}
+
+static async Task CheckExportIntegrityCleanAsync(string projectRoot, List<string> failures)
+{
+    var outputIndexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    await File.WriteAllTextAsync(outputIndexPath, "<!doctype html><title>Self check</title>", Encoding.UTF8);
+
+    var result = await new ExportIntegrityCheckService().CheckAsync(projectRoot);
+    if (!result.IsOk)
+    {
+        var errors = string.Join(", ", result.Items
+            .Where(item => string.Equals(item.Status, "error", StringComparison.OrdinalIgnoreCase))
+            .Select(item => $"{item.Key}:{item.RelativePath}"));
+        failures.Add($"ExportIntegrityCheckService reported errors after required P1 files existed: {errors}");
+    }
+}
+
+static async Task CheckSecretAndLocalPathScanAsync(string projectRoot, List<string> failures)
+{
+    var testPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "secret-test.js");
+    await File.WriteAllTextAsync(
+        testPath,
+        "const key = \"sk-test\"; const localPath = \"C:\\\\Users\\\\test\";",
+        Encoding.UTF8);
+
+    var result = await new SecretAndLocalPathScanService().ScanProjectAsync(projectRoot);
+    if (!result.Findings.Any(finding => finding.Key == "openaiSecretKey"))
+    {
+        failures.Add("SecretAndLocalPathScanService did not detect sk-test.");
+    }
+
+    if (!result.Findings.Any(finding => finding.Key == "windowsUsersPath"))
+    {
+        failures.Add("SecretAndLocalPathScanService did not detect C:\\Users\\test.");
+    }
+
+    File.Delete(testPath);
+}
+
+static async Task CheckSnapshotScaffoldAsync(string projectRoot, List<string> failures)
+{
+    var blockedDirectory = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "bin");
+    Directory.CreateDirectory(blockedDirectory);
+    await File.WriteAllTextAsync(Path.Combine(blockedDirectory, "skip.dll"), "do not copy", Encoding.UTF8);
+
+    var manifest = await new ProjectSnapshotService().CreateSnapshotAsync(projectRoot, "self-test snapshot");
+    if (string.IsNullOrWhiteSpace(manifest.SnapshotId))
+    {
+        failures.Add("ProjectSnapshotService returned an empty snapshotId.");
+        return;
+    }
+
+    var snapshotRoot = Path.Combine(projectRoot, ProjectSnapshotSchema.SnapshotRootRelativePath, manifest.SnapshotId);
+    var manifestPath = Path.Combine(snapshotRoot, ProjectSnapshotSchema.ManifestFileName);
+    if (!File.Exists(manifestPath))
+    {
+        failures.Add("ProjectSnapshotService did not write snapshot-manifest.json.");
+    }
+
+    if (manifest.Files.Count == 0 || manifest.Files.Any(file => string.IsNullOrWhiteSpace(file.Sha256)))
+    {
+        failures.Add("ProjectSnapshotService did not record copied files with hashes.");
+    }
+
+    if (File.Exists(Path.Combine(snapshotRoot, "output-site", "bin", "skip.dll")))
+    {
+        failures.Add("ProjectSnapshotService copied a blocked bin/ file into the snapshot.");
+    }
+}
+
+static async Task CheckP12PackageScaffoldsAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var observation = await CheckObservationPackageAsync(projectRoot, projectId, failures);
+    var construction = await CheckConstructionPackageAsync(projectRoot, projectId, failures);
+    var taskPackage = await CheckCodexTaskPackageAsync(projectRoot, projectId, failures);
+    await CheckCodexTaskRunRecordAsync(projectRoot, projectId, taskPackage.TaskPackageId, failures);
+    CheckFailureClassification(failures);
+    await CheckPackageValidationAsync(projectRoot, observation, taskPackage, failures);
+
+    if (!string.Equals(construction.ProjectId, projectId, StringComparison.Ordinal))
+    {
+        failures.Add("Construction package did not preserve the project id.");
+    }
+}
+
+static async Task<ObservationPackageManifest> CheckObservationPackageAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new ObservationPackageService();
+    var manifest = await service.CreateNewAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, manifest);
+
+    var emptyReloaded = await service.LoadAsync(projectRoot);
+    if (emptyReloaded.Warnings.Count == 0)
+    {
+        failures.Add("ObservationPackageService did not warn when no legacy observation artifacts were present.");
+    }
+
+    var artifactRelativePath = "observation/screenshots/p1-2-artifact.txt";
+    var artifactFullPath = Path.Combine(projectRoot, artifactRelativePath);
+    await File.WriteAllTextAsync(artifactFullPath, "observation artifact", Encoding.UTF8);
+
+    await service.AddArtifactAsync(
+        projectRoot,
+        new ObservationArtifactItem
+        {
+            ArtifactId = "artifact-p1-2",
+            Kind = "text",
+            RelativePath = artifactRelativePath,
+            Note = "Self-test observation artifact."
+        });
+    await service.AddSectionAsync(
+        projectRoot,
+        new ObservationSectionItem
+        {
+            SectionId = "hero",
+            DisplayName = "Hero",
+            SectionType = "hero",
+            VisualIntent = "Large first viewport statement.",
+            RelatedArtifactIds = ["artifact-p1-2"]
+        });
+    await service.AddInteractionAsync(
+        projectRoot,
+        new ObservationInteractionItem
+        {
+            InteractionId = "hover-cta",
+            TargetHint = "primary CTA",
+            Trigger = "hover",
+            ObservedEffect = "Button contrast increases.",
+            Confidence = "medium"
+        });
+    await service.AddFindingAsync(
+        projectRoot,
+        new ObservationFindingItem
+        {
+            FindingId = "finding-rhythm",
+            Category = "layout",
+            Summary = "Hero section carries the page rhythm.",
+            Detail = "Scaffold finding for package validation.",
+            Confidence = "medium"
+        });
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    if (reloaded.Artifacts.Count == 0
+        || reloaded.Sections.Count == 0
+        || reloaded.Interactions.Count == 0
+        || reloaded.Findings.Count == 0)
+    {
+        failures.Add("ObservationPackageService did not persist artifact/section/interaction/finding items.");
+    }
+
+    var artifact = reloaded.Artifacts.SingleOrDefault(item => item.ArtifactId == "artifact-p1-2");
+    if (artifact is null || string.IsNullOrWhiteSpace(artifact.Sha256) || artifact.SizeBytes is null or <= 0)
+    {
+        failures.Add("Observation package artifact did not record hash/size.");
+    }
+
+    try
+    {
+        await service.AddArtifactAsync(
+            projectRoot,
+            new ObservationArtifactItem
+            {
+                ArtifactId = "bad-absolute-path",
+                Kind = "text",
+                RelativePath = @"C:\Users\test\artifact.txt"
+            });
+        failures.Add("ObservationPackageService allowed an absolute artifact path.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    return reloaded;
+}
+
+static async Task<ConstructionPackageManifest> CheckConstructionPackageAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new ConstructionPackageService();
+    var manifest = await service.CreateNewAsync(projectRoot, projectId, "Foundation Brand", "Prepare a static scaffold.");
+    await service.SaveAsync(projectRoot, manifest);
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    var required = new[]
+    {
+        WrbProjectSchema.FileName,
+        ObservationPackageSchema.RelativePath,
+        AssetsManifestSchema.RelativePath,
+        ThemeManifestSchema.RelativePath,
+        ContentMapSchema.RelativePath
+    };
+
+    foreach (var relativePath in required)
+    {
+        if (!reloaded.RequiredProjectFiles.Contains(relativePath, StringComparer.OrdinalIgnoreCase))
+        {
+            failures.Add($"Construction package missing required file reference: {relativePath}");
+        }
+    }
+
+    if (reloaded.RequiredProjectFiles.Any(Path.IsPathRooted)
+        || reloaded.Inputs.Any(input => Path.IsPathRooted(input.RelativePath))
+        || reloaded.Deliverables.Any(output => Path.IsPathRooted(output.TargetRelativePath)))
+    {
+        failures.Add("Construction package stored an absolute path.");
+    }
+
+    var missingRoot = Path.Combine(projectRoot, ProjectDirectoryV2.Runtime, "missing-construction-package-check");
+    Directory.CreateDirectory(missingRoot);
+    var missingManifest = await service.CreateNewAsync(missingRoot, "missing-project");
+    if (missingManifest.Warnings.Count == 0)
+    {
+        failures.Add("ConstructionPackageService did not warn when required files were missing.");
+    }
+
+    return reloaded;
+}
+
+static async Task<CodexTaskPackage> CheckCodexTaskPackageAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new CodexTaskPackageService();
+    var package = await service.CreateNewAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, package);
+    var instructionsPath = await service.WriteInstructionsAsync(projectRoot, package);
+
+    if (!File.Exists(instructionsPath))
+    {
+        failures.Add("CodexTaskPackageService did not write instructions.md.");
+    }
+
+    var reloaded = await service.LoadAsync(projectRoot);
+    if (reloaded.Sandbox.AllowedWriteRoots.Count == 0)
+    {
+        failures.Add("Codex task package has no allowed write roots.");
+    }
+
+    if (!reloaded.Sandbox.ForbiddenRoots.Any(root => root.Contains(".git", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("Codex task package does not record .git as forbidden.");
+    }
+
+    if (reloaded.ExpectedOutputs.All(output =>
+            !output.RelativePath.StartsWith(ProjectDirectoryV2.OutputCurrent, StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("Codex task package does not target output-site/current/.");
+    }
+
+    try
+    {
+        var invalid = CloneTaskPackage(reloaded);
+        invalid.Sandbox.AllowedWriteRoots = [@"C:\Users\test"];
+        await service.SaveAsync(projectRoot, invalid);
+        failures.Add("CodexTaskPackageService allowed an absolute allowed-write root.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    await service.SaveAsync(projectRoot, reloaded);
+    await service.WriteInstructionsAsync(projectRoot, reloaded);
+    return reloaded;
+}
+
+static async Task CheckCodexTaskRunRecordAsync(
+    string projectRoot,
+    string projectId,
+    string taskPackageId,
+    List<string> failures)
+{
+    var service = new CodexTaskRunService();
+    var created = await service.CreateRunAsync(projectRoot, projectId, taskPackageId);
+    if (created.Status != CodexTaskRunStatus.Created)
+    {
+        failures.Add("CodexTaskRunService did not create a Created run.");
+    }
+
+    var running = await service.MarkRunningAsync(projectRoot, created.RunId);
+    if (running.Status != CodexTaskRunStatus.Running || running.StartedAt is null)
+    {
+        failures.Add("CodexTaskRunService did not mark the run as Running.");
+    }
+
+    var succeeded = await service.MarkSucceededAsync(
+        projectRoot,
+        created.RunId,
+        [ProjectDirectoryV2.OutputCurrent + "/index.html"]);
+    if (succeeded.Status != CodexTaskRunStatus.Succeeded || succeeded.CompletedAt is null)
+    {
+        failures.Add("CodexTaskRunService did not mark the run as Succeeded.");
+    }
+
+    var runRecordJson = await File.ReadAllTextAsync(CodexTaskRunService.GetRunRecordPath(projectRoot, created.RunId));
+    using (var document = JsonDocument.Parse(runRecordJson))
+    {
+        if (!document.RootElement.TryGetProperty("status", out var statusElement)
+            || statusElement.ValueKind != JsonValueKind.String
+            || !string.Equals(statusElement.GetString(), "succeeded", StringComparison.Ordinal))
+        {
+            failures.Add("Codex task run status was not saved as a JSON string enum.");
+        }
+    }
+
+    try
+    {
+        await service.MarkRunningAsync(projectRoot, created.RunId);
+        failures.Add("CodexTaskRunService allowed a terminal status to transition back to Running.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+}
+
+static void CheckFailureClassification(List<string> failures)
+{
+    var classifier = new TaskFailureClassifier();
+    if (classifier.Classify("sandbox violation outside project").Category != TaskFailureCategory.SandboxViolation)
+    {
+        failures.Add("TaskFailureClassifier did not classify sandbox violations.");
+    }
+
+    if (classifier.Classify("missing input required file").Category != TaskFailureCategory.MissingInput)
+    {
+        failures.Add("TaskFailureClassifier did not classify missing input.");
+    }
+
+    if (classifier.Classify("secret token detected").Category != TaskFailureCategory.SecretDetected)
+    {
+        failures.Add("TaskFailureClassifier did not classify secret detection.");
+    }
+
+    var json = JsonSerializer.Serialize(
+        new TaskFailureClassification
+        {
+            Category = TaskFailureCategory.SandboxViolation,
+            Message = "sandbox"
+        },
+        WrbJsonOptions.Default);
+    if (!json.Contains("\"category\": \"sandboxViolation\"", StringComparison.Ordinal))
+    {
+        failures.Add("TaskFailureCategory did not serialize as a JSON string enum.");
+    }
+}
+
+static async Task CheckPackageValidationAsync(
+    string projectRoot,
+    ObservationPackageManifest observation,
+    CodexTaskPackage taskPackage,
+    List<string> failures)
+{
+    var service = new PackageValidationService();
+    var observationResult = await service.ValidateObservationPackageAsync(projectRoot);
+    if (!observationResult.IsOk)
+    {
+        failures.Add($"PackageValidationService did not accept the normal observation package: {DescribeValidationErrors(observationResult)}");
+    }
+
+    var constructionResult = await service.ValidateConstructionPackageAsync(projectRoot);
+    if (!constructionResult.IsOk)
+    {
+        failures.Add($"PackageValidationService did not accept the normal construction package: {DescribeValidationErrors(constructionResult)}");
+    }
+
+    var taskResult = await service.ValidateCodexTaskPackageAsync(projectRoot);
+    if (!taskResult.IsOk)
+    {
+        failures.Add($"PackageValidationService did not accept the normal Codex task package: {DescribeValidationErrors(taskResult)}");
+    }
+
+    var instructionsPath = CodexTaskPackageService.GetInstructionsPath(projectRoot);
+    var instructionsContent = await File.ReadAllTextAsync(instructionsPath);
+    File.Delete(instructionsPath);
+    var missingInstructions = await service.ValidateCodexTaskPackageAsync(projectRoot);
+    if (missingInstructions.IsOk
+        || !missingInstructions.Items.Any(item =>
+            item.Key == "task.instructions"
+            && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("PackageValidationService did not report missing instructions.md.");
+    }
+
+    await File.WriteAllTextAsync(instructionsPath, instructionsContent, Encoding.UTF8);
+
+    var observationPath = ObservationPackageService.GetManifestPath(projectRoot);
+    var cleanObservationJson = await File.ReadAllTextAsync(observationPath);
+    var invalidObservation = CloneObservationPackage(observation);
+    invalidObservation.Artifacts[0].RelativePath = @"C:\Users\test\escape.png";
+    await WriteJsonAsync(observationPath, invalidObservation);
+    var absolutePathResult = await service.ValidateObservationPackageAsync(projectRoot);
+    if (absolutePathResult.IsOk)
+    {
+        failures.Add("PackageValidationService did not reject an absolute observation artifact path.");
+    }
+
+    await File.WriteAllTextAsync(observationPath, cleanObservationJson, Encoding.UTF8);
+
+    var taskPackagePath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var cleanTaskJson = await File.ReadAllTextAsync(taskPackagePath);
+    var secretTask = CloneTaskPackage(taskPackage);
+    secretTask.ProhibitedActions.Add("OPENAI_API_KEY=sk-test");
+    await WriteJsonAsync(taskPackagePath, secretTask);
+    var secretResult = await service.ValidateCodexTaskPackageAsync(projectRoot);
+    if (secretResult.IsOk
+        || !secretResult.Items.Any(item => item.Key.StartsWith("secretScan.", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("PackageValidationService did not report a secret in the task package.");
+    }
+
+    await File.WriteAllTextAsync(taskPackagePath, cleanTaskJson, Encoding.UTF8);
+}
+
+static async Task CheckP13ContentGenerationAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    await CheckLegacyObservationBridgeAsync(projectRoot, failures);
+    await CheckConstructionContextBuilderAsync(projectRoot, failures);
+    await CheckCodexTaskPackageContextAsync(projectRoot, projectId, failures);
+    await CheckCodexTaskQueuedTransitionsAsync(projectRoot, projectId, failures);
+    await CheckPackageValidationModesAsync(projectRoot, failures);
+    CheckFoundationWorkflow(failures);
+}
+
+static async Task CheckLegacyObservationBridgeAsync(
+    string projectRoot,
+    List<string> failures)
+{
+    var service = new LegacyObservationBridgeService();
+    var emptyRoot = Path.Combine(projectRoot, ProjectDirectoryV2.Runtime, "p1-3-empty-legacy-bridge");
+    Directory.CreateDirectory(emptyRoot);
+    var emptyResult = await service.BuildAsync(emptyRoot);
+    if (!emptyResult.IsOk || emptyResult.Warnings.Count == 0)
+    {
+        failures.Add("LegacyObservationBridgeService did not tolerate missing legacy observation files with warnings.");
+    }
+
+    try
+    {
+        await service.BuildAsync(projectRoot, ["../escape.md"]);
+        failures.Add("LegacyObservationBridgeService allowed a traversal source path.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    var observationMarkdownPath = Path.Combine(projectRoot, "observation", "observation.md");
+    await File.WriteAllTextAsync(
+        observationMarkdownPath,
+        """
+        # Hero
+        Clear first viewport statement and visual hierarchy.
+
+        ## Product Detail
+        Feature proof appears after the hero section.
+        """,
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(projectRoot, "observation", "action-log.json"),
+        """
+        [
+          { "type": "scroll", "target": "window", "note": "scroll reveal was observed" },
+          { "event": "click", "selector": "#cta", "message": "button opens contact panel" }
+        ]
+        """,
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(projectRoot, "observation", "frame-index.json"),
+        """
+        {
+          "frames": [
+            { "relativePath": "observation/screenshots/frame-0001.png", "timestamp": "00:00:01.000" }
+          ]
+        }
+        """,
+        Encoding.UTF8);
+
+    var result = await service.BuildAsync(projectRoot);
+    if (!result.IsOk)
+    {
+        failures.Add("LegacyObservationBridgeService returned a failing result for valid legacy inputs.");
+    }
+
+    var reportPath = LegacyObservationBridgeService.GetReportPath(projectRoot);
+    if (!File.Exists(reportPath))
+    {
+        failures.Add("LegacyObservationBridgeService did not write legacy-bridge-report.json.");
+    }
+    else
+    {
+        await using var reportStream = File.OpenRead(reportPath);
+        var report = await JsonSerializer.DeserializeAsync<LegacyObservationBridgeResult>(reportStream, WrbJsonOptions.Default);
+        if (report is null || report.Items.Count == 0)
+        {
+            failures.Add("legacy-bridge-report.json could not be read with bridge items.");
+        }
+    }
+
+    var observation = await new ObservationPackageService().LoadAsync(projectRoot);
+    if (!observation.Sections.Any(section => section.SectionId.StartsWith("legacy-md-section-", StringComparison.OrdinalIgnoreCase))
+        || !observation.Findings.Any(finding => finding.FindingId.StartsWith("legacy-md-finding-", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("LegacyObservationBridgeService did not generate section/finding items from observation.md.");
+    }
+
+    if (!observation.Interactions.Any(interaction => interaction.Trigger == "scroll" || interaction.Trigger == "click"))
+    {
+        failures.Add("LegacyObservationBridgeService did not generate interactions from action-log.json.");
+    }
+
+    if (!observation.Artifacts.Any(artifact => artifact.ArtifactId == "legacy-frame-index"))
+    {
+        failures.Add("LegacyObservationBridgeService did not register frame-index.json as an artifact.");
+    }
+}
+
+static async Task CheckConstructionContextBuilderAsync(
+    string projectRoot,
+    List<string> failures)
+{
+    var builder = new ConstructionPackageContentBuilderService();
+    var result = await builder.BuildAsync(projectRoot);
+    if (!result.IsOk)
+    {
+        failures.Add("ConstructionPackageContentBuilderService returned a failing result for a normal project.");
+    }
+
+    foreach (var definition in ConstructionPackageContextSchema.ContextFiles)
+    {
+        var fullPath = Path.Combine(projectRoot, definition.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath))
+        {
+            failures.Add($"Construction context file was not generated: {definition.RelativePath}");
+        }
+    }
+
+    var indexPath = Path.Combine(projectRoot, ConstructionPackageContextSchema.PackageIndexRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    await using (var indexStream = File.OpenRead(indexPath))
+    {
+        var index = await JsonSerializer.DeserializeAsync<ConstructionPackageContextIndex>(indexStream, WrbJsonOptions.Default);
+        if (index is null)
+        {
+            failures.Add("package-index.json could not be deserialized.");
+        }
+        else
+        {
+            foreach (var definition in ConstructionPackageContextSchema.ContextFiles)
+            {
+                var indexed = index.Files.SingleOrDefault(file =>
+                    string.Equals(file.RelativePath, definition.RelativePath, StringComparison.OrdinalIgnoreCase));
+                if (indexed is null)
+                {
+                    failures.Add($"package-index.json does not contain {definition.RelativePath}.");
+                    continue;
+                }
+
+                var fullPath = Path.Combine(projectRoot, indexed.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+                if (indexed.SizeBytes <= 0 || string.IsNullOrWhiteSpace(indexed.Sha256))
+                {
+                    failures.Add($"package-index.json did not record hash/size for {indexed.RelativePath}.");
+                }
+                else if (!string.Equals(indexed.RelativePath, ConstructionPackageContextSchema.PackageIndexRelativePath, StringComparison.OrdinalIgnoreCase)
+                         && !string.Equals(indexed.Sha256, ComputeSha256ForTest(fullPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    failures.Add($"package-index.json hash does not match file content for {indexed.RelativePath}.");
+                }
+
+                if (Path.IsPathRooted(indexed.RelativePath))
+                {
+                    failures.Add($"package-index.json stored an absolute path for {indexed.RelativePath}.");
+                }
+            }
+        }
+    }
+
+    foreach (var definition in ConstructionPackageContextSchema.ContextFiles.Where(file => file.RelativePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase)))
+    {
+        var content = await File.ReadAllTextAsync(Path.Combine(projectRoot, definition.RelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase) || content.Contains(@":\", StringComparison.Ordinal))
+        {
+            failures.Add($"Construction context markdown contains an absolute local path: {definition.RelativePath}");
+        }
+    }
+
+    var construction = await new ConstructionPackageService().LoadAsync(projectRoot);
+    foreach (var definition in ConstructionPackageContextSchema.ContextFiles)
+    {
+        if (!construction.Inputs.Any(input => string.Equals(input.RelativePath, definition.RelativePath, StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add($"Construction package inputs do not include context file {definition.RelativePath}.");
+        }
+    }
+
+    var missingRoot = Path.Combine(projectRoot, ProjectDirectoryV2.Runtime, "p1-3-missing-context-source");
+    Directory.CreateDirectory(missingRoot);
+    var missingResult = await builder.BuildAsync(missingRoot);
+    if (missingResult.Warnings.Count == 0)
+    {
+        failures.Add("ConstructionPackageContentBuilderService did not warn when source manifests were missing.");
+    }
+}
+
+static async Task CheckCodexTaskPackageContextAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var service = new CodexTaskPackageService();
+    var package = await service.CreateNewAsync(projectRoot, projectId);
+    await service.SaveAsync(projectRoot, package);
+    var instructionsPath = await service.WriteInstructionsAsync(projectRoot, package);
+    var reloaded = await service.LoadAsync(projectRoot);
+
+    foreach (var definition in ConstructionPackageContextSchema.ContextFiles)
+    {
+        if (!reloaded.InputFiles.Any(input => string.Equals(input.RelativePath, definition.RelativePath, StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add($"Codex task package inputs do not include context file {definition.RelativePath}.");
+        }
+    }
+
+    var instructions = await File.ReadAllTextAsync(instructionsPath);
+    foreach (var relativePath in new[]
+             {
+                 WrbProjectSchema.FileName,
+                 ConstructionPackageSchema.RelativePath,
+                 ConstructionPackageContextSchema.ProjectBriefRelativePath,
+                 ConstructionPackageContextSchema.ObservationSummaryRelativePath,
+                 ConstructionPackageContextSchema.AssetIndexRelativePath,
+                 ConstructionPackageContextSchema.ThemeSummaryRelativePath,
+                 ConstructionPackageContextSchema.ContentMapSummaryRelativePath,
+                 ConstructionPackageContextSchema.ConstraintsRelativePath,
+                 ConstructionPackageContextSchema.AcceptanceChecklistRelativePath,
+                 ContentMapSchema.RelativePath,
+                 ThemeManifestSchema.RelativePath,
+                 AssetsManifestSchema.RelativePath,
+                 ObservationPackageSchema.RelativePath
+             })
+    {
+        if (!instructions.Contains(relativePath, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"instructions.md missing reading-order entry: {relativePath}");
+        }
+    }
+
+    var allowed = reloaded.Sandbox.AllowedWriteRoots.ToHashSet(StringComparer.OrdinalIgnoreCase);
+    if (!allowed.SetEquals([ProjectDirectoryV2.CodexWorkspace, ProjectDirectoryV2.OutputCurrent]))
+    {
+        failures.Add("Codex task package allowed write roots are not limited to codex-workspace/ and output-site/current/.");
+    }
+
+    if (!reloaded.Sandbox.ForbiddenRoots.Any(root => root.Contains(".git", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("Codex task package lost forbidden roots after P1.3 context update.");
+    }
+}
+
+static async Task CheckCodexTaskQueuedTransitionsAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var taskPackage = await new CodexTaskPackageService().LoadAsync(projectRoot);
+    var service = new CodexTaskRunService();
+
+    var queuedRun = await service.CreateRunAsync(projectRoot, projectId, taskPackage.TaskPackageId);
+    var queued = await service.MarkQueuedAsync(projectRoot, queuedRun.RunId);
+    if (queued.Status != CodexTaskRunStatus.Queued)
+    {
+        failures.Add("CodexTaskRunService did not mark a Created run as Queued.");
+    }
+
+    var running = await service.MarkRunningAsync(projectRoot, queuedRun.RunId);
+    var succeeded = await service.MarkSucceededAsync(projectRoot, queuedRun.RunId, [ProjectDirectoryV2.OutputCurrent + "/index.html"]);
+    if (running.Status != CodexTaskRunStatus.Running || succeeded.Status != CodexTaskRunStatus.Succeeded)
+    {
+        failures.Add("CodexTaskRunService did not support Created -> Queued -> Running -> Succeeded.");
+    }
+
+    var directRun = await service.CreateRunAsync(projectRoot, projectId, taskPackage.TaskPackageId);
+    await service.MarkRunningAsync(projectRoot, directRun.RunId);
+    await service.MarkSucceededAsync(projectRoot, directRun.RunId, [ProjectDirectoryV2.OutputCurrent + "/index.html"]);
+
+    try
+    {
+        await service.MarkRunningAsync(projectRoot, queuedRun.RunId);
+        failures.Add("CodexTaskRunService allowed Succeeded -> Running.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    var failedRun = await service.CreateRunAsync(projectRoot, projectId, taskPackage.TaskPackageId);
+    await service.MarkRunningAsync(projectRoot, failedRun.RunId);
+    await service.MarkFailedAsync(projectRoot, failedRun.RunId, TaskFailureCategory.ValidationError, "validation failed");
+    try
+    {
+        await service.MarkRunningAsync(projectRoot, failedRun.RunId);
+        failures.Add("CodexTaskRunService allowed Failed -> Running.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    var runRecordJson = await File.ReadAllTextAsync(CodexTaskRunService.GetRunRecordPath(projectRoot, queuedRun.RunId));
+    if (!runRecordJson.Contains("\"status\": \"succeeded\"", StringComparison.Ordinal))
+    {
+        failures.Add("Codex task run status stopped serializing as a JSON string enum.");
+    }
+}
+
+static async Task CheckPackageValidationModesAsync(
+    string projectRoot,
+    List<string> failures)
+{
+    var service = new PackageValidationService();
+    var strict = await service.ValidateCodexTaskPackageAsync(projectRoot, PackageValidationMode.Strict);
+    if (!strict.IsOk)
+    {
+        failures.Add($"PackageValidationService strict mode did not accept a complete P1.3 task package: {DescribeValidationErrors(strict)}");
+    }
+
+    var indexPath = Path.Combine(projectRoot, ConstructionPackageContextSchema.PackageIndexRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var indexJson = await File.ReadAllTextAsync(indexPath);
+    File.Delete(indexPath);
+    var draftMissingContext = await service.ValidateCodexTaskPackageAsync(projectRoot, PackageValidationMode.Draft);
+    var strictMissingContext = await service.ValidateCodexTaskPackageAsync(projectRoot, PackageValidationMode.Strict);
+    if (!draftMissingContext.IsOk
+        || !draftMissingContext.Items.Any(item =>
+            item.RelativePath == ConstructionPackageContextSchema.PackageIndexRelativePath
+            && string.Equals(item.Severity, "warning", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("PackageValidationService draft mode did not downgrade missing context package-index to warning.");
+    }
+
+    if (strictMissingContext.IsOk
+        || !strictMissingContext.Items.Any(item =>
+            item.RelativePath == ConstructionPackageContextSchema.PackageIndexRelativePath
+            && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("PackageValidationService strict mode did not treat missing context package-index as error.");
+    }
+
+    await File.WriteAllTextAsync(indexPath, indexJson, Encoding.UTF8);
+
+    var taskPackagePath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var cleanTaskJson = await File.ReadAllTextAsync(taskPackagePath);
+    var taskPackage = await new CodexTaskPackageService().LoadAsync(projectRoot);
+    taskPackage.ProhibitedActions.Add("OPENAI_API_KEY=sk-test");
+    await WriteJsonAsync(taskPackagePath, taskPackage);
+    var draftSecret = await service.ValidateCodexTaskPackageAsync(projectRoot, PackageValidationMode.Draft);
+    var strictSecret = await service.ValidateCodexTaskPackageAsync(projectRoot, PackageValidationMode.Strict);
+    if (draftSecret.IsOk || strictSecret.IsOk)
+    {
+        failures.Add("PackageValidationService did not treat a detected secret marker as error in both modes.");
+    }
+
+    await File.WriteAllTextAsync(taskPackagePath, cleanTaskJson, Encoding.UTF8);
+
+    var observationPath = ObservationPackageService.GetManifestPath(projectRoot);
+    var cleanObservationJson = await File.ReadAllTextAsync(observationPath);
+    var observation = await new ObservationPackageService().LoadAsync(projectRoot);
+    observation.Artifacts[0].RelativePath = @"C:\Users\test\escape.png";
+    await WriteJsonAsync(observationPath, observation);
+    var draftAbsolute = await service.ValidateObservationPackageAsync(projectRoot, PackageValidationMode.Draft);
+    var strictAbsolute = await service.ValidateObservationPackageAsync(projectRoot, PackageValidationMode.Strict);
+    if (draftAbsolute.IsOk || strictAbsolute.IsOk)
+    {
+        failures.Add("PackageValidationService did not reject an absolute path in both modes.");
+    }
+
+    await File.WriteAllTextAsync(observationPath, cleanObservationJson, Encoding.UTF8);
+
+    var modeJson = JsonSerializer.Serialize(PackageValidationMode.Strict, WrbJsonOptions.Default);
+    if (!modeJson.Contains("\"strict\"", StringComparison.Ordinal))
+    {
+        failures.Add("PackageValidationMode did not serialize as a JSON string enum.");
+    }
+}
+
+static async Task CheckP14SnapshotRestoreAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var themeService = new ThemeManifestService();
+    var contentMapService = new ContentMapService();
+    var manifestService = new ProjectManifestService();
+    var snapshotService = new ProjectSnapshotService();
+    var restoreService = new SnapshotRestoreService();
+
+    var snapshotTheme = await themeService.LoadAsync(projectRoot);
+    snapshotTheme.Notes = "P1.4 snapshot theme notes";
+    await themeService.SaveAsync(projectRoot, snapshotTheme);
+
+    var snapshotContentMap = await contentMapService.LoadAsync(projectRoot);
+    snapshotContentMap.Pages[0].Title = "P1.4 snapshot page title";
+    await contentMapService.SaveAsync(projectRoot, snapshotContentMap);
+
+    var snapshotProject = await manifestService.LoadAsync(projectRoot);
+    snapshotProject.CurrentOutputVersion = "p1-4-snapshot-output";
+    await manifestService.SaveAsync(projectRoot, snapshotProject);
+
+    var snapshotOutputPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    await File.WriteAllTextAsync(snapshotOutputPath, "<!doctype html><title>P1.4 snapshot</title>", Encoding.UTF8);
+
+    var snapshot = await snapshotService.CreateSnapshotAsync(projectRoot, "p1.4 restorable snapshot");
+
+    var listed = await restoreService.ListSnapshotsAsync(projectRoot);
+    if (!listed.Any(item => string.Equals(item.SnapshotId, snapshot.SnapshotId, StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("SnapshotRestoreService.ListSnapshotsAsync did not include the created snapshot.");
+    }
+
+    var loaded = await restoreService.LoadSnapshotAsync(projectRoot, snapshot.SnapshotId);
+    if (!string.Equals(loaded.SnapshotId, snapshot.SnapshotId, StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("SnapshotRestoreService.LoadSnapshotAsync returned the wrong snapshot.");
+    }
+
+    var validation = await restoreService.ValidateSnapshotAsync(projectRoot, snapshot.SnapshotId);
+    if (!validation.IsOk)
+    {
+        failures.Add($"SnapshotRestoreService.ValidateSnapshotAsync did not accept a normal snapshot: {DescribeSnapshotValidationErrors(validation)}");
+    }
+
+    var themeSnapshotItem = snapshot.Files.FirstOrDefault(file =>
+        string.Equals(file.RelativePath, ThemeManifestSchema.RelativePath, StringComparison.OrdinalIgnoreCase))
+        ?? snapshot.Files.FirstOrDefault();
+    if (themeSnapshotItem is null)
+    {
+        failures.Add("ProjectSnapshotService did not produce a restorable file for P1.4 validation.");
+        return;
+    }
+
+    var snapshotFilePath = Path.Combine(
+        projectRoot,
+        ProjectSnapshotSchema.SnapshotRootRelativePath,
+        snapshot.SnapshotId,
+        themeSnapshotItem.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var originalSnapshotBytes = await File.ReadAllBytesAsync(snapshotFilePath);
+    await File.AppendAllTextAsync(snapshotFilePath, "tampered", Encoding.UTF8);
+    var tamperedValidation = await restoreService.ValidateSnapshotAsync(projectRoot, snapshot.SnapshotId);
+    if (tamperedValidation.IsOk
+        || !tamperedValidation.Items.Any(item => string.Equals(item.Key, "snapshot.file.hashMismatch", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("SnapshotRestoreService did not detect a snapshot file hash mismatch.");
+    }
+
+    await File.WriteAllBytesAsync(snapshotFilePath, originalSnapshotBytes);
+
+    var changedTheme = await themeService.LoadAsync(projectRoot);
+    changedTheme.Notes = "P1.4 changed after snapshot";
+    await themeService.SaveAsync(projectRoot, changedTheme);
+
+    var changedContentMap = await contentMapService.LoadAsync(projectRoot);
+    changedContentMap.Pages[0].Title = "P1.4 changed after snapshot";
+    await contentMapService.SaveAsync(projectRoot, changedContentMap);
+
+    var changedProject = await manifestService.LoadAsync(projectRoot);
+    changedProject.CurrentOutputVersion = "p1-4-changed-output";
+    await manifestService.SaveAsync(projectRoot, changedProject);
+    await File.WriteAllTextAsync(snapshotOutputPath, "<!doctype html><title>P1.4 changed</title>", Encoding.UTF8);
+
+    var restore = await restoreService.RestoreAsync(projectRoot, snapshot.SnapshotId);
+    if (!restore.IsOk)
+    {
+        failures.Add($"SnapshotRestoreService.RestoreAsync failed for a valid snapshot: {string.Join("; ", restore.Errors)}");
+    }
+
+    if (string.IsNullOrWhiteSpace(restore.SafetySnapshotId))
+    {
+        failures.Add("SnapshotRestoreService did not create a before-restore safety snapshot.");
+    }
+    else
+    {
+        var afterRestoreSnapshots = await restoreService.ListSnapshotsAsync(projectRoot);
+        var safetySnapshot = afterRestoreSnapshots.SingleOrDefault(item =>
+            string.Equals(item.SnapshotId, restore.SafetySnapshotId, StringComparison.OrdinalIgnoreCase));
+        if (safetySnapshot is null
+            || !safetySnapshot.Reason.Contains($"before-restore:{snapshot.SnapshotId}", StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add("Before-restore safety snapshot was not listed with the expected reason.");
+        }
+    }
+
+    var restoredTheme = await themeService.LoadAsync(projectRoot);
+    if (!string.Equals(restoredTheme.Notes, "P1.4 snapshot theme notes", StringComparison.Ordinal))
+    {
+        failures.Add("SnapshotRestoreService did not restore theme/theme.json from the snapshot.");
+    }
+
+    var restoredContentMap = await contentMapService.LoadAsync(projectRoot);
+    if (!string.Equals(restoredContentMap.Pages[0].Title, "P1.4 snapshot page title", StringComparison.Ordinal))
+    {
+        failures.Add("SnapshotRestoreService did not restore maps/content-map.json from the snapshot.");
+    }
+
+    var restoredProject = await manifestService.LoadAsync(projectRoot);
+    if (!string.Equals(restoredProject.CurrentOutputVersion, "p1-4-snapshot-output", StringComparison.Ordinal))
+    {
+        failures.Add("SnapshotRestoreService did not restore project.wrbproj from the snapshot.");
+    }
+
+    var restoredOutput = await File.ReadAllTextAsync(snapshotOutputPath);
+    if (!restoredOutput.Contains("P1.4 snapshot", StringComparison.Ordinal))
+    {
+        failures.Add("SnapshotRestoreService did not restore output-site/current content from the snapshot.");
+    }
+
+    if (!File.Exists(SnapshotRestoreService.GetRestorePlanPath(projectRoot, restore.RestoreId)))
+    {
+        failures.Add("SnapshotRestoreService did not write restore-plan.json.");
+    }
+
+    if (!File.Exists(SnapshotRestoreService.GetRestoreResultPath(projectRoot, restore.RestoreId)))
+    {
+        failures.Add("SnapshotRestoreService did not write restore-result.json.");
+    }
+
+    var projectLogPath = Path.Combine(projectRoot, ProjectDirectoryV2.Logs, "project.log");
+    var securityLogPath = Path.Combine(projectRoot, ProjectDirectoryV2.Logs, "security.log");
+    if (!File.Exists(projectLogPath) || !File.ReadAllText(projectLogPath).Contains(restore.RestoreId, StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("SnapshotRestoreService did not write the project log.");
+    }
+
+    if (!File.Exists(securityLogPath) || !File.ReadAllText(securityLogPath).Contains("Snapshot restore boundary check", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("SnapshotRestoreService did not write the security log.");
+    }
+
+    var policySnapshot = await CreateManualSnapshotAsync(
+        projectRoot,
+        "p1-4-policy-snapshot",
+        projectId,
+        [
+            ("output-site/site.zip", "zip content", null),
+            ("output-site/demo.mp4", "video content", null)
+        ]);
+    var policyValidation = await restoreService.ValidateSnapshotAsync(projectRoot, policySnapshot.SnapshotId);
+    if (!policyValidation.IsOk
+        || !policyValidation.Items.Any(item => string.Equals(item.Severity, "warning", StringComparison.OrdinalIgnoreCase)
+                                              && item.Message.Contains("extension", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("SnapshotRestoreService did not treat zip/video restore targets as skipped warnings.");
+    }
+
+    var policyPlan = await restoreService.CreateRestorePlanAsync(projectRoot, policySnapshot.SnapshotId);
+    if (!policyPlan.Files.All(file => string.Equals(file.Status, "skipped", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("SnapshotRestoreService did not skip zip/video files in the restore plan.");
+    }
+
+    var forbiddenGitSnapshot = await CreateManualSnapshotAsync(
+        projectRoot,
+        "p1-4-forbidden-git-snapshot",
+        projectId,
+        [(".git/config", "do not restore", null)]);
+    var forbiddenGitValidation = await restoreService.ValidateSnapshotAsync(projectRoot, forbiddenGitSnapshot.SnapshotId);
+    if (forbiddenGitValidation.IsOk)
+    {
+        failures.Add("SnapshotRestoreService validation allowed a .git restore path.");
+    }
+
+    var forbiddenGitRestore = await restoreService.RestoreAsync(projectRoot, forbiddenGitSnapshot.SnapshotId);
+    if (forbiddenGitRestore.IsOk || File.Exists(Path.Combine(projectRoot, ".git", "config")))
+    {
+        failures.Add("SnapshotRestoreService restored or accepted a .git path.");
+    }
+
+    var escapeSnapshot = new ProjectSnapshotManifest
+    {
+        SchemaVersion = ProjectSnapshotSchema.CurrentSchemaVersion,
+        SnapshotId = "p1-4-escape-snapshot",
+        ProjectId = projectId,
+        CreatedAt = DateTimeOffset.UtcNow,
+        Reason = "P1.4 escape self-test",
+        Files =
+        [
+            new SnapshotFileItem
+            {
+                RelativePath = "../escape.txt",
+                Sha256 = "not-used",
+                SizeBytes = 1
+            }
+        ]
+    };
+    await WriteManualSnapshotManifestAsync(projectRoot, escapeSnapshot);
+    var escapeValidation = await restoreService.ValidateSnapshotAsync(projectRoot, escapeSnapshot.SnapshotId);
+    if (escapeValidation.IsOk)
+    {
+        failures.Add("SnapshotRestoreService validation allowed a project-escape snapshot path.");
+    }
+
+    var escapeRestore = await restoreService.RestoreAsync(projectRoot, escapeSnapshot.SnapshotId);
+    if (escapeRestore.IsOk || File.Exists(Path.Combine(projectRoot, "..", "escape.txt")))
+    {
+        failures.Add("SnapshotRestoreService restored or accepted a project-escape path.");
+    }
+}
+
+static async Task CheckP15ConstructionReadinessAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var outputBin = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "bin");
+    if (Directory.Exists(outputBin))
+    {
+        Directory.Delete(outputBin, recursive: true);
+    }
+
+    var secretTestPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "secret-test.js");
+    if (File.Exists(secretTestPath))
+    {
+        File.Delete(secretTestPath);
+    }
+
+    var taskService = new CodexTaskPackageService();
+    var taskPackage = await taskService.CreateNewAsync(projectRoot, projectId);
+    await taskService.SaveAsync(projectRoot, taskPackage);
+    await taskService.WriteInstructionsAsync(projectRoot, taskPackage);
+
+    var contentBuilder = new ConstructionPackageContentBuilderService();
+    await contentBuilder.BuildAsync(projectRoot);
+
+    var gate = new ConstructionReadinessGateService();
+    var draft = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.Draft);
+    if (!draft.IsReady)
+    {
+        failures.Add($"ConstructionReadinessGateService Draft mode was not ready: {DescribeReadinessBlockers(draft)}");
+    }
+
+    var strict = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.Strict);
+    if (!strict.IsReady)
+    {
+        failures.Add($"ConstructionReadinessGateService Strict mode was not ready: {DescribeReadinessBlockers(strict)}");
+    }
+
+    var pre = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.PreCodexDryRun);
+    if (!pre.IsReady)
+    {
+        failures.Add($"ConstructionReadinessGateService PreCodexDryRun mode was not ready: {DescribeReadinessBlockers(pre)}");
+    }
+
+    if (!pre.Items.Any(item => item.Category == "rollback" && item.Key == "rollback.snapshotValidation" && item.Status == ConstructionReadinessStatus.Ok))
+    {
+        failures.Add("ConstructionReadinessGateService did not verify rollback snapshot validation.");
+    }
+
+    var snapshots = await new SnapshotRestoreService().ListSnapshotsAsync(projectRoot);
+    if (!snapshots.Any(snapshot =>
+            snapshot.SnapshotId.StartsWith("readiness-probe-", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(snapshot.Reason, "readiness-probe", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("Readiness gate did not create a readiness-probe snapshot with the required prefix/reason.");
+    }
+
+    if (!pre.Items.Any(item => item.Category == "aiEngine"
+                               && item.Status == ConstructionReadinessStatus.Warning
+                               && !item.BlocksExecution))
+    {
+        failures.Add("ConstructionReadinessGateService did not record missing AI engines as non-blocking warnings.");
+    }
+
+    if (!pre.Items.Any(item => item.Category == "optionalAwareness"
+                               && item.Status == ConstructionReadinessStatus.Warning
+                               && !item.BlocksExecution))
+    {
+        failures.Add("ConstructionReadinessGateService did not record optional design/reference awareness as non-blocking warnings.");
+    }
+
+    if (!pre.Items.Any(item => item.Key == "outputSurface.indexOptional"
+                               && item.Status == ConstructionReadinessStatus.Ok))
+    {
+        failures.Add("ConstructionReadinessGateService did not mark generated index.html as optional.");
+    }
+
+    var reportJsonPath = ConstructionReadinessGateService.GetReportJsonPath(projectRoot);
+    var reportMarkdownPath = ConstructionReadinessGateService.GetReportMarkdownPath(projectRoot);
+    if (!File.Exists(reportJsonPath) || !File.Exists(reportMarkdownPath))
+    {
+        failures.Add("ConstructionReadinessGateService did not write readiness-report.json and readiness-report.md.");
+    }
+    else
+    {
+        var reportJson = await File.ReadAllTextAsync(reportJsonPath);
+        var reportMarkdown = await File.ReadAllTextAsync(reportMarkdownPath);
+        if (!reportJson.Contains("\"mode\": \"PreCodexDryRun\"", StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add("readiness-report.json did not serialize readiness mode as a string.");
+        }
+
+        if (ReportLeaksSensitiveData(reportJson, projectRoot) || ReportLeaksSensitiveData(reportMarkdown, projectRoot))
+        {
+            failures.Add("Readiness reports leaked a local path or secret marker.");
+        }
+    }
+
+    await CheckP15SecretAndSanitizerAsync(projectRoot, gate, taskService, failures);
+    await contentBuilder.BuildAsync(projectRoot);
+
+    await CheckP15PackageIndexMismatchAsync(projectRoot, gate, contentBuilder, failures);
+    await CheckP15MissingPackageIndexAsync(projectRoot, gate, contentBuilder, failures);
+    await CheckP15OutputIndexIsOptionalAsync(projectRoot, gate, failures);
+    await CheckP15MissingOutputSurfaceAsync(projectRoot, gate, failures);
+    await CheckP15TaskSandboxFailureAsync(projectRoot, gate, taskService, contentBuilder, failures);
+    await CheckP15ReferenceAssetRiskAsync(projectRoot, gate, contentBuilder, failures);
+}
+
+static async Task CheckP15SecretAndSanitizerAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    CodexTaskPackageService taskService,
+    List<string> failures)
+{
+    var taskPath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var cleanTask = await taskService.LoadAsync(projectRoot);
+    var secretTask = CloneTaskPackage(cleanTask);
+    secretTask.ProhibitedActions.Add(@"OPENAI_API_KEY=sk-test C:\Users\test\.ssh");
+    await WriteJsonAsync(taskPath, secretTask);
+
+    var secretResult = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.Draft);
+    if (secretResult.IsReady
+        || !secretResult.Items.Any(item => item.BlocksExecution && item.FailureCategory == TaskFailureCategory.SecretDetected))
+    {
+        failures.Add("ConstructionReadinessGateService did not block a secret/local path in task-package.json.");
+    }
+
+    var reportJson = await File.ReadAllTextAsync(ConstructionReadinessGateService.GetReportJsonPath(projectRoot));
+    var reportMarkdown = await File.ReadAllTextAsync(ConstructionReadinessGateService.GetReportMarkdownPath(projectRoot));
+    if (ReportLeaksSensitiveData(reportJson, projectRoot) || ReportLeaksSensitiveData(reportMarkdown, projectRoot))
+    {
+        failures.Add("ConstructionReadinessGateService report sanitizer did not redact a secret/local path.");
+    }
+
+    await taskService.SaveAsync(projectRoot, cleanTask);
+    await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+}
+
+static async Task CheckP15PackageIndexMismatchAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var projectBriefPath = Path.Combine(
+        projectRoot,
+        ConstructionPackageContextSchema.ProjectBriefRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var original = await File.ReadAllTextAsync(projectBriefPath);
+    await File.WriteAllTextAsync(projectBriefPath, original + Environment.NewLine + "tampered", Encoding.UTF8);
+
+    var mismatch = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.PreCodexDryRun);
+    if (mismatch.IsReady
+        || !mismatch.Items.Any(item => item.Key.Contains("context.hash.projectBrief", StringComparison.OrdinalIgnoreCase)
+                                      && item.BlocksExecution))
+    {
+        failures.Add("ConstructionReadinessGateService did not block a package-index context hash mismatch.");
+    }
+
+    await File.WriteAllTextAsync(projectBriefPath, original, Encoding.UTF8);
+    await contentBuilder.BuildAsync(projectRoot);
+}
+
+static async Task CheckP15MissingPackageIndexAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var packageIndexPath = Path.Combine(
+        projectRoot,
+        ConstructionPackageContextSchema.PackageIndexRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var original = await File.ReadAllTextAsync(packageIndexPath);
+    File.Delete(packageIndexPath);
+
+    var missingIndex = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.Strict);
+    if (missingIndex.IsReady
+        || !missingIndex.Items.Any(item => item.Key == "context.packageIndex" && item.BlocksExecution))
+    {
+        failures.Add("ConstructionReadinessGateService Strict mode did not block a missing context package-index.json.");
+    }
+
+    await File.WriteAllTextAsync(packageIndexPath, original, Encoding.UTF8);
+    await contentBuilder.BuildAsync(projectRoot);
+}
+
+static async Task CheckP15OutputIndexIsOptionalAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    List<string> failures)
+{
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    var hadIndex = File.Exists(indexPath);
+    var original = hadIndex ? await File.ReadAllTextAsync(indexPath) : string.Empty;
+    if (hadIndex)
+    {
+        File.Delete(indexPath);
+    }
+
+    var noIndex = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.PreCodexDryRun);
+    if (!noIndex.IsReady)
+    {
+        failures.Add($"ConstructionReadinessGateService required output-site/current/index.html unexpectedly: {DescribeReadinessBlockers(noIndex)}");
+    }
+
+    if (!noIndex.Items.Any(item => item.Key == "outputSurface.indexOptional"
+                                   && item.Status == ConstructionReadinessStatus.Ok))
+    {
+        failures.Add("ConstructionReadinessGateService did not report index.html as optional when missing.");
+    }
+
+    if (hadIndex)
+    {
+        await File.WriteAllTextAsync(indexPath, original, Encoding.UTF8);
+    }
+}
+
+static async Task CheckP15MissingOutputSurfaceAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    List<string> failures)
+{
+    var outputRoot = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent);
+    var backupRoot = Path.Combine(projectRoot, ProjectDirectoryV2.Runtime, "p1-5-output-current-backup");
+    if (Directory.Exists(backupRoot))
+    {
+        Directory.Delete(backupRoot, recursive: true);
+    }
+
+    Directory.Move(outputRoot, backupRoot);
+    try
+    {
+        var missingOutput = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.PreCodexDryRun);
+        if (missingOutput.IsReady
+            || !missingOutput.Items.Any(item => item.Key is "outputSurface.directory" or "directory.writable.output-site/current"
+                                              && item.BlocksExecution))
+        {
+            failures.Add("ConstructionReadinessGateService PreCodexDryRun did not block a missing output-site/current directory.");
+        }
+    }
+    finally
+    {
+        if (Directory.Exists(outputRoot))
+        {
+            Directory.Delete(outputRoot, recursive: true);
+        }
+
+        Directory.Move(backupRoot, outputRoot);
+    }
+}
+
+static async Task CheckP15TaskSandboxFailureAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var cleanTask = await taskService.LoadAsync(projectRoot);
+    var badTask = CloneTaskPackage(cleanTask);
+    badTask.Sandbox.AllowedWriteRoots.Add(ProjectDirectoryV2.Logs);
+    await taskService.SaveAsync(projectRoot, badTask);
+    await taskService.WriteInstructionsAsync(projectRoot, badTask);
+    await contentBuilder.BuildAsync(projectRoot);
+
+    var badSandbox = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.PreCodexDryRun);
+    if (badSandbox.IsReady
+        || !badSandbox.Items.Any(item => item.Key == "task.allowedWriteRoots.exact"
+                                        && item.BlocksExecution
+                                        && item.FailureCategory == TaskFailureCategory.SandboxViolation))
+    {
+        failures.Add("ConstructionReadinessGateService did not block expanded task allowed write roots.");
+    }
+
+    await taskService.SaveAsync(projectRoot, cleanTask);
+    await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+    await contentBuilder.BuildAsync(projectRoot);
+}
+
+static async Task CheckP15ReferenceAssetRiskAsync(
+    string projectRoot,
+    ConstructionReadinessGateService gate,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var assetsPath = AssetsManifestService.GetManifestPath(projectRoot);
+    var cleanAssets = await new AssetsManifestService().LoadAsync(projectRoot);
+    var riskyAssets = CloneAssetsManifest(cleanAssets);
+    if (riskyAssets.Assets.Count == 0)
+    {
+        riskyAssets.Assets.Add(new AssetManifestItem
+        {
+            AssetId = "asset-reference-risk",
+            Kind = "image",
+            Role = "reference",
+            RelativePath = "input/assets/test-logo.txt"
+        });
+    }
+
+    riskyAssets.Assets[0].SourceType = "referenceSite";
+    riskyAssets.Assets[0].IsExternalReference = true;
+    riskyAssets.Assets[0].IsApprovedForExport = true;
+    await WriteJsonAsync(assetsPath, riskyAssets);
+    await contentBuilder.BuildAsync(projectRoot);
+
+    var risk = await gate.CheckAsync(projectRoot, ConstructionReadinessMode.Strict);
+    if (risk.IsReady
+        || !risk.Items.Any(item => item.Key.Contains("assets.referenceApproved", StringComparison.OrdinalIgnoreCase)
+                                  && item.BlocksExecution))
+    {
+        failures.Add("ConstructionReadinessGateService did not block approved reference-site asset export risk.");
+    }
+
+    await new AssetsManifestService().SaveAsync(projectRoot, cleanAssets);
+    await contentBuilder.BuildAsync(projectRoot);
+}
+
+static async Task CheckP16DryRunOrchestratorAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    if (File.Exists(indexPath))
+    {
+        File.Delete(indexPath);
+    }
+
+    var taskService = new CodexTaskPackageService();
+    var contentBuilder = new ConstructionPackageContentBuilderService();
+    var taskPackage = await taskService.CreateNewAsync(projectRoot, projectId);
+    await taskService.SaveAsync(projectRoot, taskPackage);
+    await taskService.WriteInstructionsAsync(projectRoot, taskPackage);
+    await contentBuilder.BuildAsync(projectRoot);
+
+    var service = new CodexDryRunOrchestratorService();
+    var success = await service.RunAsync(projectRoot);
+    if (!success.IsOk || !success.IsReadyForFutureExecution)
+    {
+        failures.Add($"CodexDryRunOrchestratorService did not pass a valid dry-run: {string.Join("; ", success.BlockingReasons)}");
+    }
+
+    if (success.ExecutedCodexCli || success.CalledOpenAiApi || success.GeneratedWebsite)
+    {
+        failures.Add("CodexDryRunOrchestratorService reported a forbidden execution flag as true.");
+    }
+
+    var planPath = CodexDryRunOrchestratorService.GetPlanPath(projectRoot, success.DryRunId);
+    var resultPath = CodexDryRunOrchestratorService.GetResultPath(projectRoot, success.DryRunId);
+    var reportPath = CodexDryRunOrchestratorService.GetReportPath(projectRoot, success.DryRunId);
+    var recordPath = CodexDryRunOrchestratorService.GetRecordPath(projectRoot, success.DryRunId);
+    if (!File.Exists(planPath) || !File.Exists(resultPath) || !File.Exists(reportPath) || !File.Exists(recordPath))
+    {
+        failures.Add("CodexDryRunOrchestratorService did not write plan/result/report/record files.");
+    }
+    else
+    {
+        var plan = await ReadJsonAsync<CodexDryRunPlan>(planPath);
+        var result = await ReadJsonAsync<CodexDryRunResult>(resultPath);
+        var record = await ReadJsonAsync<CodexDryRunRecord>(recordPath);
+        if (plan is null || result is null || record is null)
+        {
+            failures.Add("Dry-run plan/result/record could not be deserialized.");
+        }
+        else
+        {
+            var requiredSteps = new[]
+            {
+                "load-project-manifest",
+                "run-readiness-gate",
+                "load-task-package",
+                "validate-instructions",
+                "collect-input-files",
+                "validate-allowed-write-roots",
+                "validate-forbidden-roots",
+                "verify-rollback-availability",
+                "prepare-codex-workspace",
+                "simulate-codex-command",
+                "simulate-output-validation",
+                "write-dry-run-reports",
+                "create-dry-run-record",
+                "write-logs"
+            };
+
+            foreach (var stepId in requiredSteps)
+            {
+                if (!plan.Steps.Any(step => string.Equals(step.StepId, stepId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    failures.Add($"Dry-run plan missing simulated step: {stepId}");
+                }
+            }
+
+            var simulateStep = plan.Steps.SingleOrDefault(step => step.StepId == "simulate-codex-command");
+            if (simulateStep is null || simulateStep.WouldRunExternalProcess)
+            {
+                failures.Add("Dry-run simulate-codex-command step would run an external process.");
+            }
+
+            if (plan.WouldExecuteCodexCli)
+            {
+                failures.Add("Dry-run plan says it would execute Codex CLI.");
+            }
+
+            if (!plan.SafetyChecks.Any(check => check.Key == "readiness-gate" && check.Status == "ok"))
+            {
+                failures.Add("Dry-run plan did not record successful PreCodexDryRun readiness integration.");
+            }
+
+            if (!record.IsDryRun
+                || record.ExecutedCodexCli
+                || record.CalledOpenAiApi
+                || record.GeneratedWebsite
+                || string.Equals(record.Status, "running", StringComparison.OrdinalIgnoreCase))
+            {
+                failures.Add("Dry-run record can be misread as a real Codex execution.");
+            }
+        }
+
+        var report = await File.ReadAllTextAsync(reportPath);
+        foreach (var required in new[]
+                 {
+                     "# Codex CLI Dry-Run Report",
+                     "Codex CLI executed: false",
+                     "OpenAI API called: false",
+                     "Website generated: false",
+                     "Codex CLI not executed",
+                     "OpenAI API not called",
+                     "Website not generated",
+                     "Dry-run only"
+                 })
+        {
+            if (!report.Contains(required, StringComparison.OrdinalIgnoreCase))
+            {
+                failures.Add($"dry-run-report.md missing required statement: {required}");
+            }
+        }
+
+        if (DryRunArtifactLeaksSensitiveData(projectRoot, planPath, resultPath, reportPath, recordPath))
+        {
+            failures.Add("Dry-run artifacts leaked local path or sensitive marker.");
+        }
+    }
+
+    if (File.Exists(indexPath))
+    {
+        failures.Add("Dry-run created output-site/current/index.html.");
+        File.Delete(indexPath);
+    }
+
+    await CheckP16ReadinessFailureStillReportsAsync(projectRoot, service, contentBuilder, failures);
+    await CheckP16MissingTaskPackageAsync(projectRoot, service, taskService, contentBuilder, failures);
+    await CheckP16InstructionBoundaryFailureAsync(projectRoot, service, taskService, contentBuilder, failures);
+    await CheckP16UnsafeAllowedRootsAsync(projectRoot, service, taskService, contentBuilder, failures);
+    await CheckP16DryRunSanitizerAsync(projectRoot, service, taskService, contentBuilder, failures);
+    await CheckP16LogsAsync(projectRoot, failures);
+
+    taskPackage = await taskService.CreateNewAsync(projectRoot, projectId);
+    await taskService.SaveAsync(projectRoot, taskPackage);
+    await taskService.WriteInstructionsAsync(projectRoot, taskPackage);
+    await contentBuilder.BuildAsync(projectRoot);
+}
+
+static async Task CheckP16ReadinessFailureStillReportsAsync(
+    string projectRoot,
+    CodexDryRunOrchestratorService service,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var packageIndexPath = Path.Combine(
+        projectRoot,
+        ConstructionPackageContextSchema.PackageIndexRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var original = await File.ReadAllTextAsync(packageIndexPath);
+    File.Delete(packageIndexPath);
+    try
+    {
+        var blocked = await service.RunAsync(projectRoot);
+        if (blocked.IsOk || blocked.IsReadyForFutureExecution)
+        {
+            failures.Add("Dry-run stayed ready when PreCodexDryRun readiness gate failed.");
+        }
+
+        if (!File.Exists(CodexDryRunOrchestratorService.GetReportPath(projectRoot, blocked.DryRunId)))
+        {
+            failures.Add("Dry-run did not write a report when readiness gate failed.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(packageIndexPath, original, Encoding.UTF8);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP16MissingTaskPackageAsync(
+    string projectRoot,
+    CodexDryRunOrchestratorService service,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var taskPath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var original = await File.ReadAllTextAsync(taskPath);
+    File.Delete(taskPath);
+    try
+    {
+        var missing = await service.RunAsync(projectRoot);
+        if (missing.IsOk
+            || !missing.BlockingReasons.Any(reason => reason.Contains("task-package", StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add("Dry-run did not block a missing task-package.json.");
+        }
+
+        if (!File.Exists(CodexDryRunOrchestratorService.GetReportPath(projectRoot, missing.DryRunId)))
+        {
+            failures.Add("Dry-run did not write a report for a missing task package.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(taskPath, original, Encoding.UTF8);
+        var cleanTask = await taskService.LoadAsync(projectRoot);
+        await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP16InstructionBoundaryFailureAsync(
+    string projectRoot,
+    CodexDryRunOrchestratorService service,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var instructionsPath = CodexTaskPackageService.GetInstructionsPath(projectRoot);
+    var original = await File.ReadAllTextAsync(instructionsPath);
+    await File.WriteAllTextAsync(
+        instructionsPath,
+        "# Unsafe Instructions" + Environment.NewLine + "Reading order only.",
+        Encoding.UTF8);
+    try
+    {
+        var badInstructions = await service.RunAsync(projectRoot);
+        if (badInstructions.IsOk
+            || !badInstructions.BlockingReasons.Any(reason => reason.Contains("instructions-boundary", StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add("Dry-run did not block instructions.md with missing safety boundaries.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(instructionsPath, original, Encoding.UTF8);
+        var cleanTask = await taskService.LoadAsync(projectRoot);
+        await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP16UnsafeAllowedRootsAsync(
+    string projectRoot,
+    CodexDryRunOrchestratorService service,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var taskPath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var original = await File.ReadAllTextAsync(taskPath);
+    var badTask = await taskService.LoadAsync(projectRoot);
+    badTask.Sandbox.AllowedWriteRoots.Add(ProjectDirectoryV2.Logs);
+    await WriteJsonAsync(taskPath, badTask);
+    try
+    {
+        var badRoots = await service.RunAsync(projectRoot);
+        if (badRoots.IsOk
+            || !badRoots.BlockingReasons.Any(reason => reason.Contains("allowed-write-roots-exact", StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add("Dry-run did not block unsafe allowed write roots.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(taskPath, original, Encoding.UTF8);
+        var cleanTask = await taskService.LoadAsync(projectRoot);
+        await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP16DryRunSanitizerAsync(
+    string projectRoot,
+    CodexDryRunOrchestratorService service,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var instructionsPath = CodexTaskPackageService.GetInstructionsPath(projectRoot);
+    var original = await File.ReadAllTextAsync(instructionsPath);
+    await File.WriteAllTextAsync(
+        instructionsPath,
+        original + Environment.NewLine + @"OPENAI_API_KEY=sk-test C:\Users\test\.ssh token password secret cookie",
+        Encoding.UTF8);
+    try
+    {
+        var sanitized = await service.RunAsync(projectRoot);
+        if (sanitized.IsOk)
+        {
+            failures.Add("Dry-run did not block sensitive markers in instructions.md.");
+        }
+
+        var planPath = CodexDryRunOrchestratorService.GetPlanPath(projectRoot, sanitized.DryRunId);
+        var resultPath = CodexDryRunOrchestratorService.GetResultPath(projectRoot, sanitized.DryRunId);
+        var reportPath = CodexDryRunOrchestratorService.GetReportPath(projectRoot, sanitized.DryRunId);
+        var recordPath = CodexDryRunOrchestratorService.GetRecordPath(projectRoot, sanitized.DryRunId);
+        if (DryRunArtifactLeaksSensitiveData(projectRoot, planPath, resultPath, reportPath, recordPath))
+        {
+            failures.Add("Dry-run sanitizer did not remove sensitive markers from artifacts.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(instructionsPath, original, Encoding.UTF8);
+        var cleanTask = await taskService.LoadAsync(projectRoot);
+        await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP16LogsAsync(
+    string projectRoot,
+    List<string> failures)
+{
+    var expectedLogs = new[]
+    {
+        ("logs/project.log", "P1.6 dry-run completed"),
+        ("logs/security.log", "OpenAI API not called"),
+        ("logs/codex-task.log", "Website not generated")
+    };
+
+    foreach (var (relativePath, requiredText) in expectedLogs)
+    {
+        var fullPath = Path.Combine(projectRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath))
+        {
+            failures.Add($"Dry-run log was not written: {relativePath}");
+            continue;
+        }
+
+        var content = await File.ReadAllTextAsync(fullPath);
+        if (!content.Contains(requiredText, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"Dry-run log {relativePath} missing text: {requiredText}");
+        }
+    }
+}
+
+static bool DryRunArtifactLeaksSensitiveData(
+    string projectRoot,
+    params string[] paths)
+{
+    foreach (var path in paths)
+    {
+        if (!File.Exists(path))
+        {
+            continue;
+        }
+
+        var content = File.ReadAllText(path);
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+            || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("/home/", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".ssh", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".codex", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".openai", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" token", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" password", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" secret", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" cookie", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool ReportLeaksSensitiveData(string content, string projectRoot)
+{
+    return content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+           || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+           || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+           || content.Contains(@"\.ssh", StringComparison.OrdinalIgnoreCase)
+           || content.Contains("/home/", StringComparison.OrdinalIgnoreCase);
+}
+
+static string DescribeReadinessBlockers(ConstructionReadinessResult result)
+{
+    return string.Join("; ", result.Items
+        .Where(item => item.BlocksExecution)
+        .Select(item => $"{item.Key}:{item.FailureCategory}:{item.RelativePath}:{item.Message}"));
+}
+
+static async Task<ProjectSnapshotManifest> CreateManualSnapshotAsync(
+    string projectRoot,
+    string snapshotId,
+    string projectId,
+    IReadOnlyList<(string RelativePath, string Content, string? Sha256Override)> files)
+{
+    var manifest = new ProjectSnapshotManifest
+    {
+        SchemaVersion = ProjectSnapshotSchema.CurrentSchemaVersion,
+        SnapshotId = snapshotId,
+        ProjectId = projectId,
+        CreatedAt = DateTimeOffset.UtcNow,
+        Reason = $"manual self-test {snapshotId}"
+    };
+
+    var snapshotRoot = Path.Combine(projectRoot, ProjectSnapshotSchema.SnapshotRootRelativePath, snapshotId);
+    Directory.CreateDirectory(snapshotRoot);
+    foreach (var file in files)
+    {
+        var fullPath = Path.Combine(snapshotRoot, file.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        await File.WriteAllTextAsync(fullPath, file.Content, Encoding.UTF8);
+        manifest.Files.Add(new SnapshotFileItem
+        {
+            RelativePath = file.RelativePath,
+            Sha256 = file.Sha256Override ?? ComputeSha256ForTest(fullPath),
+            SizeBytes = new FileInfo(fullPath).Length
+        });
+    }
+
+    await WriteManualSnapshotManifestAsync(projectRoot, manifest);
+    return manifest;
+}
+
+static async Task WriteManualSnapshotManifestAsync(
+    string projectRoot,
+    ProjectSnapshotManifest manifest)
+{
+    var snapshotRoot = Path.Combine(projectRoot, ProjectSnapshotSchema.SnapshotRootRelativePath, manifest.SnapshotId);
+    Directory.CreateDirectory(snapshotRoot);
+    var manifestPath = Path.Combine(snapshotRoot, ProjectSnapshotSchema.ManifestFileName);
+    await WriteJsonAsync(manifestPath, manifest);
+}
+
+static string DescribeSnapshotValidationErrors(SnapshotValidationResult result)
+{
+    return string.Join("; ", result.Items
+        .Where(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase))
+        .Select(item => $"{item.Key}:{item.RelativePath}:{item.Message}"));
+}
+
+static void CheckFoundationWorkflow(List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    var parentRoot = Directory.GetParent(sourceRoot)?.FullName ?? string.Empty;
+    var workflowCandidates = new[]
+    {
+        Path.Combine(sourceRoot, ".github", "workflows", "webrebuildrecorder-foundation.yml"),
+        Path.Combine(parentRoot, ".github", "workflows", "webrebuildrecorder-foundation.yml")
+    };
+
+    var workflowPath = workflowCandidates.FirstOrDefault(File.Exists);
+    if (string.IsNullOrWhiteSpace(workflowPath))
+    {
+        failures.Add("GitHub Actions foundation workflow file was not found.");
+        return;
+    }
+
+    var workflow = File.ReadAllText(workflowPath);
+    foreach (var required in new[]
+             {
+                 "workflow_dispatch",
+                 "windows-latest",
+                 "timeout-minutes: 15",
+                 "dotnet build WebRebuildRecorder.slnx",
+                 "WebRebuildRecorder.FoundationSelfTest"
+             })
+    {
+        if (!workflow.Contains(required, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"GitHub Actions foundation workflow missing required entry: {required}");
+        }
+    }
+}
+
+static string ComputeSha256ForTest(string fullPath)
+{
+    using var stream = File.OpenRead(fullPath);
+    var hash = System.Security.Cryptography.SHA256.HashData(stream);
+    return Convert.ToHexString(hash).ToLowerInvariant();
+}
+
+static ObservationPackageManifest CloneObservationPackage(ObservationPackageManifest manifest)
+{
+    var json = JsonSerializer.Serialize(manifest, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<ObservationPackageManifest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone observation package.");
+}
+
+static CodexTaskPackage CloneTaskPackage(CodexTaskPackage package)
+{
+    var json = JsonSerializer.Serialize(package, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<CodexTaskPackage>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone task package.");
+}
+
+static AssetsManifest CloneAssetsManifest(AssetsManifest manifest)
+{
+    var json = JsonSerializer.Serialize(manifest, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<AssetsManifest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone assets manifest.");
+}
+
+static async Task WriteJsonAsync<T>(string path, T value)
+{
+    await using var stream = File.Create(path);
+    await JsonSerializer.SerializeAsync(stream, value, WrbJsonOptions.Default);
+}
+
+static async Task<T?> ReadJsonAsync<T>(string path)
+{
+    await using var stream = File.OpenRead(path);
+    return await JsonSerializer.DeserializeAsync<T>(stream, WrbJsonOptions.Default);
+}
+
+static string DescribeValidationErrors(PackageValidationResult result)
+{
+    return string.Join("; ", result.Items
+        .Where(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase))
+        .Select(item => $"{item.Key}:{item.RelativePath}:{item.Message}"));
+}
+
+static string FindSourceRoot()
+{
+    var directory = new DirectoryInfo(Environment.CurrentDirectory);
+    while (directory is not null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "WebRebuildRecorder.slnx")))
+        {
+            return directory.FullName;
+        }
+
+        directory = directory.Parent;
+    }
+
+    return string.Empty;
+}
+
+static void TryDeleteTempRoot(string tempRoot)
+{
+    var fullTempRoot = Path.GetFullPath(tempRoot);
+    var allowedRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "WebRebuildRecorderFoundationSelfTest"));
+    var comparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
+    if (fullTempRoot.StartsWith(allowedRoot + Path.DirectorySeparatorChar, comparison)
+        && Directory.Exists(fullTempRoot))
+    {
+        Directory.Delete(fullTempRoot, recursive: true);
+    }
+}

@@ -1,0 +1,54 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.rsuser
+
+# Logs and generated reports
+logs/
+review_package/
+*.zip
+*.7z
+*.rar
+
+# Generated media and runtime artifacts
+recordings/
+screenshots/
+frames/
+extracted-frames/
+output-site/current/
+codex-task/dry-runs/
+codex-task/runs/
+codex-task/approvals/
+codex-task/proof/
+
+# Secrets and local configuration
+.env
+.env.*
+*.pfx
+*.pem
+*.key
+*.cer
+secrets.json
+appsettings.Development.json
+
+# Video / recording files
+*.mp4
+*.mov
+*.avi
+*.webm
+*.mkv
+
+# Customer/private materials
+customer-materials/
+assets/private/
+
+# Optional local FFmpeg binaries
+WebRebuildRecorder.App/Tools/ffmpeg/ffmpeg.exe
+WebRebuildRecorder.App/Tools/ffmpeg/ffprobe.exe
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1113 @@
+<Window x:Class="WebRebuildRecorder.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WebRebuildRecorder"
+        Width="1380"
+        Height="900"
+        MinWidth="1180"
+        MinHeight="760"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        KeyDown="Window_KeyDown"
+        Background="#F4F5F7">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="56" />
+            <RowDefinition Height="*" />
+            <RowDefinition x:Name="LogRow" Height="160" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="#1F2328"
+                Padding="16,0">
+            <DockPanel LastChildFill="False">
+                <TextBlock Text="WebRebuildRecorder / 网页重构观察器"
+                           Foreground="White"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           DockPanel.Dock="Left" />
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Right"
+                            VerticalAlignment="Center">
+                    <Button x:Name="NewProjectToolbarButton"
+                            Content="新建项目"
+                            Click="NewProjectButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="OpenExistingProjectToolbarButton"
+                            Content="打开已有项目"
+                            Click="OpenExistingProjectDirectoryButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="CloseProjectToolbarButton"
+                            Content="关闭项目"
+                            Click="CloseProjectButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="OpenWebsiteToolbarButton"
+                            Content="预览网站"
+                            Click="OpenWebsiteButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="AutoObserveRecordingToolbarButton"
+                            Content="自动观察录屏"
+                            Click="AutoObserveRecordingButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="StartRecordingToolbarButton"
+                            Content="人工录屏"
+                            Click="StartRecordingButton_Click"
+                            Margin="0,0,8,0"
+                            Padding="12,6" />
+                    <Button x:Name="StopRecordingToolbarButton"
+                            Content="停止"
+                            Click="StopRecordingButton_Click"
+                            Padding="12,6" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid x:Name="StartupPageGrid"
+              Grid.Row="1"
+              Margin="28">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="White"
+                    BorderBrush="#D0D7DE"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="22"
+                    Margin="0,0,18,0">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top"
+                                Margin="0,0,0,18">
+                        <TextBlock Text="WebRebuildRecorder"
+                                   FontSize="28"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="网页观察、录屏、抽帧与 ChatGPT 投递工具"
+                                   Foreground="#57606A"
+                                   FontSize="14"
+                                   Margin="0,6,0,0" />
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Bottom"
+                                Orientation="Horizontal"
+                                Margin="0,16,0,0">
+                        <Button x:Name="StartupOpenRecentButton"
+                                Content="打开"
+                                Click="OpenRecentProjectButton_Click"
+                                Padding="14,6"
+                                Margin="0,0,8,0" />
+                        <Button x:Name="StartupOpenRecentDirectoryButton"
+                                Content="打开目录"
+                                Click="OpenRecentProjectDirectoryButton_Click"
+                                Padding="14,6"
+                                Margin="0,0,8,0" />
+                        <Button x:Name="StartupRemoveRecentButton"
+                                Content="从列表移除"
+                                Click="RemoveRecentProjectButton_Click"
+                                Padding="14,6" />
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock Text="最近项目"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,10" />
+                        <ListBox x:Name="StartupRecentProjectsListBox"
+                                 MouseDoubleClick="StartupRecentProjectsListBox_MouseDoubleClick"
+                                 MinHeight="360"
+                                 BorderBrush="#D0D7DE">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="10"
+                                            BorderBrush="#D8DEE4"
+                                            BorderThickness="0,0,0,1">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding ProjectName}"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding ReferenceUrl}"
+                                                       Foreground="#57606A"
+                                                       Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding LastOpenedAt, StringFormat=最后打开：{0:yyyy-MM-dd HH:mm}}"
+                                                       Foreground="#57606A"
+                                                       Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding ProjectDirectory}"
+                                                       Foreground="#57606A"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding StatusText}"
+                                                       Foreground="#8A6A00"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Background="White"
+                    BorderBrush="#D0D7DE"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="22">
+                <StackPanel>
+                    <TextBlock Text="开始"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,14" />
+                    <Button Content="新建项目"
+                            Click="NewProjectButton_Click"
+                            Padding="18,10"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,10" />
+                    <Button Content="打开已有项目目录"
+                            Click="OpenExistingProjectDirectoryButton_Click"
+                            Padding="18,10"
+                            HorizontalContentAlignment="Left"
+                            Margin="0,0,0,10" />
+                    <Button Content="设置"
+                            Padding="18,10"
+                            HorizontalContentAlignment="Left"
+                            IsEnabled="False"
+                            Margin="0,0,0,22" />
+                    <TextBlock Text="请先新建或打开一个项目。项目确定后，录屏、素材、抽帧、打包和投递功能才会显示。"
+                               Foreground="#57606A"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid x:Name="WorkbenchGrid"
+              Grid.Row="1"
+              Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="330" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,12,0">
+                    <GroupBox Header="项目"
+                              Margin="0,0,0,10">
+                        <StackPanel Margin="10">
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <Button x:Name="NewProjectWorkflowButton"
+                                        Content="新建项目"
+                                        Click="NewProjectButton_Click"
+                                        Padding="10,5"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="CloseProjectWorkflowButton"
+                                        Content="关闭项目"
+                                        Click="CloseProjectButton_Click"
+                                        Padding="10,5" />
+                            </StackPanel>
+
+                            <TextBlock Text="最近项目"
+                                       FontWeight="SemiBold"
+                                       Margin="0,4,0,4" />
+                            <ListBox x:Name="RecentProjectsListBox"
+                                     DisplayMemberPath="DisplayText"
+                                     Height="126"
+                                     Margin="0,0,0,8" />
+                            <WrapPanel>
+                                <Button x:Name="OpenRecentProjectButton"
+                                        Content="打开"
+                                        Click="OpenRecentProjectButton_Click"
+                                        Padding="9,4"
+                                        Margin="0,0,6,6" />
+                                <Button x:Name="RemoveRecentProjectButton"
+                                        Content="从列表移除"
+                                        Click="RemoveRecentProjectButton_Click"
+                                        Padding="9,4"
+                                        Margin="0,0,6,6" />
+                                <Button x:Name="OpenRecentProjectDirectoryButton"
+                                        Content="打开目录"
+                                        Click="OpenRecentProjectDirectoryButton_Click"
+                                        Padding="9,4"
+                                        Margin="0,0,6,6" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="项目设置"
+                              Margin="0,0,0,10">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="名称"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="0"
+                                     Grid.Column="1"
+                                     Grid.ColumnSpan="2"
+                                     x:Name="ProjectNameBox"
+                                     Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}"
+                                     TextChanged="ProjectNameBox_TextChanged"
+                                     Margin="0,0,0,8" />
+
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="链接"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="1"
+                                     Grid.Column="1"
+                                     Grid.ColumnSpan="2"
+                                     x:Name="UrlBox"
+                                     Text="{Binding ReferenceUrl, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,8" />
+
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="0"
+                                       Text="根目录"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="2"
+                                     Grid.Column="1"
+                                     x:Name="OutputRootBox"
+                                     Text="{Binding ProjectsRootDirectory, UpdateSourceTrigger=PropertyChanged}"
+                                     TextChanged="OutputRootBox_TextChanged"
+                                     LostFocus="OutputRootBox_LostFocus"
+                                     Margin="0,0,8,8" />
+                            <Button Grid.Row="2"
+                                    Grid.Column="2"
+                                    Content="..."
+                                    Click="BrowseOutputButton_Click"
+                                    Width="34"
+                                    Margin="0,0,0,8" />
+
+                            <TextBlock Grid.Row="3"
+                                       Grid.Column="0"
+                                       Text="源码"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="3"
+                                     Grid.Column="1"
+                                     x:Name="LocalCodePathBox"
+                                     Margin="0,0,8,8" />
+                            <Button Grid.Row="3"
+                                    Grid.Column="2"
+                                    Content="..."
+                                    Click="BrowseLocalCodePathButton_Click"
+                                    Width="34"
+                                    Margin="0,0,0,8" />
+
+                            <TextBlock Grid.Row="4"
+                                       Grid.Column="0"
+                                       Text="素材"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="4"
+                                     Grid.Column="1"
+                                     x:Name="AssetSourceDirectoryBox"
+                                     Margin="0,0,8,8" />
+                            <Button Grid.Row="4"
+                                    Grid.Column="2"
+                                    Content="..."
+                                    Click="BrowseAssetSourceDirectoryButton_Click"
+                                    Width="34"
+                                    Margin="0,0,0,8" />
+
+                            <TextBlock Grid.Row="5"
+                                       Grid.Column="0"
+                                       Text="预览"
+                                       VerticalAlignment="Top"
+                                       Margin="0,0,8,0" />
+                            <TextBlock Grid.Row="5"
+                                       Grid.Column="1"
+                                       Grid.ColumnSpan="2"
+                                       x:Name="ProjectDirectoryText"
+                                       Text="--"
+                                       TextWrapping="Wrap" />
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="工具路径"
+                              Margin="0,0,0,10">
+                        <Grid Margin="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="FFmpeg"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,8" />
+                            <TextBox Grid.Row="0"
+                                     Grid.Column="1"
+                                     x:Name="FfmpegPathBox"
+                                     Text="ffmpeg"
+                                     Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="1"
+                                       Grid.Column="0"
+                                       Text="FFprobe"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <TextBox Grid.Row="1"
+                                     Grid.Column="1"
+                                     x:Name="FfprobePathBox"
+                                     Text="ffprobe" />
+                            <Button Grid.Row="2"
+                                    Grid.Column="1"
+                                    Content="检测工具"
+                                    Click="CheckToolsButton_Click"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,8,0,0"
+                                    Padding="10,4" />
+                        </Grid>
+                    </GroupBox>
+
+                    <GroupBox Header="浏览器"
+                              Margin="0,0,0,10">
+                        <StackPanel Margin="10">
+                            <ComboBox x:Name="BrowserCombo"
+                                      SelectedIndex="0"
+                                      Margin="0,0,0,8">
+                                <ComboBoxItem Content="系统默认浏览器" Tag="SystemDefault" />
+                                <ComboBoxItem Content="Edge" />
+                                <ComboBoxItem Content="Chrome" />
+                                <ComboBoxItem Content="手动打开" Tag="Manual" />
+                            </ComboBox>
+                            <CheckBox x:Name="PlaywrightCheckBox"
+                                      Content="SendInput 自动观察"
+                                      IsChecked="True"
+                                      Margin="0,0,0,8" />
+                            <ComboBox x:Name="WindowSizePresetBox"
+                                      SelectedIndex="1">
+                                <ComboBoxItem Content="desktop-1920x1080" />
+                                <ComboBoxItem Content="desktop-1440x900" />
+                                <ComboBoxItem Content="laptop-1366x768" />
+                                <ComboBoxItem Content="tablet-768x1024" />
+                                <ComboBoxItem Content="mobile-390x844" />
+                                <ComboBoxItem Content="custom" />
+                            </ComboBox>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="录屏">
+                        <StackPanel Margin="10">
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <RadioButton x:Name="FullScreenRadio"
+                                             GroupName="RecordingArea"
+                                             Content="全屏"
+                                             IsChecked="True"
+                                             Margin="0,0,14,0" />
+                                <RadioButton x:Name="RegionRadio"
+                                             GroupName="RecordingArea"
+                                             Content="区域"
+                                             Margin="0,0,14,0" />
+                                <Button Content="选择"
+                                        Click="SelectRegionButton_Click"
+                                        Padding="8,3" />
+                            </StackPanel>
+                            <TextBlock x:Name="SelectedRegionText"
+                                       Text="区域：未选择"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <TextBlock Text="FPS"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="RecordingFpsBox"
+                                         Text="30"
+                                         Width="58"
+                                         Margin="6,0,14,0" />
+                                <TextBlock Text="CRF"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="RecordingCrfBox"
+                                         Text="23"
+                                         Width="58"
+                                         Margin="6,0,0,0" />
+                            </StackPanel>
+                            <ComboBox x:Name="RecordingStartModeCombo"
+                                      SelectedIndex="1"
+                                      Margin="0,0,0,8">
+                                <ComboBoxItem Content="先打开网站，再开始录屏" Tag="OpenUrlBeforeRecording" />
+                                <ComboBoxItem Content="先开始录屏，再打开网站" Tag="RecordBeforeOpenUrl" />
+                                <ComboBoxItem Content="手动模式" Tag="Manual" />
+                            </ComboBox>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+
+            <ScrollViewer Grid.Column="1"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,12,0">
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="1. Project"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <TextBlock x:Name="ProjectReadyText"
+                                       Text="请先新建或打开一个项目。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
+                                <Button x:Name="OpenProjectDirectoryWorkflowButton"
+                                        Content="打开项目目录"
+                                        Click="OpenProjectDirectoryButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenProjectDirectoryWorkflowButton2"
+                                        Content="打开项目目录"
+                                        Click="OpenProjectDirectoryButton_Click"
+                                        Padding="12,6" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="2. 素材库与设计意图"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <TextBlock Text="将用户素材导入当前项目的 source-assets/imported 目录，并在生成 GPT 分析包前填写主观感受与目标动效。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,8">
+                                <Button x:Name="ImportAssetsWorkflowButton"
+                                        Content="导入素材"
+                                        Click="ImportAssetsWorkflowButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenAssetLibraryWorkflowButton"
+                                        Content="打开素材库"
+                                        Click="OpenAssetLibraryButton_Click"
+                                        Padding="12,6" />
+                            </StackPanel>
+                            <TextBlock x:Name="AssetManifestStatusText"
+                                       Text="素材清单：尚未加载"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,10" />
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="136" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="0"
+                                           Text="第一印象"
+                                           VerticalAlignment="Top"
+                                           Margin="0,0,8,8" />
+                                <StackPanel Grid.Row="0"
+                                            Grid.Column="1"
+                                            Margin="0,0,0,8">
+                                    <TextBlock Text="例如：这个网站给我的感觉是干净、高级、科技感强，首屏留白很多。"
+                                               Foreground="#8C959F"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
+                                    <TextBox x:Name="FirstImpressionBox"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             Height="48" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="0"
+                                           Text="喜欢的部分"
+                                           VerticalAlignment="Top"
+                                           Margin="0,0,8,8" />
+                                <StackPanel Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="0,0,0,8">
+                                    <TextBlock Text="例如：喜欢首屏圆形图片漂浮、左下 CTA 按钮、右上菜单、黑白切换效果。可粘贴截图作为重点参考。"
+                                               Foreground="#8C959F"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
+                                    <TextBox x:Name="FavoritePartsBox"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             Height="48" />
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <Button x:Name="PasteFavoriteImageButton"
+                                                Content="粘贴图片"
+                                                Click="PasteFavoriteImageButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="UploadFavoriteImageButton"
+                                                Content="上传图片"
+                                                Click="UploadFavoriteImageButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="OpenFavoriteImageDirectoryButton"
+                                                Content="打开图片目录"
+                                                Click="OpenFavoriteImageDirectoryButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="ViewUserIntentAssetsManifestButton"
+                                                Content="查看图片清单"
+                                                Click="ViewUserIntentAssetsManifestButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <TextBlock x:Name="FavoriteImagesCountText"
+                                                   Text="已添加 0 张图片"
+                                                   Foreground="#57606A"
+                                                   VerticalAlignment="Center" />
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="0"
+                                           Text="目标动效"
+                                           VerticalAlignment="Top"
+                                           Margin="0,0,8,8" />
+                                <StackPanel Grid.Row="2"
+                                            Grid.Column="1"
+                                            Margin="0,0,0,8">
+                                    <TextBlock Text="例如：希望复刻图片缓慢漂浮、按钮 hover 放大、菜单展开、主题切换、弹层出现等动效。可粘贴截图或状态图。"
+                                               Foreground="#8C959F"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
+                                    <TextBox x:Name="TargetEffectsBox"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             Height="48" />
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <Button x:Name="PasteTargetEffectsImageButton"
+                                                Content="粘贴图片"
+                                                Click="PasteTargetEffectsImageButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="UploadTargetEffectsImageButton"
+                                                Content="上传图片"
+                                                Click="UploadTargetEffectsImageButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="OpenTargetEffectsImageDirectoryButton"
+                                                Content="打开图片目录"
+                                                Click="OpenTargetEffectsImageDirectoryButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <Button x:Name="ViewUserIntentAssetsManifestButton2"
+                                                Content="查看图片清单"
+                                                Click="ViewUserIntentAssetsManifestButton_Click"
+                                                Padding="8,4"
+                                                Margin="0,0,6,0" />
+                                        <TextBlock x:Name="TargetEffectsImagesCountText"
+                                                   Text="已添加 0 张图片"
+                                                   Foreground="#57606A"
+                                                   VerticalAlignment="Center" />
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="3"
+                                           Grid.Column="0"
+                                           Text="避免内容"
+                                           VerticalAlignment="Top"
+                                           Margin="0,0,8,8" />
+                                <StackPanel Grid.Row="3"
+                                            Grid.Column="1"
+                                            Margin="0,0,0,8">
+                                    <TextBlock Text="例如：不要照搬 Logo、品牌文字、具体图片和文案，只借鉴结构、节奏和动效感觉。"
+                                               Foreground="#8C959F"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
+                                    <TextBox x:Name="AvoidPartsBox"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             Height="48" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="4"
+                                           Grid.Column="0"
+                                           Text="期望结果"
+                                           VerticalAlignment="Top"
+                                           Margin="0,0,8,0" />
+                                <StackPanel Grid.Row="4"
+                                            Grid.Column="1">
+                                    <TextBlock Text="例如：希望最终生成适合医美/高端服务网站的页面结构和 Codex 重构指令。"
+                                               Foreground="#8C959F"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
+                                    <TextBox x:Name="DesiredOutcomeBox"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             Height="48" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock x:Name="UserIntentStatusText"
+                                      Text="可填写主观意图；未填写时也会使用默认说明生成 GPT 分析包。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,10,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="3. 浏览器与录屏"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <TextBlock Text="预览网站只打开网页；自动观察录屏和人工录屏默认先开始录屏，再打开目标 URL。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="自动观察录屏会先启动录屏，再重新打开目标 URL，以捕捉网页加载和首屏动画。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,0" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
+                                <Button x:Name="OpenWebsiteWorkflowButton"
+                                        Content="预览网站"
+                                        Click="OpenWebsiteButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="AutoObserveRecordingWorkflowButton"
+                                        Content="自动观察录屏"
+                                        Click="AutoObserveRecordingButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="StartRecordingWorkflowButton"
+                                        Content="人工录屏"
+                                        Click="StartRecordingButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="StopRecordingWorkflowButton"
+                                        Content="停止录屏"
+                                        Click="StopRecordingButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="ScreenshotWorkflowButton"
+                                        Content="截图"
+                                        Click="ScreenshotButton_Click"
+                                        Padding="12,6" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="4. 自动观察设置"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <WrapPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,20,8">
+                                    <TextBlock Text="速度"
+                                               VerticalAlignment="Center" />
+                                    <ComboBox x:Name="AutoObserveSpeedCombo"
+                                              SelectedIndex="1"
+                                              Width="112"
+                                              Margin="8,0,0,0">
+                                        <ComboBoxItem Content="极速" Tag="turbo" />
+                                        <ComboBoxItem Content="快速" Tag="fast" />
+                                        <ComboBoxItem Content="标准" Tag="standard" />
+                                        <ComboBoxItem Content="精细" Tag="detailed" />
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,20,8">
+                                    <TextBlock Text="模式"
+                                               VerticalAlignment="Center" />
+                                    <ComboBox x:Name="AutoObserveModeCombo"
+                                              SelectedIndex="2"
+                                              Width="150"
+                                              Margin="8,0,0,0">
+                                        <ComboBoxItem Content="快速扫页" Tag="quick-scan" />
+                                        <ComboBoxItem Content="标准观察" Tag="standard" />
+                                        <ComboBoxItem Content="热点优先" Tag="hotspot-priority" />
+                                        <ComboBoxItem Content="人工主导" Tag="manual-led" />
+                                    </ComboBox>
+                                </StackPanel>
+                                <CheckBox x:Name="TryClickHotspotsCheckBox"
+                                          Content="尝试点击安全热点"
+                                          IsChecked="False"
+                                          Margin="0,2,0,8" />
+                                <CheckBox x:Name="CollectDomTargetsCheckBox"
+                                          Content="采集网页交互元素"
+                                          IsChecked="True"
+                                          Margin="0,2,14,8" />
+                                <CheckBox x:Name="SafeClickTargetsCheckBox"
+                                          Content="尝试安全点击"
+                                          IsChecked="False"
+                                          Margin="0,2,14,8" />
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,0,14,8">
+                                    <TextBlock Text="每屏最多交互目标"
+                                               VerticalAlignment="Center" />
+                                    <TextBox x:Name="MaxDomTargetsBox"
+                                             Text="6"
+                                             Width="42"
+                                             Margin="8,0,0,0" />
+                                </StackPanel>
+                            </WrapPanel>
+                            <TextBlock Text="元素级交互采集需要 Playwright/CDP/WebView2 支持。当前外部浏览器模式下无法读取网页 DOM，会自动降级为热点坐标观察。"
+                                       Foreground="#8C959F"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,6,0,0">
+                                <CheckBox x:Name="ShowToolbarAfterOpenCheckBox"
+                                          Content="显示悬浮工具条"
+                                          IsChecked="True"
+                                          Margin="0,0,14,0" />
+                                <CheckBox x:Name="ShowCountdownCheckBox"
+                                          Content="录屏前倒计时"
+                                          IsChecked="True"
+                                          Margin="0,0,14,0" />
+                                <CheckBox x:Name="AutoObserveCheckBox"
+                                          Content="执行自动观察"
+                                          IsChecked="True" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="5. 抽帧与打包"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <TextBlock Text="间隔"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="IntervalBox"
+                                         Text="500"
+                                         Width="64"
+                                         Margin="6,0,4,0" />
+                                <TextBlock Text="ms"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,12,0" />
+                                <Button Content="1000" Tag="1000" Click="IntervalPreset_Click" Margin="0,0,6,0" />
+                                <Button Content="500" Tag="500" Click="IntervalPreset_Click" Margin="0,0,6,0" />
+                                <Button Content="250" Tag="250" Click="IntervalPreset_Click" Margin="0,0,6,0" />
+                                <Button Content="100" Tag="100" Click="IntervalPreset_Click" Margin="0,0,6,0" />
+                                <Button Content="50" Tag="50" Click="IntervalPreset_Click" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <TextBlock Text="格式"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="FormatCombo"
+                                          SelectedIndex="0"
+                                          Width="86"
+                                          Margin="6,0,16,0">
+                                    <ComboBoxItem Content="JPEG" />
+                                    <ComboBoxItem Content="PNG" />
+                                </ComboBox>
+                                <TextBlock Text="质量"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="QualityBox"
+                                         Text="90"
+                                         Width="52"
+                                         Margin="6,0,16,0" />
+                                <RadioButton x:Name="OriginalSizeRadio"
+                                             GroupName="FrameSize"
+                                             Content="原始尺寸"
+                                             IsChecked="True"
+                                             Margin="0,0,12,0" />
+                                <RadioButton x:Name="CustomSizeRadio"
+                                             GroupName="FrameSize"
+                                             Content="自定义" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,0,0,8">
+                                <TextBox x:Name="CustomWidthBox" Text="640" Width="58" />
+                                <TextBlock Text=" x " VerticalAlignment="Center" />
+                                <TextBox x:Name="CustomHeightBox" Text="480" Width="58" />
+                                <CheckBox x:Name="KeepAspectCheckBox"
+                                          Content="保持比例"
+                                          IsChecked="True"
+                                          Margin="14,0,14,0" />
+                                <TextBlock Text="最多"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="MaxFramesBox" Width="80" Margin="6,0,14,0" />
+                                <CheckBox x:Name="AllowDuplicateFramesCheckBox"
+                                          Content="允许重复帧"
+                                          IsChecked="False" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,4,0,8">
+                                <CheckBox x:Name="AutoExtractAfterStopCheckBox"
+                                          Content="停止后自动抽帧"
+                                          IsChecked="True"
+                                          Margin="0,0,14,0" />
+                                <CheckBox x:Name="AutoPackageAfterExtractCheckBox"
+                                          Content="自动打包"
+                                          IsChecked="True"
+                                          Margin="0,0,14,0" />
+                                <CheckBox x:Name="AutoGenerateMarkdownCheckBox"
+                                          Content="自动生成 observation.md"
+                                          IsChecked="True"
+                                          Margin="0,0,14,0" />
+                                <CheckBox x:Name="ShowCompletePromptCheckBox"
+                                          Content="显示完成面板"
+                                          IsChecked="True" />
+                            </StackPanel>
+                            <TextBlock x:Name="ExtractEstimateText"
+                                       Text="尚未录屏。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
+                                <Button x:Name="ExtractFramesWorkflowButton"
+                                        Content="抽帧"
+                                        Click="ExtractFramesButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="PackageWorkflowButton"
+                                        Content="生成包"
+                                        Click="PackageButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenMarkdownDirectoryWorkflowButton"
+                                        Content="打开 md 目录"
+                                        Click="OpenMarkdownDirectoryButton_Click"
+                                        Padding="12,6" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="White"
+                            BorderBrush="#D0D7DE"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="6. ChatGPT 投递"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10" />
+                            <TextBlock x:Name="ObservationText"
+                                       Text="抽帧后可生成 observation.md、GPT 分析包和最终 Codex 任务包。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <TextBlock x:Name="ChatGptPackageText"
+                                       Text="ChatGPT 包：尚未生成"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
+                                <Button x:Name="GenerateMarkdownWorkflowButton"
+                                        Content="生成 observation.md"
+                                        Click="GenerateMarkdownButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="GenerateChatGptPackageWorkflowButton"
+                                        Content="生成 ChatGPT 包"
+                                        Click="GenerateChatGptPackageButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="CopyChatGptPromptWorkflowButton"
+                                        Content="复制提示词"
+                                        Click="CopyChatGptPromptButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenPackageDirectoryWorkflowButton"
+                                        Content="打开包目录"
+                                        Click="OpenPackageDirectoryButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenChatGptWorkflowButton"
+                                        Content="打开 ChatGPT"
+                                        Click="OpenChatGptButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="CopyZipPathWorkflowButton"
+                                        Content="复制 ZIP 路径"
+                                        Click="CopyZipPathButton_Click"
+                                        Padding="12,6" />
+                            </StackPanel>
+                            <Separator Margin="0,14,0,14" />
+                            <TextBlock Text="导入 GPT 返回结果，解析素材需求提醒，并生成最终 Codex 任务包。"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                            <TextBox x:Name="GptOutputBox"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Height="110"
+                                     Margin="0,8,0,8" />
+                            <WrapPanel>
+                                <Button x:Name="ImportGptOutputWorkflowButton"
+                                        Content="导入粘贴的 GPT 结果"
+                                        Click="ImportGptOutputButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,8" />
+                                <Button x:Name="BrowseGptOutputFileWorkflowButton"
+                                        Content="导入 analysis.md"
+                                        Click="BrowseGptOutputFileButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,8" />
+                                <Button x:Name="SupplementAssetsWorkflowButton"
+                                        Content="补充素材"
+                                        Click="SupplementAssetsButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,8" />
+                                <Button x:Name="UseFallbackWorkflowButton"
+                                        Content="使用降级方案"
+                                        Click="UseFallbackButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,8" />
+                                <Button x:Name="GenerateFinalCodexPackageWorkflowButton"
+                                        Content="生成最终 Codex 包"
+                                        Click="GenerateFinalCodexPackageButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,8" />
+                            </WrapPanel>
+                            <TextBlock x:Name="AssetRequirementsText"
+                                       Text="素材需求：尚未导入 GPT 结果"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,2,0,8" />
+                            <TextBlock x:Name="FinalCodexPackageText"
+                                       Text="最终 Codex 包：尚未生成"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="当前状态"
+                          Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <TextBlock x:Name="CurrentStatusText"
+                                   Text="当前状态：空闲"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8" />
+                        <TextBlock x:Name="RecordingStateText"
+                                   Text="录屏：未开始"
+                                   Margin="0,0,0,6" />
+                        <TextBlock x:Name="VideoDurationText"
+                                   Text="时长：--"
+                                   Margin="0,0,0,6" />
+                        <TextBlock x:Name="VideoSizeText"
+                                   Text="文件大小：--"
+                                   Margin="0,0,0,6" />
+                        <TextBlock x:Name="ResolutionText"
+                                   Text="分辨率：--"
+                                   Margin="0,0,0,6" />
+                        <TextBlock x:Name="FramesCountText"
+                                   Text="截图数量：--" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="1"
+                          Header="快捷键"
+                          Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <TextBlock x:Name="HotkeyText"
+                                   Text="Ctrl+Alt+F8 暂停/人工接管&#x0a;Ctrl+Alt+F9 继续自动&#x0a;Ctrl+Alt+F10 标记&#x0a;Ctrl+Alt+F11 截图&#x0a;Ctrl+Alt+F12 停止"
+                                   TextWrapping="Wrap" />
+                        <Button x:Name="DisableGlobalHotkeysButton"
+                                Content="关闭全局快捷键"
+                                Click="DisableGlobalHotkeysButton_Click"
+                                HorizontalAlignment="Left"
+                                Padding="10,4"
+                                Margin="0,10,0,0" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="2"
+                          Header="动作日志">
+                    <ListBox x:Name="ActionLogList"
+                             Margin="10" />
+                </GroupBox>
+            </Grid>
+        </Grid>
+
+        <GroupBox x:Name="LogGroupBox"
+                  Grid.Row="2"
+                  Header="日志"
+                  Margin="12">
+            <TextBox x:Name="LogBox"
+                     Margin="8"
+                     IsReadOnly="True"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas" />
+        </GroupBox>
+    </Grid>
+</Window>

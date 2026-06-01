@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="WebRebuildRecorder.App/WebRebuildRecorder.App.csproj" />
+  <Project Path="WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj" />
+</Solution>

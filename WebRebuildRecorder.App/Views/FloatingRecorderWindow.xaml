@@ -1,0 +1,220 @@
+<Window x:Class="WebRebuildRecorder.App.Views.FloatingRecorderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WebRebuildRecorder 工具条"
+        Width="620"
+        Height="44"
+        MinWidth="96"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Background="Transparent"
+        AllowsTransparency="True"
+        KeyDown="Window_KeyDown"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        MouseEnter="Window_MouseEnter"
+        MouseLeave="Window_MouseLeave">
+    <Border x:Name="RootBorder"
+            Background="#F2FFFFFF"
+            BorderBrush="#66000000"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="7,5">
+        <Grid>
+            <Grid x:Name="MinimizedPanel"
+                  Visibility="Collapsed">
+                <Button Content="● REC"
+                        Click="RestoreButton_Click"
+                        Padding="10,3"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center" />
+            </Grid>
+
+            <Grid x:Name="ToolbarPanel">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="42" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0"
+                           LastChildFill="False">
+                    <StackPanel Orientation="Horizontal"
+                                DockPanel.Dock="Left"
+                                VerticalAlignment="Center">
+                        <TextBlock x:Name="RecGlyphText"
+                                   Text="●"
+                                   Foreground="#D91F26"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Margin="0,0,5,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="ElapsedText"
+                                   Text="00:00:00"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="FileSizeText"
+                                   Text="--"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock x:Name="StateText"
+                                   Text="待命"
+                                   MaxWidth="105"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                                DockPanel.Dock="Right">
+                        <Button x:Name="ManualButton"
+                                Content="人工"
+                                Click="ManualButton_Click"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="ResumeButton"
+                                Content="继续"
+                                Click="ResumeButton_Click"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="MarkerButton"
+                                Content="标记"
+                                Click="MarkerButton_Click"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="StopButton"
+                                Content="停止"
+                                Click="StopButton_Click"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="DeliveryCompactButton"
+                                Content="投递"
+                                Click="DeliveryButton_Click"
+                                Visibility="Collapsed"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="DirectoryCompactButton"
+                                Content="目录"
+                                Click="OpenDirectoryButton_Click"
+                                Visibility="Collapsed"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button x:Name="ExpandButton"
+                                Content="▾"
+                                Click="ExpandButton_Click"
+                                Width="28"
+                                Padding="0"
+                                Margin="0,0,4,0" />
+                        <Button Content="•"
+                                Click="MinimizeButton_Click"
+                                Width="28"
+                                Padding="0"
+                                Margin="0,0,4,0" />
+                        <Button Content="×"
+                                Click="CloseButton_Click"
+                                Width="28"
+                                Padding="0" />
+                    </StackPanel>
+                </DockPanel>
+
+                <DockPanel x:Name="ExpandedPanel"
+                           Grid.Row="1"
+                           Visibility="Collapsed"
+                           Margin="0,5,0,0">
+                    <StackPanel DockPanel.Dock="Left"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="抽帧:"
+                                   VerticalAlignment="Center" />
+                        <TextBox x:Name="IntervalBox"
+                                 Text="500"
+                                 Width="48"
+                                 Margin="5,0,3,0"
+                                 LostFocus="IntervalBox_LostFocus" />
+                        <TextBlock Text="ms"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,5,0" />
+                        <Button Content="1000"
+                                Tag="1000"
+                                Click="IntervalPreset_Click"
+                                Margin="0,0,3,0" />
+                        <Button Content="500"
+                                Tag="500"
+                                Click="IntervalPreset_Click"
+                                Margin="0,0,3,0" />
+                        <Button Content="250"
+                                Tag="250"
+                                Click="IntervalPreset_Click"
+                                Margin="0,0,3,0" />
+                        <Button Content="100"
+                                Tag="100"
+                                Click="IntervalPreset_Click"
+                                Margin="0,0,3,0" />
+                        <Button Content="50"
+                                Tag="50"
+                                Click="IntervalPreset_Click"
+                                Margin="0,0,8,0" />
+                        <ComboBox x:Name="MarkerTypeCombo"
+                                  SelectedIndex="0"
+                                  Width="108"
+                                  Margin="0,0,8,0">
+                            <ComboBoxItem Content="菜单" Tag="menu" />
+                            <ComboBoxItem Content="CTA" Tag="cta" />
+                            <ComboBoxItem Content="主题切换" Tag="theme-toggle" />
+                            <ComboBoxItem Content="弹层" Tag="dialog" />
+                            <ComboBoxItem Content="卡片" Tag="card" />
+                            <ComboBoxItem Content="转场" Tag="transition" />
+                            <ComboBoxItem Content="其他" Tag="other" />
+                        </ComboBox>
+                        <CheckBox x:Name="AutoExtractCheckBox"
+                                  Content="停止后抽帧"
+                                  IsChecked="True"
+                                  Checked="AutoExtractCheckBox_Changed"
+                                  Unchecked="AutoExtractCheckBox_Changed"
+                                  VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Right"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Button Content="目录"
+                                Click="OpenDirectoryButton_Click"
+                                Padding="8,3"
+                                Margin="0,0,4,0" />
+                        <Button Content="投递"
+                                Click="DeliveryButton_Click"
+                                Padding="8,3" />
+                    </StackPanel>
+                </DockPanel>
+
+                <Border x:Name="ManualPromptPanel"
+                        Grid.Row="2"
+                        Visibility="Collapsed"
+                        Background="#FFFFF2CC"
+                        BorderBrush="#D18B00"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="7"
+                        Margin="0,5,0,0">
+                    <DockPanel>
+                <TextBlock Text="检测到人工移动鼠标。是否暂停自动观察并继续录屏？"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <StackPanel DockPanel.Dock="Right"
+                                    Orientation="Horizontal">
+                            <Button Content="人工"
+                                    Click="ManualPromptAcceptButton_Click"
+                                    Padding="8,3"
+                                    Margin="0,0,5,0" />
+                            <Button Content="忽略"
+                                    Click="ManualPromptIgnoreButton_Click"
+                                    Padding="8,3" />
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

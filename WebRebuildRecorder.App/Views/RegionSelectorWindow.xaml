@@ -1,0 +1,39 @@
+<Window x:Class="WebRebuildRecorder.App.Views.RegionSelectorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="选择录屏区域"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="#66000000"
+        Topmost="True"
+        ShowInTaskbar="False"
+        MouseDown="Window_MouseDown"
+        MouseMove="Window_MouseMove"
+        MouseUp="Window_MouseUp"
+        KeyDown="Window_KeyDown">
+    <Canvas x:Name="RootCanvas">
+        <Rectangle x:Name="SelectionRect"
+                   Stroke="#FFFFFFFF"
+                   StrokeThickness="2"
+                   StrokeDashArray="4 3"
+                   Fill="#22FFFFFF"
+                   Visibility="Collapsed" />
+        <Border x:Name="InfoBadge"
+                Background="#E61E1E1E"
+                BorderBrush="#FFFFFFFF"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10,6"
+                Visibility="Collapsed">
+            <TextBlock x:Name="InfoText"
+                       Foreground="White"
+                       FontSize="13" />
+        </Border>
+        <TextBlock Canvas.Left="24"
+                   Canvas.Top="24"
+                   Foreground="White"
+                   FontSize="15"
+                   Text="拖拽选择录屏区域，松开鼠标确认。Esc 取消。" />
+    </Canvas>
+</Window>

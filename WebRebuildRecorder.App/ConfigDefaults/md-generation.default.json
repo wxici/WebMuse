@@ -1,0 +1,9 @@
+{
+  "observationTemplatePath": "Templates/observation-template.md",
+  "includeFullFrameTable": false,
+  "maxFrameRowsInMarkdown": 500,
+  "includeActionLog": true,
+  "includeMarkers": true,
+  "includeChatGptPrompt": true,
+  "includeCodexReservedSection": true
+}

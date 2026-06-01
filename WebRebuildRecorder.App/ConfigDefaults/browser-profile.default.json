@@ -1,0 +1,15 @@
+{
+  "defaultBrowser": "SystemDefault",
+  "enablePlaywright": false,
+  "windowWidth": 1440,
+  "windowHeight": 900,
+  "useNewUserDataDirectory": true,
+  "allowExternalLinkClick": false,
+  "recordingArea": {
+    "mode": "fullscreen",
+    "x": 0,
+    "y": 0,
+    "width": 0,
+    "height": 0
+  }
+}
