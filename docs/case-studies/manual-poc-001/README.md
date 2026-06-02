@@ -69,6 +69,11 @@ If original-speed MP4 previews are available, use them as supporting evidence. T
 ### Original-speed motion clips
 
 - [View browser-playable motion demo.](../../demo/manual-poc-motion.html)
+
+GitHub Pages not enabled; demo HTML exists but GitHub repository link will show source/file view.
+
+- [Reference motion observation clip](./motion/videos/01-reference-motion-observation-clip-original-speed.mp4)
+- [Codex first draft motion clip](./motion/videos/02-codex-first-draft-motion-clip-original-speed.mp4)
 - [Tuned result motion clip](./motion/videos/03-tuned-result-motion-clip-original-speed.mp4)
 - [Live tuning preview clip](./motion/videos/04-live-tuning-preview-clip-original-speed.mp4)
 

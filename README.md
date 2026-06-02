@@ -18,6 +18,11 @@ It helps developers and solo builders organize reference-site observations, prep
   <a href="docs/demo/manual-poc-motion.html">
     View browser-playable motion demo.
   </a>
+  <br />
+  <small>
+    GitHub Pages not enabled; demo HTML exists but GitHub repository link will
+    show source/file view.
+  </small>
 </p>
 
 <a href="docs/case-studies/manual-poc-001/#motion-evidence">
