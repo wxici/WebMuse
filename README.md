@@ -8,6 +8,16 @@ It helps developers and solo builders organize reference-site observations, prep
 
 ![Manual PoC: legacy site to Codex draft to tuned result](docs/case-studies/manual-poc-001/assets/comparison-board.webp)
 
+<p>
+  <a href="docs/case-studies/manual-poc-001/#motion-evidence">
+    View motion evidence: menu rhythm, scroll transitions, image mood, and live tuning preview
+  </a>
+</p>
+
+<a href="docs/case-studies/manual-poc-001/#motion-evidence">
+  <img src="docs/case-studies/manual-poc-001/motion/motion-evidence-board.webp" alt="Motion evidence: reference observation, Codex draft, tuned result, and live tuning preview" />
+</a>
+
 ## Manual PoC evidence
 
 WebMuse is based on a manual workflow that has already been tested: legacy site review, reference-site observation, Codex-assisted first draft generation, manual tuning, and validation.

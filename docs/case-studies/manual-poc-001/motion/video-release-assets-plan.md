@@ -1,27 +1,32 @@
-# Motion Video Release Assets Plan
+# Motion Video Release Assets
 
-The original-speed MP4 videos are useful as motion evidence but are too large for the repository main branch.
+The full original-speed MP4 videos are stored as GitHub Release assets instead of being committed to `main`.
 
-Recommended handling:
+Release:
 
-- keep `motion-evidence-board.webp`;
-- keep frame strips;
-- keep `motion-observation.md`;
-- keep small original-speed clips only when they are sanitized, compressed, and useful as public workflow evidence;
-- upload full original-speed MP4s as GitHub Release assets;
-- link to release assets from the case study once available.
+```text
+v0.1.0-alpha-manual-poc
+```
 
-Do not commit raw long recordings or extracted frame folders.
+Release page:
 
-## Full Original-Speed MP4s
+```text
+https://github.com/wxici/WebMuse/releases/tag/v0.1.0-alpha-manual-poc
+```
 
-The source package contained four original-speed MP4s:
+## Full original-speed videos
 
-| File | Size | Repository handling |
-| --- | ---: | --- |
-| `01-reference-motion-observation-original-speed.mp4` | about 24.5 MB | Do not commit to main; upload as release asset if needed. |
-| `02-codex-first-draft-motion-original-speed.mp4` | about 28.7 MB | Do not commit to main; upload as release asset if needed. |
-| `03-tuned-result-motion-original-speed.mp4` | about 24.5 MB | Do not commit full file to main; a short original-speed clip is kept in the case study. |
-| `04-live-tuning-preview-original-speed.mp4` | about 34.6 MB | Do not commit full file to main; a short original-speed clip is kept in the case study. |
+- `01-reference-motion-observation-original-speed.mp4`
+- `02-codex-first-draft-motion-original-speed.mp4`
+- `03-tuned-result-motion-original-speed.mp4`
+- `04-live-tuning-preview-original-speed.mp4`
 
-The full videos should remain labeled as original-speed evidence. Do not accelerate them for public presentation.
+These videos preserve original timing. They are not accelerated.
+
+The repository keeps lightweight frame strips, short original-speed clips, and `motion-observation.md` as engineering evidence. The full MP4s live in the release to avoid bloating `main`.
+
+## Boundary
+
+The reference motion video is observation evidence only. It is not a clone target.
+
+This release does not enable production-ready website generation, real Codex CLI execution, complete WebView2 preview, or complete tuning UI.

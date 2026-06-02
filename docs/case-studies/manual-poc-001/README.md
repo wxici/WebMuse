@@ -73,6 +73,14 @@ If original-speed MP4 previews are available, use them as supporting evidence. T
 
 Full original-speed MP4s are better handled as GitHub Release assets because of repository size. See [video-release-assets-plan.md](./motion/video-release-assets-plan.md).
 
+Full original-speed videos are available as GitHub Release assets:
+
+```text
+https://github.com/wxici/WebMuse/releases/tag/v0.1.0-alpha-manual-poc
+```
+
+The full videos are not committed to `main` to keep the repository lightweight.
+
 ## Why tuning controls should move outside the webpage
 
 The manual PoC exposed a limitation of in-page tuning overlays.

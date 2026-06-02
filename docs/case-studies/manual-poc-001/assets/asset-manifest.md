@@ -41,3 +41,5 @@ The final case-study output is described as a user-owned branded result, not as 
 | `../motion/04-tuning-live-preview-strip.webp` | Live tuning preview strip | Case study only | Shows local validation panel and live visual variables. |
 | `../motion/videos/03-tuned-result-motion-clip-original-speed.mp4` | Original-speed motion preview clip | Case study only | Short H.264 MP4 clip. Original timing preserved. Not accelerated. |
 | `../motion/videos/04-live-tuning-preview-clip-original-speed.mp4` | Original-speed motion preview clip | Case study only | Short H.264 MP4 clip. Original timing preserved. Not accelerated. |
+
+Full original-speed MP4 videos are stored as GitHub Release assets under `v0.1.0-alpha-manual-poc`. They are not committed to `main`.
