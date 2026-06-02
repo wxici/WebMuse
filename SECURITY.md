@@ -49,9 +49,16 @@ AI-generated or AI-modified output must never write outside the allowed project 
 
 Customer materials, logos, screenshots, recordings, and generated delivery packages should stay out of the public repository.
 
+## Public demo screenshots
+
+Curated public demo screenshots are allowed only when they are sanitized, low-risk, non-customer, non-secret, and used to explain the workflow.
+
+Do not commit raw recordings, extracted frame sets, customer materials, credentials, local path configuration, full generated output-site artifacts, or third-party proprietary assets.
+
+Reference-site screenshots, if used, must be low-risk and must be presented only as observation or layout-rhythm evidence, not as a clone target.
+
 ## Reporting security issues
 
 For now, use GitHub Issues for non-sensitive security concerns.
 
 Do not post secrets, tokens, private customer files, or exploitable details publicly. If a sensitive report is needed, open a minimal issue asking for a private contact path without disclosing the sensitive content.
-

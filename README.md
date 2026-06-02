@@ -6,6 +6,20 @@ WebMuse, formerly WebRebuildRecorder, is an early-alpha open-source Windows desk
 
 It helps developers and solo builders organize reference-site observations, prepare construction packages, validate sandbox boundaries, run dry-run checks, require approval gates, preserve rollback readiness, and export safer manual construction packages before real AI execution.
 
+![Manual PoC: legacy site to Codex draft to tuned result](docs/case-studies/manual-poc-001/assets/comparison-board.webp)
+
+## Manual PoC evidence
+
+WebMuse is based on a manual workflow that has already been tested: legacy site review, reference-site observation, Codex-assisted first draft generation, manual tuning, and validation.
+
+See the first public case study:
+
+```text
+docs/case-studies/manual-poc-001/
+```
+
+This evidence shows why WebMuse focuses on observation packages, construction packages, tuning overrides, validation reports, sandbox boundaries, approval gates, and rollback readiness instead of one-shot website generation.
+
 ## What is WebMuse?
 
 WebMuse is a Windows desktop workbench for preparing safer AI-assisted website reconstruction workflows.
@@ -96,6 +110,7 @@ See:
 
 ```text
 docs/case-studies/manual-poc-history.md
+docs/case-studies/manual-poc-001/
 ```
 
 ## Core workflow

@@ -90,6 +90,12 @@ Principle:
 Real AI execution comes after safety gates, not before them.
 ```
 
+### Future tuning architecture
+
+Early manual PoC evidence showed that webpage-embedded tuning overlays are useful for validation but unsuitable as final product UI because they obstruct the preview, pollute screenshots, and must be excluded from exports.
+
+Future WebMuse tuning should use an external WPF floating tuning window connected to the WebView2 preview through controlled runtime CSS variable injection or a temporary override stylesheet. Confirmed values should persist to `tune-overrides.css`, `tune-overrides.json`, or the generated theme layer instead of destructively editing source CSS on every slider movement.
+
 ## P4: Export validation, templates, reference library, release packaging
 
 Goal: prepare reliable delivery and public releases.
@@ -110,4 +116,3 @@ Scope:
 WebMuse aims to become a safer AI-assisted website reconstruction workbench for developers, solo builders, and small-business workflows.
 
 It should remain focused on reference-style reconstruction, brand-owned output, project safety, validation, and delivery workflows.
-

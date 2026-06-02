@@ -73,3 +73,14 @@ The goal is reference-style reconstruction:
 observe -> understand -> transform -> create a user-owned branded result
 ```
 
+## Public case studies
+
+### Manual PoC 001
+
+See:
+
+```text
+docs/case-studies/manual-poc-001/
+```
+
+The first public case study documents a real manual validation loop: legacy site -> Codex first draft -> tuned branded result. It also records how in-page debug tuning panels exposed the need for a future external WPF floating tuning window.
