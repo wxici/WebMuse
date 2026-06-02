@@ -19,7 +19,7 @@ Never commit:
 - customer materials;
 - private brand assets;
 - recordings;
-- screenshots;
+- private screenshots, raw screenshots, or customer screenshots;
 - extracted frames;
 - generated output sites;
 - review package zips;

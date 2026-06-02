@@ -89,6 +89,8 @@ Not enabled yet:
 - Design Context Library;
 - ProposalPreview / SitePitcher.
 
+The tuning overlays shown in the case study are manual PoC validation tools, not enabled product UI.
+
 Real AI execution comes after safety gates, not before them.
 
 ## Manual proof-of-concept history
