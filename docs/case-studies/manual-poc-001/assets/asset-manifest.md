@@ -39,6 +39,8 @@ The final case-study output is described as a user-owned branded result, not as 
 | `../motion/02-codex-draft-motion-strip.webp` | Codex draft motion strip | Case study only | Shows draft interaction rhythm and remaining problems. |
 | `../motion/03-tuned-motion-result-strip.webp` | Tuned result motion strip | Case study only | Shows improved menu/scroll/section rhythm. |
 | `../motion/04-tuning-live-preview-strip.webp` | Live tuning preview strip | Case study only | Shows local validation panel and live visual variables. |
+| `../motion/videos/01-reference-motion-observation-clip-original-speed.mp4` | Original-speed motion preview clip | Case study / demo page | Short H.264 MP4 clip. Reference observation only; not a clone target. Original timing preserved. |
+| `../motion/videos/02-codex-first-draft-motion-clip-original-speed.mp4` | Original-speed motion preview clip | Case study / demo page | Short H.264 MP4 clip showing Codex first draft motion and remaining issues. Original timing preserved. |
 | `../motion/videos/03-tuned-result-motion-clip-original-speed.mp4` | Original-speed motion preview clip | Case study only | Short H.264 MP4 clip. Original timing preserved. Not accelerated. |
 | `../motion/videos/04-live-tuning-preview-clip-original-speed.mp4` | Original-speed motion preview clip | Case study only | Short H.264 MP4 clip. Original timing preserved. Not accelerated. |
 
