@@ -20,6 +20,8 @@ docs/case-studies/manual-poc-001/
 
 This evidence shows why WebMuse focuses on observation packages, construction packages, tuning overrides, validation reports, sandbox boundaries, approval gates, and rollback readiness instead of one-shot website generation.
 
+The case study also includes original-speed motion evidence showing why recording, frame extraction, and frame-based validation matter for menu behavior, scroll rhythm, image mood transitions, and live tuning previews.
+
 ## What is WebMuse?
 
 WebMuse is a Windows desktop workbench for preparing safer AI-assisted website reconstruction workflows.

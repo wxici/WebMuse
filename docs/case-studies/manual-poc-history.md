@@ -63,6 +63,21 @@ Examples include:
 - timing and easing;
 - before/after visual comparisons.
 
+Manual PoC 001 now includes motion evidence. The motion frame strips and original-speed MP4 previews show why video recording and frame extraction should evolve into a Motion Evidence Pipeline instead of remaining a temporary workaround.
+
+The intended future role is:
+
+```text
+video / interaction recording
+  -> key frame extraction
+  -> motion evidence strip
+  -> motion-observation.md
+  -> Codex construction or repair instructions
+  -> generated-site motion validation
+```
+
+Video is the raw source. Frame strips and observation notes are the engineering evidence.
+
 ## Boundary
 
 This PoC history does not authorize copying third-party brand assets, logos, proprietary images, or full website identities.

@@ -57,6 +57,10 @@ Do not commit raw recordings, extracted frame sets, customer materials, credenti
 
 Reference-site screenshots, if used, must be low-risk and must be presented only as observation or layout-rhythm evidence, not as a clone target.
 
+Curated motion frame strips or compressed original-speed motion previews may be committed when they are sanitized, low-risk, non-customer, non-secret, and used only to explain workflow evidence.
+
+Raw long recordings and extracted frame folders should not be committed.
+
 ## Reporting security issues
 
 For now, use GitHub Issues for non-sensitive security concerns.

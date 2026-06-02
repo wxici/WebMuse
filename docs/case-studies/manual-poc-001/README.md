@@ -39,6 +39,40 @@ The manually tuned result improved the first-screen structure, contrast, title s
 
 This PoC records how manual visual decisions were exposed as repeatable tuning variables. The overlay panels are local-only validation tools and are not included in exported site output.
 
+## Motion evidence
+
+Static screenshots are not enough for interaction-heavy website reconstruction.
+
+Motion evidence shows problems that only appear during interaction:
+
+- menu reveal rhythm;
+- hover or menu behavior;
+- scroll pacing;
+- dark/light section transitions;
+- image mood changes;
+- card movement;
+- timing and easing;
+- whether tuning controls can update the preview immediately.
+
+![Motion evidence](./motion/motion-evidence-board.webp)
+
+See:
+
+```text
+docs/case-studies/manual-poc-001/motion/motion-observation.md
+```
+
+The reference video is used only as low-risk observation evidence. It is not a clone target.
+
+If original-speed MP4 previews are available, use them as supporting evidence. They must preserve original timing and must not be accelerated.
+
+### Original-speed motion clips
+
+- [Tuned result motion clip](./motion/videos/03-tuned-result-motion-clip-original-speed.mp4)
+- [Live tuning preview clip](./motion/videos/04-live-tuning-preview-clip-original-speed.mp4)
+
+Full original-speed MP4s are better handled as GitHub Release assets because of repository size. See [video-release-assets-plan.md](./motion/video-release-assets-plan.md).
+
 ## Why tuning controls should move outside the webpage
 
 The manual PoC exposed a limitation of in-page tuning overlays.
