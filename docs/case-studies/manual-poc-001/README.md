@@ -68,6 +68,7 @@ If original-speed MP4 previews are available, use them as supporting evidence. T
 
 ### Original-speed motion clips
 
+- [View browser-playable motion demo.](../../demo/manual-poc-motion.html)
 - [Tuned result motion clip](./motion/videos/03-tuned-result-motion-clip-original-speed.mp4)
 - [Live tuning preview clip](./motion/videos/04-live-tuning-preview-clip-original-speed.mp4)
 

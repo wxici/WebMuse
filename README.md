@@ -14,6 +14,12 @@ It helps developers and solo builders organize reference-site observations, prep
   </a>
 </p>
 
+<p>
+  <a href="docs/demo/manual-poc-motion.html">
+    View browser-playable motion demo.
+  </a>
+</p>
+
 <a href="docs/case-studies/manual-poc-001/#motion-evidence">
   <img src="docs/case-studies/manual-poc-001/motion/motion-evidence-board.webp" alt="Motion evidence: reference observation, Codex draft, tuned result, and live tuning preview" />
 </a>

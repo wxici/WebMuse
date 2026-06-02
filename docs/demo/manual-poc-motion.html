@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WebMuse Manual PoC Motion Evidence</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f5f0;
+        --panel: #ffffff;
+        --ink: #171717;
+        --muted: #5f625d;
+        --line: #d9d5cd;
+        --accent: #0f6f61;
+        --accent-strong: #094d43;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 48px 0 56px;
+      }
+
+      header {
+        max-width: 840px;
+        margin-bottom: 28px;
+      }
+
+      h1,
+      h2 {
+        line-height: 1.15;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 760;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+      }
+
+      p {
+        color: var(--muted);
+        margin: 14px 0 0;
+      }
+
+      a {
+        color: var(--accent-strong);
+        font-weight: 650;
+      }
+
+      .lede {
+        font-size: 1.08rem;
+        max-width: 760px;
+      }
+
+      .notice {
+        border-left: 4px solid var(--accent);
+        background: #eef7f4;
+        color: #23423d;
+        margin: 26px 0 30px;
+        padding: 14px 18px;
+      }
+
+      .videos {
+        display: grid;
+        gap: 22px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .video-card,
+      .links {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: #101010;
+        border-radius: 6px;
+        margin-top: 14px;
+      }
+
+      .links {
+        margin-top: 24px;
+      }
+
+      .links ul {
+        display: grid;
+        gap: 8px;
+        margin: 12px 0 0;
+        padding-left: 20px;
+      }
+
+      footer {
+        color: var(--muted);
+        font-size: 0.93rem;
+        margin-top: 28px;
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100% - 24px, 1080px);
+          padding-top: 32px;
+        }
+
+        .videos {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>WebMuse Manual PoC Motion Evidence</h1>
+        <p class="lede">
+          This lightweight demo page lets visitors watch the committed short
+          original-speed motion clips directly in the browser. The full
+          original-speed recordings stay in GitHub Release assets so the main
+          branch remains small.
+        </p>
+      </header>
+
+      <section class="notice" aria-label="Boundary note">
+        Reference motion is observation only, not a clone target. These clips
+        document validation signals for rhythm, timing, transitions, and manual
+        tuning feedback.
+      </section>
+
+      <section class="videos" aria-label="Browser-playable short clips">
+        <article class="video-card">
+          <h2>Tuned Result Short Clip</h2>
+          <p>
+            A short original-speed preview of the manually tuned branded result.
+          </p>
+          <video controls preload="metadata">
+            <source
+              src="../case-studies/manual-poc-001/motion/videos/03-tuned-result-motion-clip-original-speed.mp4"
+              type="video/mp4"
+            />
+            <a
+              href="../case-studies/manual-poc-001/motion/videos/03-tuned-result-motion-clip-original-speed.mp4"
+              >Download the tuned result short clip.</a
+            >
+          </video>
+        </article>
+
+        <article class="video-card">
+          <h2>Live Tuning Preview Short Clip</h2>
+          <p>
+            A short original-speed preview showing manual tuning controls
+            updating the visual result during validation.
+          </p>
+          <video controls preload="metadata">
+            <source
+              src="../case-studies/manual-poc-001/motion/videos/04-live-tuning-preview-clip-original-speed.mp4"
+              type="video/mp4"
+            />
+            <a
+              href="../case-studies/manual-poc-001/motion/videos/04-live-tuning-preview-clip-original-speed.mp4"
+              >Download the live tuning preview short clip.</a
+            >
+          </video>
+        </article>
+      </section>
+
+      <section class="links" aria-label="Full original-speed videos">
+        <h2>Full Original-Speed Videos</h2>
+        <p>
+          The larger 25-35 MB original-speed recordings are hosted as GitHub
+          Release assets, not committed to the main branch.
+        </p>
+        <ul>
+          <li>
+            <a
+              href="https://github.com/wxici/WebMuse/releases/download/v0.1.0-alpha-manual-poc/01-reference-motion-observation-original-speed.mp4"
+              >Reference motion observation video</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://github.com/wxici/WebMuse/releases/download/v0.1.0-alpha-manual-poc/02-codex-first-draft-motion-original-speed.mp4"
+              >Codex first draft motion video</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://github.com/wxici/WebMuse/releases/download/v0.1.0-alpha-manual-poc/03-tuned-result-motion-original-speed.mp4"
+              >Tuned result motion video</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://github.com/wxici/WebMuse/releases/download/v0.1.0-alpha-manual-poc/04-live-tuning-preview-original-speed.mp4"
+              >Live tuning preview motion video</a
+            >
+          </li>
+        </ul>
+      </section>
+
+      <footer>
+        <a href="../case-studies/manual-poc-001/">Return to the Manual PoC case study</a>
+      </footer>
+    </main>
+  </body>
+</html>
