@@ -1,5 +1,22 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-03 P1.7.1 repository workflow correction
+
+P1.7.1 proof-check package models and manifest first landed in the public OSS WebMuse repository as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9`.
+That implementation has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder` as commit `31afe67 Backfill P1.7.1 proof-check package into WebRebuildRecorder`.
+
+Repository workflow is now:
+
+1. implement and verify in `wxici/codex/WebRebuildRecorder`;
+2. commit and push prototype changes;
+3. synchronize only public-safe source and documentation to `wxici/WebMuse`.
+
+WebMuse remains the public OSS mirror and presentation repository. The prototype repository remains the construction source of truth for future implementation rounds.
+
+This update only documents the workflow correction. It does not change WebMuse source code, UI, WebView2, Codex CLI execution, OpenAI API usage, local model usage, website generation, proof runtime outputs, zips, logs, customer materials, tokens, keys, cookies, or generated artifacts.
+
+Next implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 must start in the prototype repository and must still not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
+
 ## 2026-06-03 P1.7.1 proof-check package models and manifest
 
 P1.7.1 implemented the first proof-check package layer. It is package/validation only and still does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.

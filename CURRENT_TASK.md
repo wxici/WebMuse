@@ -10,7 +10,13 @@ Foundation implementation round. Non-executing proof-check package models, persi
 
 ## Status
 
-Completed in source for this round.
+Completed in WebMuse source first, then backfilled to the primary prototype repository.
+
+Backfill status:
+
+- WebMuse original commit: `2d2cb82a02992103d292f16bb80d25ae1a2a94b9`.
+- Prototype backfill commit: `31afe67 Backfill P1.7.1 proof-check package into WebRebuildRecorder`.
+- Future workflow: implement and verify in `wxici/codex/WebRebuildRecorder` first, then synchronize public-safe source/docs to `wxici/WebMuse`.
 
 ## Goal
 
@@ -54,3 +60,8 @@ Result: build passed with 0 warnings and 0 errors; FoundationSelfTest passed and
 5. Non-execution flags remain false.
 6. FoundationSelfTest covers P1.7.1 behavior and all existing P0/P1 checks still pass.
 7. Changes are committed and pushed to `wxici/WebMuse`.
+8. P1.7.1 is also backfilled and pushed to the primary prototype repository.
+
+## Next Task Boundary
+
+Next implementation task is P1.7.2 Approval gate models and persistence, but it must start in `wxici/codex/WebRebuildRecorder`, not directly in WebMuse.

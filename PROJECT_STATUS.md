@@ -1,5 +1,20 @@
 # Project Status
 
+## Latest Repository Workflow Sync
+
+Snapshot time: 2026-06-03 16:45 +08:00.
+
+P1.7.1 first landed in WebMuse as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9`.
+It has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder` as commit `31afe67 Backfill P1.7.1 proof-check package into WebRebuildRecorder`.
+
+Repository workflow is now:
+
+1. implement and verify in `wxici/codex/WebRebuildRecorder`;
+2. commit and push prototype changes;
+3. synchronize only public-safe source and documentation to `wxici/WebMuse`.
+
+This WebMuse update is documentation-only. No source code, UI, WebView2, Codex CLI execution, OpenAI API call, local model call, website generation, runtime proof output, zip, log, customer material, token, key, or cookie was changed in this repository.
+
 ## Latest Implementation Update: P1.7.1 Proof-check Package Models
 
 Snapshot time: 2026-06-03 15:15 +08:00.
