@@ -1,5 +1,42 @@
 # Project Status
 
+## Latest Direction Update: Source Snapshot And Asset Slot Overlay
+
+Snapshot time: 2026-06-03.
+
+The product direction has been updated at the blueprint level. WebMuse should prioritize controlled Source Snapshot capture and analysis before local recording/frame extraction.
+
+The future system should infer structure, style, color, typography, code readability, capture quality, copyright risk, and asset-slot requirements from the source snapshot. Recording/frame extraction remains as targeted fallback for missing interaction evidence.
+
+This is documentation/blueprint direction only. It does not enable real Codex execution, OpenAI API calls, website generation, WebView2 preview, source crawling, recording changes, or asset slot UI implementation.
+
+## Latest Documentation Status
+
+Snapshot time: 2026-06-02 17:41 +08:00.
+
+Manual PoC 001 OSS presentation update is complete.
+
+Completed in this round:
+
+1. Added the first public Manual PoC case study under `docs/case-studies/manual-poc-001/`.
+2. Added curated compressed WebP evidence images and an asset manifest.
+3. Updated the root `README.md` with the Manual PoC comparison board and case-study link.
+4. Updated Manual PoC history, roadmap tuning architecture notes, and public demo screenshot security rules.
+5. Added OSS presentation release notes and an alpha observation demo plan.
+6. Reconfirmed the repository remains honest about early-alpha limits and does not claim production-ready generation, real Codex execution, WebView2 preview, or complete tuning UI.
+
+Verification:
+
+```powershell
+dotnet restore WebRebuildRecorder.slnx
+dotnet build WebRebuildRecorder.slnx
+dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Result: restore passed; build succeeded with 0 warnings and 0 errors; FoundationSelfTest passed.
+
+No alpha binary package was produced. The WPF recording, frame extraction, and observation package workflows were not manually validated end to end in this round.
+
 ## Snapshot Time
 
 2026-06-01 14:46 +08:00.

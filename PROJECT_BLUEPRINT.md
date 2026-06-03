@@ -56,23 +56,38 @@ Typical use cases:
 5. Scroll reveal timing is inaccurate.
 6. Video or image trigger effects require local frame analysis.
 
+## Source Snapshot And Asset Slot Direction
+
+The primary future observation path is Source Snapshot first.
+
+Instead of recording and extracting frames by default, WebMuse should first capture and analyze a controlled reference-site source snapshot: rendered DOM, raw HTML, CSS, JS references, images, SVG, fonts, media references, screenshots, link structure, and resource metadata.
+
+The system should then generate structure maps, style profiles, color and typography profiles, capture quality classification, copyright-risk reports, and an asset-slot map.
+
+Recording and frame extraction remain available as targeted interaction evidence for cases where source capture cannot explain hover, click, scroll, theme switching, masks, canvas, video, or complex motion.
+
+Captured reference-site assets and code are analysis inputs only by default. They are not final delivery assets. The output must be newly constructed as a user-branded site using user-owned or authorized assets.
+
+The generated preview should support asset slot overlays: missing image/media regions show required ratio, size, tone, count, and purpose. When a user clicks a slot, the WPF host opens a file picker, copies the selected file into the project's user-assets directory, updates the asset map, and refreshes WebView2 preview in place.
+
 ## Main Product Workflow
 
 The intended closed loop is:
 
 1. User enters all project input in one pass.
-2. Software collects or organizes reference-site observation data.
-3. Software copies and normalizes user assets.
-4. Codex/AI generates a structured observation report and construction package.
-5. Software internally assembles a Codex CLI task package.
-6. Codex CLI runs as a black box inside a project sandbox.
-7. The sandbox outputs a static single-page or static multi-section website.
-8. Software previews the output with WebView2 or an embedded browser.
-9. User lightly tunes the result through an aesthetic calibration panel.
-10. Software saves `tune-overrides.css`, `theme.json`, and `content-map.json`.
-11. User validates the result.
-12. Software exports `output-site.zip`.
-13. User can reopen the project later, modify assets, copy, or color, and regenerate.
+2. Software captures or organizes reference-site evidence, prioritizing Source Snapshot before recording.
+3. Software analyzes structure, style, colors, typography, code readability, asset needs, and interaction gaps.
+4. Software copies and normalizes user assets, and maps them into inferred asset slots.
+5. Codex/AI generates structured reports, construction rules, and a construction package.
+6. Software internally assembles a Codex CLI task package.
+7. Codex CLI runs as a black box inside a project sandbox.
+8. The sandbox outputs a static single-page or static multi-section website.
+9. Software previews the output with WebView2 or an embedded browser.
+10. User lightly tunes the result through an aesthetic calibration panel.
+11. Software saves `tune-overrides.css`, `theme.json`, and `content-map.json`.
+12. User validates the result.
+13. Software exports `output-site.zip`.
+14. User can reopen the project later, modify assets, copy, or color, and regenerate.
 
 ## MVP Hard Boundaries
 

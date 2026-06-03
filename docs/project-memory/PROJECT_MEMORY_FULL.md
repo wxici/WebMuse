@@ -1,5 +1,35 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-03 Source Snapshot and Asset Slot Overlay direction update
+
+WebMuse future observation architecture is updated from recording/frame-extraction-first to Source Snapshot first.
+
+The preferred future workflow is:
+
+```text
+reference URL
+  -> controlled source snapshot
+  -> rendered DOM / raw HTML / CSS / JS / assets / screenshot capture
+  -> code readability and capture quality classification
+  -> structure map, style profile, color palette, typography profile
+  -> asset slot map
+  -> targeted recording only for interaction gaps
+  -> construction package
+  -> new branded output
+  -> user clicks asset slots to upload own assets
+  -> real-time replacement in preview
+  -> tuning and validation
+  -> export
+```
+
+Captured reference-site code, logos, images, copy, and unique assets are analysis inputs only by default. They should not enter final export unless the user explicitly confirms authorization.
+
+The generated preview should prefer clickable asset slot overlays over bundled preset photography. Image/media slots display required ratio, size, count, tone, and purpose. Clicking a slot should eventually call the WPF host through WebView2, open a file picker, copy the asset into `assets/user-assets/`, update `asset-slot-map.json` and `asset-map.json`, then refresh the preview.
+
+Logo may use temporary text or a simple SVG placeholder. Generic stock photography should not be bundled by default.
+
+Every future Codex instruction for WebMuse must include an OSS GitHub update block: update relevant blueprint/memory/roadmap/status/current-task/review summaries, avoid committing generated or sensitive files, commit and push clean source/documentation changes to `wxici/WebMuse`.
+
 ## 2026-05-31 P1.7-0 proof-check and approval-gate design
 
 P1.7-0 defines proof-check and approval-gate design only.

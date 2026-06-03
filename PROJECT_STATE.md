@@ -57,8 +57,16 @@ The repository contains selected migrated source from the historical `WebRebuild
 - Real AI execution comes after safety gates, not before them.
 - WebMuse is not a clone, copy, imitation, or drag-and-drop website builder.
 - Do not commit generated media, local runtime artifacts, secrets, customer materials, recordings, screenshots, extracted frames, zips, release binaries, or local configuration.
+- Future observation should prioritize controlled Source Snapshot analysis before recording/frame extraction.
+- Captured reference code and assets are evidence for analysis, not default export assets.
+- Future generated previews should use asset slot overlays to tell users what images/media/logos are needed and let users fill slots with their own assets.
+- Every Codex construction instruction must include a WebMuse OSS GitHub update block.
 
 ## Recent Modification Summary
+
+2026-06-03: Updated the product direction at blueprint level from recording/frame-extraction-first to controlled Source Snapshot first with rendered DOM/resource/style/code-readability analysis, asset slot map generation, clickable asset slot overlays, user-owned asset import, real-time preview replacement, and copyright-safe export policy. This is documentation-only and does not implement source crawling, WebView2, Codex execution, OpenAI API calls, website generation, recording changes, frame extraction changes, or asset slot UI.
+
+2026-06-02: Completed Manual PoC 001 OSS presentation update. Added curated compressed public WebP evidence images, `docs/case-studies/manual-poc-001/README.md`, an asset manifest, README Manual PoC evidence section, PoC history link, roadmap future WPF floating tuning window note, public demo screenshot security rules, OSS presentation release notes, and an alpha observation demo plan. No product code, UI implementation, real Codex execution, OpenAI API calls, WebView2 preview, recording behavior changes, frame extraction behavior changes, release binaries, raw ZIPs, raw recordings, extracted frame sets, customer materials, credentials, local path configuration, or generated output-site artifacts were added. `dotnet restore`, `dotnet build`, and FoundationSelfTest passed.
 
 2026-06-01: Completed OSS Readiness Round 0.2. Created 8 real maintainer backlog GitHub Issues, added a README Mermaid workflow diagram, updated status and migration audit documents, and verified Release build and FoundationSelfTest. No product features, UI changes, real Codex execution, OpenAI API calls, WebView2, release binaries, screenshots, recordings, frames, zips, customer materials, or generated site output were added.
 

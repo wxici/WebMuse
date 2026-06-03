@@ -2,68 +2,60 @@
 
 ## Task Name
 
-OSS Readiness Round 0.3: Final Codex for OSS Application Text.
+Documentation Direction Sync: Source Snapshot And Asset Slot Overlay Blueprint.
 
 ## Task Type
 
-Low-risk public documentation finalization.
+Low-risk project blueprint, memory, roadmap, and status update.
 
 ## Status
 
-Completed on 2026-06-01.
+In progress until committed and pushed.
 
 ## Goal
 
-Create the final short-answer text for the Codex for OSS application and update public project status lightly.
+Record the updated WebMuse structural direction:
 
-This round did not implement product features.
-
-## Completed Result
-
-Completed:
-
-1. Created `docs/CODEX_FOR_OSS_APPLICATION_FINAL.md` with final application text for direct form entry.
-2. Kept the application language honest about early-alpha status and current limits.
-3. Updated `CURRENT_TASK.md`, `PROJECT_STATE.md`, and `PROJECT_STATUS.md`.
-4. Added no product code, UI changes, generated artifacts, binaries, screenshots, recordings, extracted frames, zips, customer materials, release assets, secrets, or private account information.
+- Source Snapshot first;
+- recording/frame extraction as targeted fallback;
+- structure/style/color/typography/code-quality analysis;
+- asset-slot map generation;
+- clickable asset slot overlays;
+- user asset import and real-time replacement;
+- copyright-safe export policy;
+- OSS GitHub update requirement for future Codex instructions.
 
 ## Explicitly Out Of Scope
 
-- fake users, fake contributions, fake community feedback, fake stars, fake forks, fake downloads
-- product feature implementation
-- real Codex CLI execution
-- OpenAI API calls
-- Ollama calls
-- LM Studio calls
-- website generation
-- WebView2 integration
-- UI redesign
-- tuning panel
-- Reference Portal implementation
-- Design Context Library implementation
-- ProposalPreview / SitePitcher implementation
-- recording behavior changes
-- frame extraction changes
-- mouse automation changes
-- page editor
-- drag-and-drop editor
-- release creation
-- release binaries
-- screenshots, recordings, extracted frames, zips, customer materials, or generated site output
-- namespace-wide rename
-- solution-wide rename
-- mass refactor
+- product source implementation;
+- WebView2 implementation;
+- source crawler implementation;
+- real Codex CLI execution;
+- OpenAI API calls;
+- website generation;
+- recording/frame extraction behavior changes;
+- UI redesign;
+- page editor;
+- drag-and-drop editor;
+- generated site output;
+- screenshots, recordings, extracted frames, zips, customer materials, binaries, secrets, tokens, cookies, or local absolute-path config.
 
-## Verification Result
+## Verification
 
-Markdown-only verification:
+Markdown-only round. Run:
 
 ```powershell
 git status
 ```
 
-No build was required because only Markdown documentation files changed.
+No build is required unless source files are changed.
 
-## Next Recommended Step
+## Completion Criteria
 
-The user manually submits the Codex for OSS application form.
+1. `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md` exists.
+2. `PROJECT_BLUEPRINT.md` references the new direction.
+3. `PROJECT_ROADMAP.md` records phase placement.
+4. `docs/project-memory/PROJECT_MEMORY_FULL.md` records the direction update.
+5. `PROJECT_STATUS.md` and `PROJECT_STATE.md` are updated.
+6. No generated or sensitive files are committed.
+7. Changes are committed and pushed to `wxici/WebMuse`.

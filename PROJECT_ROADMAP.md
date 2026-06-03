@@ -58,6 +58,22 @@ Later real Codex CLI execution can be considered only after rollback, strict rea
 
 Still do not start WebView2 preview, tuning UI, color-system UI, or real Codex CLI execution.
 
+## Direction Update: Source Snapshot And Asset Slot Overlay
+
+The long-term observation architecture is updated.
+
+Source Snapshot becomes the preferred first observation path. Recording and frame extraction remain important but move to targeted interaction-evidence fallback.
+
+Future implementation should add, in phase order:
+
+- P1 reserve models, directories, manifests, and export policies for source snapshots and asset slots.
+- P2 WebView2 preview shell and minimal asset slot overlay interaction.
+- P3 controlled same-origin source snapshot capture and construction-package injection.
+- P4 local screenshot/recording/frame-extraction fallback for interaction gaps.
+- P5 asset matching, batch filling, quality hints, and productized workflows.
+
+This direction must not be interpreted as a clone workflow. Source assets and source code are reference evidence unless the user confirms authorization.
+
 ## P0: Engineering Foundation
 
 Goal: establish the safe project base before product expansion.
@@ -98,6 +114,9 @@ Scope:
 - `content-map` and `data-tune-id` rules
 - `current/versions` snapshot foundation
 - layered logs
+- reserve source-snapshot and asset-slot data paths
+- asset slot map schema planning
+- reference-observed asset export policy
 
 ## P2: Main UI Skeleton, Preview, Color Candidates, Task Package
 
@@ -112,6 +131,7 @@ Scope:
 - construction package generator
 - Codex CLI task orchestration foundation
 - failure classification foundation
+- basic asset slot overlay design for WebView2 preview
 
 ## P3: Codex Execution, Validation, Tuning, Fallback
 
@@ -125,6 +145,9 @@ Scope:
 - save `tune-overrides.css`
 - content-map validation
 - observation failure fallback
+- controlled source snapshot service
+- capture quality analyzer
+- asset slot map builder
 
 ## P4: Export, Validation Reports, Correction Tools, Templates, Archives
 
@@ -140,6 +163,8 @@ Scope:
 - sample project tests
 - `.wrb` / `.wrbpkg` archive packages
 - version comparison foundation
+- interaction evidence fallback from screenshot/recording/frame extraction
+- export check against unauthorized reference-observed assets
 
 ## P5: Productization And Extension
 
@@ -153,6 +178,9 @@ Scope:
 - local section regeneration
 - multi-version comparison UI
 - full production hardening
+- asset matching service
+- batch slot filling
+- visual quality hints for uploaded assets
 
 ## Historical Recommended Stage
 

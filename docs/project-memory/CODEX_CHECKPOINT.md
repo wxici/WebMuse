@@ -325,3 +325,226 @@
 - Project run: Not run. This task changed only Markdown files.
 - Tests passed: `git status` was run. Build was not required because only Markdown files changed.
 - Next recommendation: User manually submits the Codex for OSS application form.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-02 17:29:33 +08:00
+- Previous task status: Completed. The latest marker says Round 0.3 created the final Codex for OSS application text and updated status files only.
+- Confirmed complete: Yes.
+- Remaining issues: WebMuse is still early alpha; real Codex execution, OpenAI API calls, website generation, WebView2 preview, and tuning panel are not complete.
+- Can this task begin: Yes. The user provided a new Manual PoC 001 OSS presentation update task and corrected the local checkout path.
+
+## Current Checkpoint
+
+- Update time: 2026-06-02 17:29:33 +08:00
+- Current task: Manual PoC 001 OSS presentation update.
+- Current stage: Startup checks completed; task scope recorded; preparing ZIP image inspection and visual classification.
+- Completed: Read required public task files when present (`README.md`, `ROADMAP.md`, `SECURITY.md`, `CONTRIBUTING.md`, `docs/case-studies/manual-poc-history.md`, `PROJECT_STATUS.md`, `CURRENT_TASK.md`), recorded `PROJECT_MEMORY_INDEX.md` as missing, read local WebMuse continuity rules, confirmed previous task completed, confirmed working tree was clean before edits, and updated `CURRENT_TASK.md` to the active Manual PoC task.
+- In progress: Inspecting the provided image ZIP files and preparing curated public WebP evidence assets.
+- Not completed: Image classification, case-study assets, case-study README, README update, manual PoC history update, roadmap/security updates, optional release notes, build/self-test verification, alpha package decision, final checkpoint marker.
+- Modified files: `CURRENT_TASK.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Expected yes; no source code has been changed.
+- Tested: No current-round build/test yet.
+- Test result: Pending.
+- Current errors/warnings: `PROJECT_MEMORY_INDEX.md` is missing from this public repository and will be recorded in the final report as required by the task. The initially provided local checkout path did not exist; the corrected checkout path was used.
+- If interrupted, continue from: Extract the two provided ZIPs to a temporary location, classify images visually, and generate sanitized lightweight WebP assets under `docs/case-studies/manual-poc-001/assets/`.
+- Notes: Do not commit raw ZIP uploads, raw recordings, extracted frames, credentials, local private paths, full generated output-site artifacts, or customer private materials.
+
+## Current Checkpoint
+
+- Update time: 2026-06-02 17:36:30 +08:00
+- Current task: Manual PoC 001 OSS presentation update.
+- Current stage: Curated assets and documentation edits completed; verification pending.
+- Completed: Extracted both uploaded ZIPs to a temporary directory; visually classified the images; copied only curated WebP assets into `docs/case-studies/manual-poc-001/assets/`; created Manual PoC 001 README and asset manifest; updated root `README.md`, PoC history, `ROADMAP.md`, and `SECURITY.md`; added OSS presentation release notes and an alpha observation demo plan explaining why no binary package is produced in this round.
+- In progress: Running restore/build/FoundationSelfTest and link/status audits.
+- Not completed: Build/self-test verification, README/case-study image link audit, `PROJECT_STATUS.md` / `PROJECT_STATE.md` final update, review package decision, final checkpoint marker, final report.
+- Modified files: `CURRENT_TASK.md`, `README.md`, `ROADMAP.md`, `SECURITY.md`, `docs/case-studies/manual-poc-history.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: `docs/case-studies/manual-poc-001/README.md`, `docs/case-studies/manual-poc-001/assets/*.webp`, `docs/case-studies/manual-poc-001/assets/asset-manifest.md`, `docs/release-notes/v0.1.0-alpha-oss-presentation.md`, `docs/release-notes/v0.1.0-alpha-observation-demo-plan.md`.
+- Deleted files: None.
+- Can currently run: Expected yes; application source code has not been changed.
+- Tested: Visual inspection completed for the core boards and key single images; build/self-test pending.
+- Test result: Pending.
+- Current errors/warnings: `rg.exe` failed with Access denied, so PowerShell search was used for feature inspection. `PROJECT_MEMORY_INDEX.md` is missing from this public repository and will be reported.
+- If interrupted, continue from: Run `dotnet restore WebRebuildRecorder.slnx`, `dotnet build WebRebuildRecorder.slnx`, and the foundation self-test, then update status files and final checkpoint.
+- Notes: Raw ZIPs remain outside the repository. No product code, UI implementation, WebView2, tuning UI, real Codex execution, or release binary was added.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Added Manual PoC 001 public case study evidence; copied curated compressed WebP images only; created the case-study README and asset manifest; updated README, Manual PoC history, roadmap tuning architecture notes, security public screenshot rules, release notes, current task, project status, and project state.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `README.md`, `ROADMAP.md`, `SECURITY.md`, `docs/case-studies/manual-poc-history.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: `docs/case-studies/manual-poc-001/README.md`, `docs/case-studies/manual-poc-001/assets/asset-manifest.md`, 13 curated `.webp` evidence images under `docs/case-studies/manual-poc-001/assets/`, `docs/release-notes/v0.1.0-alpha-oss-presentation.md`, `docs/release-notes/v0.1.0-alpha-observation-demo-plan.md`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No product source code, UI implementation, real Codex execution, OpenAI API call, WebView2 integration, website generation, recording behavior, frame extraction behavior, mouse automation, release publishing, raw ZIP, raw recording, extracted frame set, customer material, credential, local path configuration, or output-site artifact was added or changed.
+- Known issues: WebMuse remains early alpha. Real AI execution, OpenAI API calls, website generation, WebView2 preview, and complete tuning UI are not enabled. `PROJECT_MEMORY_INDEX.md` is missing from this public repository and was recorded as missing per the task's mandatory reading rule. The alpha observation demo binary was not produced because WPF recording/frame extraction/observation package workflows were not manually validated end to end in this round.
+- Project run: The WPF UI was not manually launched. The foundation console self-test was run.
+- Tests passed: `dotnet restore WebRebuildRecorder.slnx` passed. `dotnet build WebRebuildRecorder.slnx` passed with 0 warnings and 0 errors. `dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj` passed. Link/file existence checks for the Manual PoC image assets passed. `git diff --check` reported no whitespace errors; Git only warned that LF will be replaced by CRLF on touched text files.
+- Next recommendation: Review the new case-study rendering on GitHub, then run a dedicated alpha observation demo release-readiness task before producing any binary package.
+
+## Current Checkpoint
+
+- Update time: 2026-06-02 19:45:45 +08:00
+- Current task: Create a lightweight GitHub Pages-compatible Manual PoC motion demo page.
+- Current stage: Startup checks completed; preparing static HTML and Markdown link updates.
+- Completed: Confirmed the existing short original-speed clips are already committed under `docs/case-studies/manual-poc-001/motion/videos/`; confirmed no full 25-35MB videos need to be added to `main`; identified README and case-study link insertion points.
+- In progress: Creating `docs/demo/manual-poc-motion.html` and adding browser-playable demo links.
+- Not completed: HTML page creation, README update, case-study README update, diff verification, final completion marker.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Expected yes; this task is docs/static HTML only.
+- Tested: No.
+- Test result: Pending.
+- Current errors/warnings: `rg.exe` failed with Access denied, so PowerShell search was used. Existing local project/status files remain modified and will not be staged for the public docs commit.
+- If interrupted, continue from: Create the static demo page, link it from `README.md` and `docs/case-studies/manual-poc-001/README.md`, then verify the diff.
+- Notes: Do not add GIFs, full original-speed MP4s, product code, UI implementation, WebView2 integration, or functional expansion.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Created a lightweight GitHub Pages-compatible Manual PoC motion demo page, embedded only the two already-committed short original-speed MP4 clips, linked the full original-speed videos as GitHub Release assets, added the requested browser-playable demo link to the root README and Manual PoC case study README, and pushed the scoped docs commit to `main`.
+- Modified files this task: `README.md`, `docs/case-studies/manual-poc-001/README.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: `docs/demo/manual-poc-motion.html`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No product source code, generated site code, WebView2 integration, tuning UI, GIFs, or full 25-35MB videos were added or changed.
+- Known issues: WebMuse remains early alpha. This page depends on GitHub Pages or another static file host to serve the HTML and committed short MP4 clips in browser.
+- Project run: Not run. This task changed only docs/static HTML.
+- Tests passed: `git diff --cached --check` passed before commit. `Test-Path` confirmed both committed short MP4 clip paths and the new HTML page path exist. Build was not run because docs/static HTML only.
+- Commit pushed: `26ff2dcad3320e39cd328aa0bf86416d4adfabfb` (`Add browser-playable Manual PoC motion demo`) pushed to `origin/main`.
+- Next recommendation: Check the GitHub Pages URL after Pages rebuilds to confirm the browser video players load from the published static path.
+
+## Current Checkpoint
+
+- Update time: 2026-06-02 19:59:57 +08:00
+- Current task: Add missing browser-playable Manual PoC short motion clips and update the demo page to four videos.
+- Current stage: Clip generation completed; documentation updates pending.
+- Completed: Read required startup files; confirmed previous demo task completed; confirmed existing 03/04 short clips are committed; confirmed GitHub Pages API returns 404 for `wxici/WebMuse` Pages; located local FFmpeg/ffprobe; extracted the provided full original-speed release asset ZIP into a temporary directory outside the repository; generated 01 and 02 short original-speed H.264 MP4 clips with no audio, 12-second duration, 1280px maximum width, and no `setpts` speed changes.
+- In progress: Updating `docs/demo/manual-poc-motion.html`, `README.md`, and `docs/case-studies/manual-poc-001/README.md`.
+- Not completed: HTML/Markdown updates, diff verification, commit, push, final completion marker.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: `docs/case-studies/manual-poc-001/motion/videos/01-reference-motion-observation-clip-original-speed.mp4`, `docs/case-studies/manual-poc-001/motion/videos/02-codex-first-draft-motion-clip-original-speed.mp4`.
+- Deleted files: None.
+- Can currently run: Expected yes; only docs/static media assets are being changed.
+- Tested: Partial.
+- Test result: `ffprobe` confirmed all four short clips are 12-second H.264 MP4 video streams at 1280px width or lower with no audio stream reported.
+- Current errors/warnings: GitHub Pages is not enabled for `wxici/WebMuse` according to `gh api repos/wxici/WebMuse/pages` returning 404. Existing local project/status files remain modified and will not be staged for the public docs/media commit.
+- If interrupted, continue from: Update the demo page to four video cards, update README/case-study links and Pages-disabled notes, then run diff/media verification before commit.
+- Notes: Do not add GIFs, full original-speed videos, raw ZIPs, extracted frame folders, product code, or feature expansion.
+
+## Interruption / Error Record
+
+- Time: 2026-06-02 20:06:14 +08:00
+- Stage: Push to `origin/main` after local commit.
+- Files in progress: `README.md`, `docs/case-studies/manual-poc-001/README.md`, `docs/demo/manual-poc-motion.html`, `docs/case-studies/manual-poc-001/motion/videos/01-reference-motion-observation-clip-original-speed.mp4`, `docs/case-studies/manual-poc-001/motion/videos/02-codex-first-draft-motion-clip-original-speed.mp4`.
+- Completed part: Local commit `aeff9fd195fa1aec5988dda1162371842f4aab7d` was created with the scoped docs/media changes; staged checks passed; no full original-speed videos, ZIPs, GIFs, extracted frames, or product source changes were staged.
+- Incomplete part: Push to `origin/main` has not succeeded yet.
+- Error symptom: `git push origin main` failed twice with connection reset, and `git ls-remote --heads origin main` failed with inability to connect to `github.com:443`.
+- Error message: `Recv failure: Connection was reset`; `Failed to connect to github.com port 443 after 21115 ms: Could not connect to server`.
+- Initial judgment: Local repository state is valid and ahead of `origin/main` by one commit; the blocker appears to be transient network/GitHub connectivity, not a repository conflict.
+- Must check before continuing: Recheck GitHub connectivity, then retry `git push origin main`.
+- Suggested next step: Retry push once connectivity returns; if it succeeds, record final completion marker with commit hash and push result.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Generated two missing browser-playable short original-speed H.264 MP4 clips for reference motion observation and Codex first draft motion; updated `docs/demo/manual-poc-motion.html` to include four embedded video cards; retained full original-speed GitHub Release asset links; updated README and Manual PoC case study with the demo link and a GitHub Pages-not-enabled note; pushed the scoped docs/media update to `origin/main`.
+- Modified files this task: `README.md`, `docs/case-studies/manual-poc-001/README.md`, `docs/demo/manual-poc-motion.html`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files this task: `docs/case-studies/manual-poc-001/motion/videos/01-reference-motion-observation-clip-original-speed.mp4`, `docs/case-studies/manual-poc-001/motion/videos/02-codex-first-draft-motion-clip-original-speed.mp4`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No product source code, full original-speed videos, raw ZIPs, GIFs, extracted frame folders, WebView2 integration, tuning UI, or feature expansion was added.
+- Known issues: GitHub Pages is not enabled for `wxici/WebMuse`; the repository HTML link shows source/file view until Pages is enabled.
+- Project run: Not run. This task changed only docs/static HTML and short public media clips.
+- Tests passed: `ffprobe` confirmed all four short clips are 12-second H.264 MP4 video streams, 1280px width or lower, with no audio stream. `git diff --cached --check` passed. Staged filename checks found no full original-speed MP4s, ZIPs, GIFs, extracted frame folders, or product source changes. GitHub API confirmed remote `main` at `b975c6f532ffb57128e9f6db415545e21593288b` and confirmed the two new remote MP4 blobs with sizes 568,261 bytes and 490,569 bytes.
+- Push result: `git push origin main` initially failed due GitHub HTTPS connection resets/timeouts. The same scoped commit content was fast-forwarded through the GitHub Git Data API, then `git fetch origin main` succeeded and local `main` was aligned with `origin/main`.
+- Commit pushed: `b975c6f532ffb57128e9f6db415545e21593288b` (`Add short motion clips to Manual PoC demo`).
+- Next recommendation: Enable GitHub Pages for the repository if the demo should render directly at `https://wxici.github.io/WebMuse/demo/manual-poc-motion.html`.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-03 14:12:05 +08:00
+- Previous task status: Completed. Latest local and remote commit is `b975c6f532ffb57128e9f6db415545e21593288b` (`Add short motion clips to Manual PoC demo`).
+- Confirmed complete: Yes.
+- Remaining issues: WebMuse remains early alpha; GitHub Pages is not enabled; real Codex execution, OpenAI API calls, website generation, WebView2 preview, and complete tuning UI are not enabled. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are missing from this public repository.
+- Can this task begin: Yes. The new task is a Markdown-only direction sync for Source Snapshot and asset slot overlay, with no product source implementation.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 14:12:05 +08:00
+- Current task: Documentation Direction Sync: Source Snapshot And Asset Slot Overlay Blueprint.
+- Current stage: Startup checks completed; preparing Markdown direction updates.
+- Completed: Read target repository status and startup files; confirmed `main` is aligned with `origin/main`; read `README.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `CURRENT_TASK.md`, `CODEX_CONSTRUCTION_RULES.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`, `SECURITY.md`, `.gitignore`, `CODEX_GLOBAL_RULES.md`, `README_FOR_CODEX.md`, `REVIEW_PACKAGE_RULES.md`, and this checkpoint. Confirmed root `CODEX_CHECKPOINT.md` is intentionally absent because WebMuse stores checkpoints under `docs/project-memory/`.
+- In progress: Updating the blueprint, roadmap, memory, status, state, current task, and checkpoint documents for the Source Snapshot and asset slot overlay direction.
+- Not completed: New blueprint file, Markdown edits, git diff verification, git status, commit, push, final completion marker.
+- Modified files: Existing uncommitted status edits were already present in `CURRENT_TASK.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, and `docs/project-memory/CODEX_CHECKPOINT.md` before this task. This checkpoint is now additionally modified for the current task.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Expected yes; no source code has been changed.
+- Tested: No current-round verification yet.
+- Test result: Pending `git status` and Markdown diff checks. No build is required unless source files change.
+- Current errors/warnings: `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are missing from this public repository; existing repository docs already record `PROJECT_MEMORY_INDEX.md` as missing. Git reports line-ending normalization warnings for touched Markdown files.
+- If interrupted, continue from: Create `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`, update the requested Markdown files, then run `git status` and inspect the diff before committing.
+- Notes: Do not implement source snapshot crawling, WebView2, asset slot UI, real Codex execution, OpenAI API calls, website generation, recording behavior changes, frame extraction changes, generated output, raw media, zips, secrets, customer materials, or local configuration.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 14:18:05 +08:00
+- Current task: Documentation Direction Sync: Source Snapshot And Asset Slot Overlay Blueprint.
+- Current stage: Requested Markdown edits completed; verification pending.
+- Completed: Added `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`; updated `PROJECT_BLUEPRINT.md` with the Source Snapshot and asset slot direction and revised the main workflow; updated `PROJECT_ROADMAP.md` with phase placement and P1-P5 scope additions; added the 2026-06-03 direction update to `docs/project-memory/PROJECT_MEMORY_FULL.md`; updated `PROJECT_STATUS.md`, `PROJECT_STATE.md`, and `CURRENT_TASK.md`.
+- In progress: Inspecting diff/status and checking for generated or sensitive files before commit.
+- Not completed: `git status`, `git diff --check`, staged-file audit, commit, push, final completion marker.
+- Modified files: `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files: `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`.
+- Deleted files: None.
+- Can currently run: Expected yes; no product source code has been changed.
+- Tested: Partial.
+- Test result: `git diff --stat` shows Markdown/status changes only. Full verification pending.
+- Current errors/warnings: Git reports LF-to-CRLF normalization warnings for touched Markdown files. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` remain missing from this public repository.
+- If interrupted, continue from: Run `git status`, inspect the full diff for scope and sensitive content, then stage only intended Markdown files.
+- Notes: No source crawler, WebView2, Codex execution, OpenAI API, website generation, UI, recording, frame extraction, media, zip, secret, customer material, or generated output change was made.
+
+## Task Completion Marker
+
+- Status: Completed for repository content; commit and push are the remaining transport steps to execute immediately after this marker.
+- Completed in this task: Added the Source Snapshot and asset slot overlay blueprint; updated the main product blueprint, roadmap, long-term memory, project status, project state, and current task to record Source Snapshot first, recording/frame extraction as targeted fallback, asset slot map generation, clickable asset slot overlays, user-owned asset import, and copyright-safe export boundaries.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files this task: `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No application source code, UI, WebView2 implementation, source crawler, Codex CLI execution, OpenAI API call, website generation, recording behavior, frame extraction behavior, generated output, media, zip, secret, customer material, or local configuration was added or changed.
+- Known issues: WebMuse remains early alpha. Real Codex execution, OpenAI API calls, website generation, WebView2 preview, source snapshot service, asset slot UI, and complete tuning UI remain unimplemented. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` remain missing from this public repository.
+- Project run: Not run. This task changed only Markdown and project memory/status files.
+- Tests passed: `git status --short --branch` was run; required files were checked with `Test-Path`; `git diff --check` reported no whitespace errors and only LF-to-CRLF normalization warnings; changed-file name scan found no generated media, archives, logs, `bin/`, `obj/`, `.vs/`, customer material, token, cookie, secret, or `.env` paths. Build was not required because no source files changed.
+- Next recommendation: Keep P1.7 safety/proof/approval foundations as the next immediate implementation track unless explicitly changed; when implementation reaches observation architecture, start with bounded source snapshot models, manifests, export policy, and asset-slot schemas before any crawler or WebView2 UI work.
+
+## Interruption / Error Record
+
+- Time: 2026-06-03 14:26:51 +08:00
+- Stage: Push to `origin/main` after local documentation commit.
+- Files in progress: `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATUS.md`, `PROJECT_STATE.md`, `CURRENT_TASK.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Completed part: Local commit was created with the scoped Markdown direction sync.
+- Incomplete part: First push attempt did not succeed.
+- Error symptom: `git push origin main` was rejected because the remote branch contained newer commits.
+- Error message: `! [rejected] main -> main (fetch first)`.
+- Initial judgment: Remote `origin/main` advanced by three Manual PoC README/manifest commits while the local direction-sync commit was being prepared.
+- Must check before continuing: Fetch remote changes, inspect divergence, rebase local direction-sync commit onto `origin/main`, verify status, then push without force.
+- Suggested next step: Continue from the completed `git rebase origin/main`, amend this checkpoint record into the direction-sync commit, then push normally.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 14:26:51 +08:00
+- Current task: Documentation Direction Sync: Source Snapshot And Asset Slot Overlay Blueprint.
+- Current stage: Remote divergence resolved; amending checkpoint record before final push.
+- Completed: Fetched `origin/main`; confirmed local branch was ahead 1 and behind 3; identified remote commits `bf86767`, `f259691`, and `3bedefb`; rebased the direction-sync commit cleanly onto `origin/main`; local branch is now ahead by one commit.
+- In progress: Amending this checkpoint record into the direction-sync commit.
+- Not completed: Final push and final remote status check.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None beyond the already committed `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`.
+- Deleted files: None.
+- Can currently run: Expected yes; no source code changed.
+- Tested: Yes for Git integration state.
+- Test result: `git rebase origin/main` completed successfully with no conflicts.
+- Current errors/warnings: No unresolved Git conflict. Push still pending after amend.
+- If interrupted, continue from: Run `git status --short --branch`, amend or commit the checkpoint record if still unstaged, then push `main` normally.
+- Notes: Do not force-push. Preserve the three remote Manual PoC documentation commits.
