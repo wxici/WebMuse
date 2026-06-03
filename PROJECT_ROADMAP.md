@@ -2,15 +2,17 @@
 
 ## Current Recommended Next Stage
 
-After P1.6, continue strengthening proof-check and approval foundations before entering real Codex execution, WebView2, or website generation.
+After P1.7.1, continue strengthening approval foundations before entering real Codex execution, WebView2, or website generation.
 
 P1.7-0 has now defined proof-check and approval-gate design only. It does not implement proof-check service, approval gate service, real Codex CLI execution, OpenAI API calls, or website generation.
 
+P1.7.1 has now implemented proof-check package models, manifest/request persistence, proof instructions, package validation reports, path-safety checks, and FoundationSelfTest coverage. P1.7.1 still does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
 Next immediate implementation round should be:
 
-1. P1.7.1 Proof-check package models and manifest.
+1. P1.7.2 Approval gate models and persistence.
 
-P1.7.1 still does not execute Codex CLI.
+P1.7.2 still must not execute Codex CLI.
 
 P1.6 was later committed and pushed as cc28e56613d16032cea5664d23d8415a37610a86. Older review_package text saying commit/push was pending is historical transport context from report-writing time, not the current GitHub state.
 

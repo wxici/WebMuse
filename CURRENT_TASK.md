@@ -2,60 +2,55 @@
 
 ## Task Name
 
-Documentation Direction Sync: Source Snapshot And Asset Slot Overlay Blueprint.
+P1.7.1 Proof-check Package Models and Manifest.
 
 ## Task Type
 
-Low-risk project blueprint, memory, roadmap, and status update.
+Foundation implementation round. Non-executing proof-check package models, persistence, validation, and self-test coverage.
 
 ## Status
 
-In progress until committed and pushed.
+Completed in source for this round.
 
 ## Goal
 
-Record the updated WebMuse structural direction:
+Add the first proof-check package layer under `codex-task/proof/`:
 
-- Source Snapshot first;
-- recording/frame extraction as targeted fallback;
-- structure/style/color/typography/code-quality analysis;
-- asset-slot map generation;
-- clickable asset slot overlays;
-- user asset import and real-time replacement;
-- copyright-safe export policy;
-- OSS GitHub update requirement for future Codex instructions.
+- proof-check package schema and model classes;
+- `ProofCheckPackageService.CreateNewAsync`, `LoadAsync`, and `ValidateAsync`;
+- package-only manifest, request, instructions, and validation reports;
+- path-safety validation for allowed and denied targets;
+- FoundationSelfTest coverage for persistence, validation, path safety, and non-execution boundaries.
 
 ## Explicitly Out Of Scope
 
-- product source implementation;
-- WebView2 implementation;
-- source crawler implementation;
 - real Codex CLI execution;
 - OpenAI API calls;
+- local model engine calls;
 - website generation;
-- recording/frame extraction behavior changes;
-- UI redesign;
-- page editor;
-- drag-and-drop editor;
-- generated site output;
-- screenshots, recordings, extracted frames, zips, customer materials, binaries, secrets, tokens, cookies, or local absolute-path config.
+- WebView2 implementation;
+- approval gate implementation;
+- writing `output-site/current/index.html`;
+- creating future runtime proof result files: `proof-created-file.txt`, `proof-result.json`, or `proof-report.md`;
+- committing ignored runtime proof package files under `codex-task/proof/`.
 
 ## Verification
 
-Markdown-only round. Run:
+Required verification completed:
 
 ```powershell
-git status
+dotnet build WebRebuildRecorder.slnx
+dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-No build is required unless source files are changed.
+Result: build passed with 0 warnings and 0 errors; FoundationSelfTest passed and printed the required P1.7.1 proof-check lines.
 
 ## Completion Criteria
 
-1. `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md` exists.
-2. `PROJECT_BLUEPRINT.md` references the new direction.
-3. `PROJECT_ROADMAP.md` records phase placement.
-4. `docs/project-memory/PROJECT_MEMORY_FULL.md` records the direction update.
-5. `PROJECT_STATUS.md` and `PROJECT_STATE.md` are updated.
-6. No generated or sensitive files are committed.
+1. `ProofCheckPackage.cs` exists with P1.7.1 proof-check package models.
+2. `ProofCheckPackageService.cs` exists with create/load/validate methods.
+3. Generated package files are package/instruction/validation artifacts only.
+4. Future runtime result files are declared but not generated.
+5. Non-execution flags remain false.
+6. FoundationSelfTest covers P1.7.1 behavior and all existing P0/P1 checks still pass.
 7. Changes are committed and pushed to `wxici/WebMuse`.

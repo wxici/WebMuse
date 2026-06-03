@@ -39,6 +39,7 @@ try
     await CheckP14SnapshotRestoreAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP15ConstructionReadinessAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP16DryRunOrchestratorAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP171ProofCheckPackageAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -90,6 +91,11 @@ try
     Console.WriteLine("[P1.6] Output-site untouched verified.");
     Console.WriteLine("[P1.6] Report sanitizer verified.");
     Console.WriteLine("[P1.6] Dry-run logs verified.");
+    Console.WriteLine("[P1.7.1] Proof-check package models verified.");
+    Console.WriteLine("[P1.7.1] Proof-check package persistence verified.");
+    Console.WriteLine("[P1.7.1] Proof-check package validation verified.");
+    Console.WriteLine("[P1.7.1] Proof-check path safety verified.");
+    Console.WriteLine("[P1.7.1] Proof-check non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -2286,6 +2292,292 @@ static async Task CheckP16LogsAsync(
     }
 }
 
+static async Task CheckP171ProofCheckPackageAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    if (File.Exists(indexPath))
+    {
+        File.Delete(indexPath);
+    }
+
+    var service = new ProofCheckPackageService();
+    var manifest = await service.CreateNewAsync(projectRoot);
+    if (!string.Equals(manifest.SchemaVersion, ProofCheckPackageSchema.CurrentSchemaVersion, StringComparison.Ordinal)
+        || !string.Equals(manifest.ProjectId, projectId, StringComparison.Ordinal)
+        || string.IsNullOrWhiteSpace(manifest.ProofPackageId))
+    {
+        failures.Add("ProofCheckPackageService did not create a manifest with the expected schema/project/package identity.");
+    }
+
+    if (manifest.ExecutesCodexCli || manifest.CallsOpenAiApi || manifest.GeneratesWebsite)
+    {
+        failures.Add("Proof-check manifest reported a forbidden execution/API/website flag as true.");
+    }
+
+    var manifestPath = ProofCheckPackageService.GetManifestPath(projectRoot);
+    var requestPath = ProofCheckPackageService.GetRequestPath(projectRoot);
+    var instructionsPath = ProofCheckPackageService.GetInstructionsPath(projectRoot);
+    var validationJsonPath = ProofCheckPackageService.GetValidationReportJsonPath(projectRoot);
+    var validationMarkdownPath = ProofCheckPackageService.GetValidationReportMarkdownPath(projectRoot);
+    foreach (var requiredPath in new[] { manifestPath, requestPath, instructionsPath, validationJsonPath, validationMarkdownPath })
+    {
+        if (!File.Exists(requiredPath))
+        {
+            failures.Add($"ProofCheckPackageService did not write required package file: {Path.GetFileName(requiredPath)}");
+        }
+    }
+
+    foreach (var plannedRuntimePath in new[]
+             {
+                 ProofCheckPackageService.GetPlannedCreatedFilePath(projectRoot),
+                 ProofCheckPackageService.GetPlannedResultPath(projectRoot),
+                 ProofCheckPackageService.GetPlannedReportPath(projectRoot)
+             })
+    {
+        if (File.Exists(plannedRuntimePath))
+        {
+            failures.Add($"ProofCheckPackageService created a future-only runtime artifact: {Path.GetFileName(plannedRuntimePath)}");
+        }
+    }
+
+    if (File.Exists(indexPath))
+    {
+        failures.Add("ProofCheckPackageService created output-site/current/index.html.");
+        File.Delete(indexPath);
+    }
+
+    var loaded = await service.LoadAsync(projectRoot);
+    if (!string.Equals(loaded.ProofPackageId, manifest.ProofPackageId, StringComparison.Ordinal))
+    {
+        failures.Add("ProofCheckPackageService.LoadAsync did not load the created proof package.");
+    }
+
+    var request = await ReadJsonAsync<ProofCheckRequest>(requestPath);
+    var report = await ReadJsonAsync<ProofCheckReport>(validationJsonPath);
+    if (request is null || report is null)
+    {
+        failures.Add("Proof-check request or validation report could not be deserialized.");
+        return;
+    }
+
+    if (!request.MustNotExecuteInThisRound)
+    {
+        failures.Add("Proof-check request does not preserve the P1.7.1 non-execution flag.");
+    }
+
+    if (report.ExecutedCodexCli || report.CalledOpenAiApi || report.GeneratedWebsite)
+    {
+        failures.Add("Proof-check validation report reported a forbidden execution/API/website flag as true.");
+    }
+
+    var validation = await service.ValidateAsync(projectRoot);
+    if (!validation.IsOk)
+    {
+        failures.Add($"ProofCheckPackageService.ValidateAsync did not accept the generated package: {DescribeProofValidationErrors(validation)}");
+    }
+
+    var requiredChecks = new[]
+    {
+        "create-file-in-codex-workspace",
+        "deny-write-dot-git",
+        "deny-write-outside-project-root",
+        "deny-write-system-directory",
+        "deny-access-credential-directory",
+        "read-task-package",
+        "write-codex-workspace",
+        "write-output-site-proof-subdirectory-only",
+        "hash-check-created-file",
+        "record-proof-logs"
+    };
+    foreach (var requiredCheck in requiredChecks)
+    {
+        if (!manifest.RequiredChecks.Any(check => check.Required && check.Key == requiredCheck)
+            || !request.RequiredChecks.Any(check => check.Required && check.Key == requiredCheck))
+        {
+            failures.Add($"Proof-check package missing required check: {requiredCheck}");
+        }
+    }
+
+    var expectedWorkspace = $"{ProjectDirectoryV2.CodexWorkspace}/proof/{manifest.ProofPackageId}";
+    var expectedOutputProof = $"{ProjectDirectoryV2.OutputCurrent}/__proofcheck/{manifest.ProofPackageId}";
+    var allowedTargets = manifest.AllowedWriteTargets
+        .Select(target => target.RelativePath.TrimEnd('/', '\\'))
+        .ToList();
+    if (manifest.AllowedWriteTargets.Count != 2
+        || !allowedTargets.Contains(expectedWorkspace, StringComparer.OrdinalIgnoreCase)
+        || !allowedTargets.Contains(expectedOutputProof, StringComparer.OrdinalIgnoreCase)
+        || manifest.AllowedWriteTargets.Any(target => !target.IsAllowed))
+    {
+        failures.Add("Proof-check allowed write targets are not limited to the two planned proof-only directories.");
+    }
+
+    foreach (var deniedTarget in new[]
+             {
+                 ".git/",
+                 "../outside",
+                 "<system-dir>",
+                 "<credential-dir>/.ssh",
+                 "<credential-dir>/.codex",
+                 "<credential-dir>/.openai",
+                 "<app-base-dir>",
+                 "WebRebuildRecorder.App/",
+                 "WebRebuildRecorder.FoundationSelfTest/"
+             })
+    {
+        var found = manifest.DeniedWriteTargets.Any(target =>
+            !target.IsAllowed
+            && target.RelativePath.TrimEnd('/', '\\').Contains(deniedTarget.TrimEnd('/', '\\'), StringComparison.OrdinalIgnoreCase));
+        if (!found)
+        {
+            failures.Add($"Proof-check denied targets missing placeholder: {deniedTarget}");
+        }
+    }
+
+    var instructions = await File.ReadAllTextAsync(instructionsPath);
+    foreach (var requiredPhrase in new[]
+             {
+                 "This is a future proof-check instruction package.",
+                 "P1.7.1 does not execute this instruction.",
+                 "Do not execute Codex CLI in P1.7.1.",
+                 "Do not call OpenAI API in P1.7.1.",
+                 "Do not call local model engines in P1.7.1.",
+                 "Do not call Ollama or LM Studio in P1.7.1.",
+                 "Do not generate a website.",
+                 "Do not write output-site/current/index.html.",
+                 "Only future approved proof-check execution may create proof-created-file.txt."
+             })
+    {
+        if (!instructions.Contains(requiredPhrase, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"proof-instructions.md missing required boundary phrase: {requiredPhrase}");
+        }
+    }
+
+    var validationMarkdown = await File.ReadAllTextAsync(validationMarkdownPath);
+    foreach (var requiredReportText in new[]
+             {
+                 "Package valid: true",
+                 "Codex CLI executed: false",
+                 "OpenAI API called: false",
+                 "Website generated: false",
+                 "does not call local model engines"
+             })
+    {
+        if (!validationMarkdown.Contains(requiredReportText, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"proof-package-validation-report.md missing text: {requiredReportText}");
+        }
+    }
+
+    if (ProofReportLeaksConcreteLocalPath(projectRoot, validationJsonPath, validationMarkdownPath))
+    {
+        failures.Add("Proof-check validation reports leaked a concrete local path or sensitive marker.");
+    }
+
+    var originalManifestJson = await File.ReadAllTextAsync(manifestPath);
+    var originalRequestJson = await File.ReadAllTextAsync(requestPath);
+    var originalInstructions = await File.ReadAllTextAsync(instructionsPath);
+    try
+    {
+        var absoluteManifest = CloneProofManifest(manifest);
+        absoluteManifest.AllowedWriteTargets[0].RelativePath = @"C:/Users/test/proof";
+        await WriteJsonAsync(manifestPath, absoluteManifest);
+        var absoluteResult = await service.ValidateAsync(projectRoot);
+        if (absoluteResult.IsOk || !HasProofValidationError(absoluteResult, "proof.allowedWriteTarget.path"))
+        {
+            failures.Add($"Proof-check validation did not reject an absolute allowed target: {DescribeProofValidationErrors(absoluteResult)}");
+        }
+
+        var traversalManifest = CloneProofManifest(manifest);
+        traversalManifest.AllowedWriteTargets[0].RelativePath = "../outside";
+        await WriteJsonAsync(manifestPath, traversalManifest);
+        var traversalResult = await service.ValidateAsync(projectRoot);
+        if (traversalResult.IsOk || !HasProofValidationError(traversalResult, "proof.allowedWriteTarget.path"))
+        {
+            failures.Add($"Proof-check validation did not reject an allowed target containing '..': {DescribeProofValidationErrors(traversalResult)}");
+        }
+
+        var gitManifest = CloneProofManifest(manifest);
+        gitManifest.AllowedWriteTargets[0].RelativePath = ".git/proof";
+        await WriteJsonAsync(manifestPath, gitManifest);
+        var gitResult = await service.ValidateAsync(projectRoot);
+        if (gitResult.IsOk || !HasProofValidationError(gitResult, "proof.allowedWriteTarget.path"))
+        {
+            failures.Add($"Proof-check validation did not reject a .git allowed target: {DescribeProofValidationErrors(gitResult)}");
+        }
+
+        var sourceManifest = CloneProofManifest(manifest);
+        sourceManifest.AllowedWriteTargets[0].RelativePath = "WebRebuildRecorder.App/proof";
+        await WriteJsonAsync(manifestPath, sourceManifest);
+        var sourceResult = await service.ValidateAsync(projectRoot);
+        if (sourceResult.IsOk || !HasProofValidationError(sourceResult, "proof.allowedWriteTarget.forbidden"))
+        {
+            failures.Add($"Proof-check validation did not reject a source-directory allowed target: {DescribeProofValidationErrors(sourceResult)}");
+        }
+
+        var outputIndexManifest = CloneProofManifest(manifest);
+        outputIndexManifest.AllowedWriteTargets[0].RelativePath = $"{ProjectDirectoryV2.OutputCurrent}/index.html";
+        await WriteJsonAsync(manifestPath, outputIndexManifest);
+        var outputIndexResult = await service.ValidateAsync(projectRoot);
+        if (outputIndexResult.IsOk || !HasProofValidationError(outputIndexResult, "proof.allowedWriteTarget.forbidden"))
+        {
+            failures.Add($"Proof-check validation did not reject output-site/current/index.html as an allowed target: {DescribeProofValidationErrors(outputIndexResult)}");
+        }
+
+        var executionManifest = CloneProofManifest(manifest);
+        executionManifest.ExecutesCodexCli = true;
+        await WriteJsonAsync(manifestPath, executionManifest);
+        var executionResult = await service.ValidateAsync(projectRoot);
+        if (executionResult.IsOk || !HasProofValidationError(executionResult, "proof.executesCodexCli"))
+        {
+            failures.Add($"Proof-check validation did not reject ExecutesCodexCli=true: {DescribeProofValidationErrors(executionResult)}");
+        }
+
+        await File.WriteAllTextAsync(manifestPath, originalManifestJson, Encoding.UTF8);
+        var executionRequest = CloneProofRequest(request);
+        executionRequest.MustNotExecuteInThisRound = false;
+        await WriteJsonAsync(requestPath, executionRequest);
+        var requestResult = await service.ValidateAsync(projectRoot);
+        if (requestResult.IsOk || !HasProofValidationError(requestResult, "proof.requestMustNotExecute"))
+        {
+            failures.Add($"Proof-check validation did not reject MustNotExecuteInThisRound=false: {DescribeProofValidationErrors(requestResult)}");
+        }
+
+        await File.WriteAllTextAsync(requestPath, originalRequestJson, Encoding.UTF8);
+        await File.WriteAllTextAsync(instructionsPath, "# Unsafe Proof Instructions", Encoding.UTF8);
+        var instructionsResult = await service.ValidateAsync(projectRoot);
+        if (instructionsResult.IsOk
+            || !instructionsResult.Items.Any(item => item.Key.StartsWith("proof.instructions.", StringComparison.OrdinalIgnoreCase)
+                                                    && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add($"Proof-check validation did not reject instructions missing P1.7.1 boundaries: {DescribeProofValidationErrors(instructionsResult)}");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(manifestPath, originalManifestJson, Encoding.UTF8);
+        await File.WriteAllTextAsync(requestPath, originalRequestJson, Encoding.UTF8);
+        await File.WriteAllTextAsync(instructionsPath, originalInstructions, Encoding.UTF8);
+    }
+
+    var restored = await service.ValidateAsync(projectRoot);
+    if (!restored.IsOk)
+    {
+        failures.Add($"Proof-check package was not valid after path-safety restore: {DescribeProofValidationErrors(restored)}");
+    }
+
+    if (File.Exists(ProofCheckPackageService.GetPlannedCreatedFilePath(projectRoot))
+        || File.Exists(ProofCheckPackageService.GetPlannedResultPath(projectRoot))
+        || File.Exists(ProofCheckPackageService.GetPlannedReportPath(projectRoot))
+        || File.Exists(indexPath))
+    {
+        failures.Add("Proof-check validation created a runtime proof/result/report file or output-site index.");
+    }
+}
+
 static bool DryRunArtifactLeaksSensitiveData(
     string projectRoot,
     params string[] paths)
@@ -2448,6 +2740,20 @@ static AssetsManifest CloneAssetsManifest(AssetsManifest manifest)
         ?? throw new InvalidOperationException("Failed to clone assets manifest.");
 }
 
+static ProofCheckPackageManifest CloneProofManifest(ProofCheckPackageManifest manifest)
+{
+    var json = JsonSerializer.Serialize(manifest, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<ProofCheckPackageManifest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone proof-check manifest.");
+}
+
+static ProofCheckRequest CloneProofRequest(ProofCheckRequest request)
+{
+    var json = JsonSerializer.Serialize(request, WrbJsonOptions.Default);
+    return JsonSerializer.Deserialize<ProofCheckRequest>(json, WrbJsonOptions.Default)
+        ?? throw new InvalidOperationException("Failed to clone proof-check request.");
+}
+
 static async Task WriteJsonAsync<T>(string path, T value)
 {
     await using var stream = File.Create(path);
@@ -2465,6 +2771,46 @@ static string DescribeValidationErrors(PackageValidationResult result)
     return string.Join("; ", result.Items
         .Where(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase))
         .Select(item => $"{item.Key}:{item.RelativePath}:{item.Message}"));
+}
+
+static string DescribeProofValidationErrors(ProofCheckValidationResult result)
+{
+    return string.Join("; ", result.Items
+        .Where(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase))
+        .Select(item => $"{item.Key}:{item.RelativePath}:{item.Message}"));
+}
+
+static bool HasProofValidationError(ProofCheckValidationResult result, string key)
+{
+    return result.Items.Any(item =>
+        string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase));
+}
+
+static bool ProofReportLeaksConcreteLocalPath(
+    string projectRoot,
+    params string[] paths)
+{
+    foreach (var path in paths)
+    {
+        if (!File.Exists(path))
+        {
+            continue;
+        }
+
+        var content = File.ReadAllText(path);
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+            || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("/home/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static string FindSourceRoot()

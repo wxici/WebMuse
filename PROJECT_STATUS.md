@@ -1,5 +1,30 @@
 # Project Status
 
+## Latest Implementation Update: P1.7.1 Proof-check Package Models
+
+Snapshot time: 2026-06-03 15:15 +08:00.
+
+P1.7.1 implements proof-check package models and manifest only. It does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
+Completed in this round:
+
+1. Added `ProofCheckPackage.cs` with proof-check schema, manifest, request, result, report, target, input reference, and validation models.
+2. Added `ProofCheckPackageService.cs` with package creation, loading, validation, proof instructions, and validation reports.
+3. Generated package paths are limited to `codex-task/proof/proof-manifest.json`, `proof-request.json`, `proof-instructions.md`, `proof-package-validation-report.json`, and `proof-package-validation-report.md`.
+4. Future result paths are declared but not generated: `proof-created-file.txt`, `proof-result.json`, and `proof-report.md`.
+5. FoundationSelfTest now verifies P1.7.1 models, persistence, validation, path safety, and non-execution boundaries while keeping all existing P0/P1 checks passing.
+
+Verification:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Result: build passed with 0 warnings and 0 errors; FoundationSelfTest passed.
+
+Next implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 still must not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
 ## Latest Direction Update: Source Snapshot And Asset Slot Overlay
 
 Snapshot time: 2026-06-03.

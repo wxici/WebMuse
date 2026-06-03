@@ -1,5 +1,32 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-03 P1.7.1 proof-check package models and manifest
+
+P1.7.1 implemented the first proof-check package layer. It is package/validation only and still does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
+Implemented:
+
+- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`
+- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`
+- model types for proof schema, manifest, request, future result, validation report, required checks, path targets, input references, validation result, and validation items
+- `CreateNewAsync`, `LoadAsync`, and `ValidateAsync`
+- package files under `codex-task/proof/`: `proof-manifest.json`, `proof-request.json`, `proof-instructions.md`, `proof-package-validation-report.json`, and `proof-package-validation-report.md`
+- planned future result paths only: `proof-created-file.txt`, `proof-result.json`, and `proof-report.md`
+- FoundationSelfTest coverage for package models, persistence, validation, path safety, and non-execution boundaries
+
+The generated proof instructions explicitly state that P1.7.1 does not execute the instruction, does not run Codex CLI, does not call OpenAI API, does not call local model engines, does not generate a website, does not write `output-site/current/index.html`, and only future approved proof-check execution may create `proof-created-file.txt`.
+
+Verification on 2026-06-03:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Both passed. Build reported 0 warnings and 0 errors.
+
+Next recommended implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 must remain non-executing.
+
 ## 2026-06-03 Source Snapshot and Asset Slot Overlay direction update
 
 WebMuse future observation architecture is updated from recording/frame-extraction-first to Source Snapshot first.

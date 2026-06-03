@@ -32,6 +32,7 @@ The repository contains selected migrated source from the historical `WebRebuild
 - FoundationSelfTest passes.
 - Migration audit created.
 - Sensitive/generated artifact filtering completed for the initial migration.
+- P1.7.1 proof-check package models, manifest/request persistence, validation reports, path-safety checks, and FoundationSelfTest coverage completed.
 
 ## Unfinished Modules
 
@@ -39,6 +40,8 @@ The repository contains selected migrated source from the historical `WebRebuild
 - Manual Codex for OSS application submission is not completed yet.
 - External public-readiness review is still pending.
 - README architecture details may still need review after the first external pass.
+- P1.7.2 approval gate models and persistence are not implemented yet.
+- Real proof-check execution is not implemented yet.
 
 ## Current Key Issues
 
@@ -64,6 +67,8 @@ The repository contains selected migrated source from the historical `WebRebuild
 
 ## Recent Modification Summary
 
+2026-06-03: Completed P1.7.1 proof-check package models and manifest. Added `ProofCheckPackage.cs`, `ProofCheckPackageService.cs`, and FoundationSelfTest coverage for proof package creation, loading, validation, path safety, and non-execution boundaries. This round generates only package/instruction/validation files under `codex-task/proof/` at runtime; it does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, write `output-site/current/index.html`, or create future runtime result files.
+
 2026-06-03: Updated the product direction at blueprint level from recording/frame-extraction-first to controlled Source Snapshot first with rendered DOM/resource/style/code-readability analysis, asset slot map generation, clickable asset slot overlays, user-owned asset import, real-time preview replacement, and copyright-safe export policy. This is documentation-only and does not implement source crawling, WebView2, Codex execution, OpenAI API calls, website generation, recording changes, frame extraction changes, or asset slot UI.
 
 2026-06-02: Completed Manual PoC 001 OSS presentation update. Added curated compressed public WebP evidence images, `docs/case-studies/manual-poc-001/README.md`, an asset manifest, README Manual PoC evidence section, PoC history link, roadmap future WPF floating tuning window note, public demo screenshot security rules, OSS presentation release notes, and an alpha observation demo plan. No product code, UI implementation, real Codex execution, OpenAI API calls, WebView2 preview, recording behavior changes, frame extraction behavior changes, release binaries, raw ZIPs, raw recordings, extracted frame sets, customer materials, credentials, local path configuration, or generated output-site artifacts were added. `dotnet restore`, `dotnet build`, and FoundationSelfTest passed.
@@ -85,7 +90,7 @@ Round 0.2 issues:
 
 ## Next Priorities
 
-1. Manually submit the Codex for OSS application form.
+1. P1.7.2 Approval gate models and persistence, still non-executing.
 2. External public-readiness review.
 3. Prepare `v0.1.0-alpha` after review.
 

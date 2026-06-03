@@ -548,3 +548,92 @@
 - Current errors/warnings: No unresolved Git conflict. Push still pending after amend.
 - If interrupted, continue from: Run `git status --short --branch`, amend or commit the checkpoint record if still unstaged, then push `main` normally.
 - Notes: Do not force-push. Preserve the three remote Manual PoC documentation commits.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Finalized the Source Snapshot and asset slot overlay direction sync, including blueprint, roadmap, project memory, status, state, current task, and checkpoint updates.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files this task: `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. No application source code, UI, WebView2 implementation, source crawler, Codex CLI execution, OpenAI API call, website generation, recording behavior, frame extraction behavior, generated output, media, zip, secret, customer material, or local configuration was added or changed.
+- Known issues: WebMuse remains early alpha. GitHub Pages status and real execution capabilities remain separate follow-up concerns. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` remain missing from this public repository.
+- Project run: Not run. The task changed only Markdown and project memory/status files.
+- Tests passed: Git status and diff checks passed; build was not required because no source files changed.
+- Commit pushed: `07f356de0cdc68d2588c375ded5585bb9772bc5a` (`Document Source Snapshot and asset slot workflow direction`) pushed to `origin/main`.
+- Next recommendation: Continue with P1.7.1 Proof-check package models and manifest. P1.7.1 still must not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-03 14:51:51 +08:00
+- Previous task status: Completed. Latest local and remote `main` contains `07f356de0cdc68d2588c375ded5585bb9772bc5a`.
+- Confirmed complete: Yes.
+- Remaining issues: WebMuse remains early alpha; real Codex execution, OpenAI API calls, local model execution, website generation, WebView2 preview, source snapshot service, asset slot UI, and complete tuning UI remain unimplemented. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are missing from the public repository.
+- Can this task begin: Yes. The user request is P1.7.1 Proof-check Package Models and Manifest, a code implementation round that explicitly remains non-executing.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 14:51:51 +08:00
+- Current task: P1.7.1 Proof-check Package Models and Manifest.
+- Current stage: Startup checks completed; preparing source inspection.
+- Completed: Confirmed repository path `E:\GitHub\WebMuse`; confirmed remote is `https://github.com/wxici/WebMuse.git`; confirmed required source/status files and projects exist; confirmed working tree was clean before this checkpoint; read required project files and P1.7 design; read optional `CODEX_CONSTRUCTION_RULES.md`, `README.md`, `CONTRIBUTING.md`, and `SECURITY.md`; confirmed `review_package/` and `codex-task/proof/` are ignored; confirmed old `git.exe` processes are Git fsmonitor daemons, not active commit or push operations.
+- In progress: Inspecting existing project-system services, path helpers, sandbox policy, JSON options, and FoundationSelfTest patterns before implementation.
+- Not completed: Proof-check models, `ProofCheckPackageService`, FoundationSelfTest updates, short status docs, build, self-test, git audit, commit, push, final completion marker.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Expected yes; source has not been modified yet.
+- Tested: Git/source existence checks only.
+- Test result: `git status` was clean before this checkpoint; full build and self-test pending after implementation.
+- Current errors/warnings: `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are missing from this public repository. They are recorded as missing, not fabricated. This task must not create or submit runtime proof files under `codex-task/proof/`.
+- If interrupted, continue from: Inspect `WebRebuildRecorder.App/Core/ProjectSystem`, `SandboxPathPolicy`, `ProjectPackagePathHelpers`, and `WebRebuildRecorder.FoundationSelfTest/Program.cs`, then implement only P1.7.1 package models/service and harness coverage.
+- Notes: Do not execute Codex CLI, run `codex`, call OpenAI API, call Ollama or LM Studio, access remote AI services, generate a website, write `output-site/current/index.html`, create `proof-created-file.txt`, create `proof-result.json`, create `proof-report.md`, or change UI/WebView2/tuning/Reference Portal/Design Context/ProposalPreview behavior.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 15:10:04 +08:00
+- Current task: P1.7.1 Proof-check Package Models and Manifest.
+- Current stage: App service and self-test implementation completed; verification not yet run.
+- Completed: Added proof-check package model definitions; added proof-check package service with package creation, loading, validation, instruction generation, validation reports, path checks, and non-execution boundaries; extended FoundationSelfTest with P1.7.1 proof-package persistence, validation, path-safety, and non-execution checks.
+- In progress: Build/self-test verification.
+- Not completed: Short status document updates, `dotnet build WebRebuildRecorder.slnx`, `dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj`, commit, push, final completion marker.
+- Modified files: `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`, `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`, `WebRebuildRecorder.FoundationSelfTest/Program.cs`, `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`, `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`.
+- Deleted files: None.
+- Can currently run: Unknown until build/self-test are run.
+- Tested: Not yet.
+- Test result: Pending.
+- Current errors/warnings: None observed before verification.
+- If interrupted, continue from: Run build, fix compile/runtime issues if any, then update short status docs and commit/push.
+- Notes: Proof package service is designed to generate only `codex-task/proof` package/validation files at runtime and must not create future result files or `output-site/current/index.html`.
+
+## Current Checkpoint
+
+- Update time: 2026-06-03 15:19:05 +08:00
+- Current task: P1.7.1 Proof-check Package Models and Manifest.
+- Current stage: Implementation, documentation update, build, and self-test completed; final audit/commit/push in progress.
+- Completed: Added proof-check models and service; added FoundationSelfTest P1.7.1 coverage; updated `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, and `docs/project-memory/PROJECT_MEMORY_FULL.md`; ran required build and self-test.
+- In progress: Git diff audit, commit, push, and final completion marker.
+- Not completed: Commit and push.
+- Modified files: `CURRENT_TASK.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `WebRebuildRecorder.FoundationSelfTest/Program.cs`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files: `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`, `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`.
+- Deleted files: None.
+- Can currently run: Yes.
+- Tested: Yes.
+- Test result: `dotnet build WebRebuildRecorder.slnx` passed with 0 warnings and 0 errors; `dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed and printed the required P1.7.1 proof-check verification lines.
+- Current errors/warnings: None. `codex-task/proof/` and `review_package/` do not exist in the repository root.
+- If interrupted, continue from: Run `git diff --check`, inspect intended diffs, then commit with `P1.7.1 add proof-check package models and manifest` and push `main`.
+- Notes: The repo still lacks optional `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md`; they were not fabricated. Runtime proof artifacts remain ignored/not committed.
+
+## Task Completion Marker
+
+- Status: Completed.
+- Completed in this task: Implemented P1.7.1 proof-check package models and manifest/request/instruction/validation package generation; added package load and validation service; added path-safety checks, denied-placeholder checks, non-execution boundary checks, and validation reports; extended FoundationSelfTest with P1.7.1 model, persistence, validation, path safety, and non-execution coverage; updated allowed short status/memory docs.
+- Modified files this task: `CURRENT_TASK.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `WebRebuildRecorder.FoundationSelfTest/Program.cs`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files this task: `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`, `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`.
+- Deleted files this task: None.
+- Existing functionality preserved: Yes. Existing P0/P1 self-test coverage still passes. No UI, WebView2, recording, frame extraction, tuning, Reference Portal, Design Context, ProposalPreview, real Codex execution, OpenAI API call, local model call, or website generation was added.
+- Known issues: WebMuse remains early alpha. P1.7.2 approval gate models/persistence, real proof-check execution, real Codex CLI execution, OpenAI API calls, local model execution, website generation, WebView2 preview, and complete tuning UI remain unimplemented. Optional `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are still missing from this public repository.
+- Project run: Required verification was run.
+- Tests passed: `dotnet build WebRebuildRecorder.slnx` passed with 0 warnings and 0 errors; `dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed and printed all required P1.7.1 proof-check lines.
+- Next recommendation: Continue with P1.7.2 Approval gate models and persistence. P1.7.2 must still not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
