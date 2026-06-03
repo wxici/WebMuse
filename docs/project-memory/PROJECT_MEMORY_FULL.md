@@ -1,37 +1,65 @@
 # PROJECT_MEMORY_FULL.md
 
-## 2026-06-03 P1.7.1 repository workflow correction
+## 2026-06-03 P1.7.2 approval gate models and persistence
 
-P1.7.1 proof-check package models and manifest first landed in the public OSS WebMuse repository as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9`.
-That implementation has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder` as commit `31afe67 Backfill P1.7.1 proof-check package into WebRebuildRecorder`.
+P1.7.2 implements approval gate models and persistence only.
 
-Repository workflow is now:
+It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
 
-1. implement and verify in `wxici/codex/WebRebuildRecorder`;
-2. commit and push prototype changes;
-3. synchronize only public-safe source and documentation to `wxici/WebMuse`.
+P1.7.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
-WebMuse remains the public OSS mirror and presentation repository. The prototype repository remains the construction source of truth for future implementation rounds.
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-This update only documents the workflow correction. It does not change WebMuse source code, UI, WebView2, Codex CLI execution, OpenAI API usage, local model usage, website generation, proof runtime outputs, zips, logs, customer materials, tokens, keys, cookies, or generated artifacts.
+This round lands the approval-gate portion of the P1.7 design in the prototype repository first:
 
-Next implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 must start in the prototype repository and must still not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
+- `WebRebuildRecorder.App/Core/ProjectSystem/ApprovalGate.cs`
+- `WebRebuildRecorder.App/Core/ProjectSystem/ApprovalGateService.cs`
+- expanded `WebRebuildRecorder.FoundationSelfTest/Program.cs`
 
-## 2026-06-03 P1.7.1 proof-check package models and manifest
+Approval gate model coverage:
 
-P1.7.1 implemented the first proof-check package layer. It is package/validation only and still does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+- schema constants in `ApprovalGateSchema`;
+- gate types for proof-check, real Codex execution, output-site writes, overwrites, export zip, and uploads;
+- decision states `Pending`, `Approved`, `Rejected`, `Expired`, `Cancelled`, and `Superseded`;
+- request/result/binding/validation models;
+- `CannotBeBypassedByAi = true` defaults.
 
-Implemented:
+Approval persistence:
 
-- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`
-- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`
-- model types for proof schema, manifest, request, future result, validation report, required checks, path targets, input references, validation result, and validation items
-- `CreateNewAsync`, `LoadAsync`, and `ValidateAsync`
-- package files under `codex-task/proof/`: `proof-manifest.json`, `proof-request.json`, `proof-instructions.md`, `proof-package-validation-report.json`, and `proof-package-validation-report.md`
-- planned future result paths only: `proof-created-file.txt`, `proof-result.json`, and `proof-report.md`
-- FoundationSelfTest coverage for package models, persistence, validation, path safety, and non-execution boundaries
+```text
+codex-task/approvals/<approval-id>/
+  approval-request.json
+  approval-result.json
+  approval-validation-report.json
+  approval-validation-report.md
+```
 
-The generated proof instructions explicitly state that P1.7.1 does not execute the instruction, does not run Codex CLI, does not call OpenAI API, does not call local model engines, does not generate a website, does not write `output-site/current/index.html`, and only future approved proof-check execution may create `proof-created-file.txt`.
+Approval bindings include required hashes for:
+
+- `codex-task/task-package.json`;
+- `codex-task/instructions.md`.
+
+When present, bindings also record optional hashes for:
+
+- latest dry-run plan;
+- `codex-task/proof/proof-manifest.json`;
+- future `codex-task/execution-plan.json`.
+
+Approval validation checks schema, project id, approval id, gate type, purpose/summary/risk fields, non-bypass flag, project-relative stored paths, required binding file existence, current hashes, sensitive/local path leakage, and decision state. `ApproveAsync()` revalidates current hashes and refuses stale approvals.
+
+Allowed transitions:
+
+- Pending -> Approved
+- Pending -> Rejected
+- Pending -> Cancelled
+- Pending -> Expired
+- Pending -> Superseded
+- Approved -> Superseded
+- Approved -> Expired
+
+Forbidden transitions such as Rejected -> Approved, Cancelled -> Approved, Expired -> Approved, Superseded -> Approved, and Approved -> Rejected throw `InvalidOperationException`.
+
+Runtime approval artifacts are ignored by root and project `.gitignore` rules and must not be committed from real project folders.
 
 Verification on 2026-06-03:
 
@@ -40,39 +68,57 @@ dotnet build WebRebuildRecorder.slnx
 dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-Both passed. Build reported 0 warnings and 0 errors.
+Both passed. Build reported 0 warnings and 0 errors. FoundationSelfTest printed the required P1.7.2 approval gate verification lines.
 
-Next recommended implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 must remain non-executing.
+Repository workflow remains prototype-first: implement and verify in `wxici/codex/WebRebuildRecorder`, then synchronize only public-safe source and documentation to `wxici/WebMuse`.
 
-## 2026-06-03 Source Snapshot and Asset Slot Overlay direction update
+Next recommended implementation round: P1.7.3 Execution precondition service, still without real Codex CLI execution, OpenAI API calls, local model calls, website generation, or `output-site/current/index.html`.
 
-WebMuse future observation architecture is updated from recording/frame-extraction-first to Source Snapshot first.
+## 2026-06-03 P1.7.1-sync proof-check backfill
 
-The preferred future workflow is:
+P1.7.1 was accidentally implemented first in the public OSS presentation repository `wxici/WebMuse`.
+The source commit used for this backfill is `2d2cb82a02992103d292f16bb80d25ae1a2a94b9` with message `P1.7.1 add proof-check package models and manifest`.
 
-```text
-reference URL
-  -> controlled source snapshot
-  -> rendered DOM / raw HTML / CSS / JS / assets / screenshot capture
-  -> code readability and capture quality classification
-  -> structure map, style profile, color palette, typography profile
-  -> asset slot map
-  -> targeted recording only for interaction gaps
-  -> construction package
-  -> new branded output
-  -> user clicks asset slots to upload own assets
-  -> real-time replacement in preview
-  -> tuning and validation
-  -> export
+This round restores the intended repository order by backfilling P1.7.1 into the primary prototype repository `wxici/codex/WebRebuildRecorder`.
+Going forward, the primary construction workflow is:
+
+1. implement and verify in `wxici/codex/WebRebuildRecorder`;
+2. commit and push prototype changes;
+3. synchronize only public-safe source and documentation to `wxici/WebMuse`.
+
+Backfilled prototype source:
+
+- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackage.cs`
+- `WebRebuildRecorder.App/Core/ProjectSystem/ProofCheckPackageService.cs`
+- P1.7.1 proof-check coverage in `WebRebuildRecorder.FoundationSelfTest/Program.cs`
+
+The P1.7.1 proof-check package creates and validates proof package manifests and request/result/report models, including non-execution flags:
+
+- `ExecutesCodexCli = false`
+- `CallsOpenAiApi = false`
+- `GeneratesWebsite = false`
+- `MustNotExecuteInThisRound = true`
+
+FoundationSelfTest now verifies proof-check models, persistence, validation, path safety, and the non-execution boundary.
+
+Allowed P1.7.1 source artifacts are the model/service files and self-test code. Real runtime artifacts remain forbidden:
+
+- no real `codex-task/proof/proof-created-file.txt`;
+- no real `codex-task/proof/proof-result.json`;
+- no real `codex-task/proof/proof-report.md`;
+- no generated `output-site/current/index.html`;
+- no zips, logs, customer materials, tokens, keys, cookies, or build outputs.
+
+Verification on 2026-06-03:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
 ```
 
-Captured reference-site code, logos, images, copy, and unique assets are analysis inputs only by default. They should not enter final export unless the user explicitly confirms authorization.
+Both commands passed. Build reported 0 warnings and 0 errors. FoundationSelfTest printed the required P1.7.1 proof-check verification lines.
 
-The generated preview should prefer clickable asset slot overlays over bundled preset photography. Image/media slots display required ratio, size, count, tone, and purpose. Clicking a slot should eventually call the WPF host through WebView2, open a file picker, copy the asset into `assets/user-assets/`, update `asset-slot-map.json` and `asset-map.json`, then refresh the preview.
-
-Logo may use temporary text or a simple SVG placeholder. Generic stock photography should not be bundled by default.
-
-Every future Codex instruction for WebMuse must include an OSS GitHub update block: update relevant blueprint/memory/roadmap/status/current-task/review summaries, avoid committing generated or sensitive files, commit and push clean source/documentation changes to `wxici/WebMuse`.
+Next recommended implementation round: P1.7.2 Approval gate models and persistence. P1.7.2 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
 
 ## 2026-05-31 P1.7-0 proof-check and approval-gate design
 

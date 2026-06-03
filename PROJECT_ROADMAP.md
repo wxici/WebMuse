@@ -2,23 +2,25 @@
 
 ## Current Recommended Next Stage
 
-After P1.7.1, continue strengthening approval foundations before entering real Codex execution, WebView2, or website generation.
+After P1.7.2, continue strengthening execution preconditions before entering real Codex execution, WebView2, or website generation.
 
-Repository workflow correction after P1.7.1: `wxici/codex/WebRebuildRecorder` is the primary construction source, and `wxici/WebMuse` is the public OSS mirror/presentation repository. P1.7.1 was first committed here as `2d2cb82a02992103d292f16bb80d25ae1a2a94b9`, then backfilled to the prototype as `31afe67 Backfill P1.7.1 proof-check package into WebRebuildRecorder`.
+P1.7-0 defined proof-check and approval-gate design only. P1.7.1 was first implemented in `wxici/WebMuse` as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9` and has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder`.
 
-Future implementation should land and verify in the prototype repository first, then synchronize only public-safe source and documentation to WebMuse.
+P1.7.2 now implements approval gate models and persistence only. It adds project-relative approval request/result/report files, approval binding hashes, state transitions, stale-binding validation, and FoundationSelfTest coverage.
 
-P1.7-0 has now defined proof-check and approval-gate design only. It does not implement proof-check service, approval gate service, real Codex CLI execution, OpenAI API calls, or website generation.
+P1.7.2 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
 
-P1.7.1 has now implemented proof-check package models, manifest/request persistence, proof instructions, package validation reports, path-safety checks, and FoundationSelfTest coverage. P1.7.1 still does not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+P1.7.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 Next immediate implementation round should be:
 
-1. P1.7.2 Approval gate models and persistence.
+1. P1.7.3 Execution precondition service.
 
-P1.7.2 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
+P1.7.3 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
 
-P1.6 was later committed and pushed as cc28e56613d16032cea5664d23d8415a37610a86. Older review_package text saying commit/push was pending is historical transport context from report-writing time, not the current GitHub state.
+Repository workflow rule: implementation and verification land first in `wxici/codex/WebRebuildRecorder`; `wxici/WebMuse` receives public-safe synchronized source and documentation after prototype verification.
+
+P1.6 was later committed and pushed as cc28e56613d16032cea5664d23d8415a37610a86. Older review_package text saying commit/push was pending is historical transport context from the current GitHub state.
 
 P1.6.1 closed transport/status wording and audited generated dry-run artifacts only. It does not change the next technical stage.
 
@@ -58,27 +60,56 @@ Future directions that must not enter P1.7 unless explicitly authorized:
 - WebView2 browsing/preview integration;
 - real Codex CLI execution;
 - OpenAI API calls;
-- website generation.
+- website generation;
+- Local Responses Adapter implementation or adapter-backed provider execution.
 
 Later real Codex CLI execution can be considered only after rollback, strict readiness, dry-run orchestration, proof checks, sandbox policy, run records, and failure recovery are stable.
 
-Still do not start WebView2 preview, tuning UI, color-system UI, or real Codex CLI execution.
+Still do not start WebView2 preview, tuning UI, color-system UI, real Codex CLI execution, or Local Responses Adapter implementation.
 
-## Direction Update: Source Snapshot And Asset Slot Overlay
+## Future AI Engine Extension: Local Responses Adapter
 
-The long-term observation architecture is updated.
+A future architecture direction is recorded in:
 
-Source Snapshot becomes the preferred first observation path. Recording and frame extraction remain important but move to targeted interaction-evidence fallback.
+```text
+PROJECT_BLUEPRINT_LOCAL_RESPONSES_ADAPTER.md
+```
 
-Future implementation should add, in phase order:
+The Local Responses Adapter is a future AI engine extension layer. Its purpose is to let advanced users eventually route Codex-style Responses requests through a local machine adapter to other online model providers, while preserving official Codex / OpenAI as the recommended high-quality construction path.
 
-- P1 reserve models, directories, manifests, and export policies for source snapshots and asset slots.
-- P2 WebView2 preview shell and minimal asset slot overlay interaction.
-- P3 controlled same-origin source snapshot capture and construction-package injection.
-- P4 local screenshot/recording/frame-extraction fallback for interaction gaps.
-- P5 asset matching, batch filling, quality hints, and productized workflows.
+This direction is valuable for cost control, provider diversity, and fallback workflows, but it is not a P1.7 implementation target.
 
-This direction must not be interpreted as a clone workflow. Source assets and source code are reference evidence unless the user confirms authorization.
+Current status:
+
+- record architecture only;
+- do not implement adapter source code in P1.7;
+- do not connect adapter-backed providers in P1.7;
+- do not use adapter-backed construction in P1.7;
+- keep the adapter as `[ALT-EXPERIMENT]` until a separate proof suite repeatedly passes.
+
+Future adapter-backed providers must pass proof checks before they can be used for low-risk construction:
+
+- connectivity check;
+- text response check;
+- sandbox proof file creation;
+- small isolated source-file modification;
+- build command verification;
+- minimal repair after a small build failure;
+- path boundary validation;
+- safe report generation;
+- confirmation that no writes occur outside allowed project roots.
+
+Provider capability labels should eventually include:
+
+```text
+Not usable
+Documentation only
+Draft coding only
+Low-risk construction only
+Formal construction candidate
+```
+
+The adapter must not delay the main product path: P1.7 safety closure -> P2 professional UI shell -> WebView2 preview -> official Codex minimum construction -> basic color palette selection -> basic tuning -> export and validation.
 
 ## P0: Engineering Foundation
 
@@ -120,9 +151,6 @@ Scope:
 - `content-map` and `data-tune-id` rules
 - `current/versions` snapshot foundation
 - layered logs
-- reserve source-snapshot and asset-slot data paths
-- asset slot map schema planning
-- reference-observed asset export policy
 
 ## P2: Main UI Skeleton, Preview, Color Candidates, Task Package
 
@@ -137,7 +165,6 @@ Scope:
 - construction package generator
 - Codex CLI task orchestration foundation
 - failure classification foundation
-- basic asset slot overlay design for WebView2 preview
 
 ## P3: Codex Execution, Validation, Tuning, Fallback
 
@@ -151,9 +178,13 @@ Scope:
 - save `tune-overrides.css`
 - content-map validation
 - observation failure fallback
-- controlled source snapshot service
-- capture quality analyzer
-- asset slot map builder
+
+Future optional extension after the official construction route is stable:
+
+- Local Responses Adapter experimental awareness;
+- adapter-backed provider proof checks;
+- provider capability labels;
+- adapter-backed documentation or draft-coding mode only after proof success.
 
 ## P4: Export, Validation Reports, Correction Tools, Templates, Archives
 
@@ -169,8 +200,6 @@ Scope:
 - sample project tests
 - `.wrb` / `.wrbpkg` archive packages
 - version comparison foundation
-- interaction evidence fallback from screenshot/recording/frame extraction
-- export check against unauthorized reference-observed assets
 
 ## P5: Productization And Extension
 
@@ -184,9 +213,7 @@ Scope:
 - local section regeneration
 - multi-version comparison UI
 - full production hardening
-- asset matching service
-- batch slot filling
-- visual quality hints for uploaded assets
+- future AI Engine settings for official Codex, OpenAI API mode, Local Responses Adapter, Ollama, LM Studio, and manual construction package export
 
 ## Historical Recommended Stage
 

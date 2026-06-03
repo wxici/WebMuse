@@ -40,6 +40,7 @@ try
     await CheckP15ConstructionReadinessAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP16DryRunOrchestratorAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP171ProofCheckPackageAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP172ApprovalGateAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -96,6 +97,11 @@ try
     Console.WriteLine("[P1.7.1] Proof-check package validation verified.");
     Console.WriteLine("[P1.7.1] Proof-check path safety verified.");
     Console.WriteLine("[P1.7.1] Proof-check non-execution boundary verified.");
+    Console.WriteLine("[P1.7.2] Approval gate models verified.");
+    Console.WriteLine("[P1.7.2] Approval gate persistence verified.");
+    Console.WriteLine("[P1.7.2] Approval binding hash validation verified.");
+    Console.WriteLine("[P1.7.2] Approval state transitions verified.");
+    Console.WriteLine("[P1.7.2] Approval non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -2578,6 +2584,318 @@ static async Task CheckP171ProofCheckPackageAsync(
     }
 }
 
+static async Task CheckP172ApprovalGateAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    if (File.Exists(indexPath))
+    {
+        File.Delete(indexPath);
+    }
+
+    var service = new ApprovalGateService();
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "Future real execution approval gate",
+        "User approval is required before any future real execution can proceed.",
+        "This approval only records consent state and does not execute anything.");
+
+    if (!string.Equals(request.SchemaVersion, ApprovalGateSchema.CurrentSchemaVersion, StringComparison.Ordinal)
+        || !string.Equals(request.ProjectId, projectId, StringComparison.Ordinal)
+        || string.IsNullOrWhiteSpace(request.ApprovalId)
+        || !string.Equals(request.GateId, request.ApprovalId, StringComparison.Ordinal)
+        || request.GateType != ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution
+        || string.IsNullOrWhiteSpace(request.Purpose)
+        || string.IsNullOrWhiteSpace(request.RequiredSummary)
+        || string.IsNullOrWhiteSpace(request.RiskWarning))
+    {
+        failures.Add("ApprovalGateService did not create a request with the expected identity, type, purpose, summary, and risk fields.");
+    }
+
+    if (!request.CannotBeBypassedByAi)
+    {
+        failures.Add("ApprovalGateRequest did not force cannotBeBypassedByAi=true.");
+    }
+
+    var requestPath = ApprovalGateService.GetRequestPath(projectRoot, request.ApprovalId);
+    var resultPath = ApprovalGateService.GetResultPath(projectRoot, request.ApprovalId);
+    var validationJsonPath = ApprovalGateService.GetValidationReportJsonPath(projectRoot, request.ApprovalId);
+    var validationMarkdownPath = ApprovalGateService.GetValidationReportMarkdownPath(projectRoot, request.ApprovalId);
+    foreach (var requiredPath in new[] { requestPath, resultPath, validationJsonPath, validationMarkdownPath })
+    {
+        if (!File.Exists(requiredPath))
+        {
+            failures.Add($"ApprovalGateService did not write required approval file: {Path.GetFileName(requiredPath)}");
+        }
+    }
+
+    var loadedRequest = await service.LoadRequestAsync(projectRoot, request.ApprovalId);
+    var loadedResult = await service.LoadResultAsync(projectRoot, request.ApprovalId);
+    if (loadedRequest.GateType != ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution
+        || loadedResult.Decision != ApprovalDecision.Pending
+        || !loadedResult.CannotBeBypassedByAi)
+    {
+        failures.Add("ApprovalGateService did not load the pending request/result state correctly.");
+    }
+
+    if (Path.IsPathRooted(loadedRequest.StoredRelativePath)
+        || loadedRequest.StoredRelativePath.Contains("..", StringComparison.Ordinal)
+        || !loadedRequest.StoredRelativePath.StartsWith(ApprovalGateSchema.ApprovalsRootRelativePath, StringComparison.Ordinal))
+    {
+        failures.Add($"Approval request stored an unsafe relative path: {loadedRequest.StoredRelativePath}");
+    }
+
+    var requestJson = await File.ReadAllTextAsync(requestPath);
+    var resultJson = await File.ReadAllTextAsync(resultPath);
+    if (!requestJson.Contains("\"gateType\": \"approvalRequiredBeforeRealCodexExecution\"", StringComparison.Ordinal)
+        || !resultJson.Contains("\"decision\": \"pending\"", StringComparison.Ordinal)
+        || resultJson.Contains("\"decision\": 0", StringComparison.Ordinal))
+    {
+        failures.Add("Approval gate request/result did not serialize enums as stable strings.");
+    }
+
+    var pendingValidation = await service.ValidateAsync(projectRoot, request.ApprovalId);
+    if (pendingValidation.IsOk
+        || pendingValidation.IsExecutable
+        || !pendingValidation.IsBindingCurrent
+        || pendingValidation.Items.Any(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add($"Pending approval validation should be bound/current but not executable: {DescribeApprovalValidationErrors(pendingValidation)}");
+    }
+
+    var approvedRequest = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeProofCheck,
+        "Future proof-check approval gate",
+        "User approval is required before any future proof-check may proceed.",
+        "This round only records approval metadata.");
+    var approved = await service.ApproveAsync(projectRoot, approvedRequest.ApprovalId, "approved for self-check");
+    if (approved.Decision != ApprovalDecision.Approved)
+    {
+        failures.Add("ApproveAsync did not set decision=Approved.");
+    }
+
+    var approvedValidation = await service.ValidateAsync(projectRoot, approvedRequest.ApprovalId);
+    if (!approvedValidation.IsOk || !approvedValidation.IsExecutable || !approvedValidation.IsBindingCurrent)
+    {
+        failures.Add($"Approved approval did not validate as executable/current: {DescribeApprovalValidationErrors(approvedValidation)}");
+    }
+
+    await CheckP172TerminalTransitionAsync(
+        projectRoot,
+        service,
+        ApprovalDecision.Rejected,
+        request => service.RejectAsync(projectRoot, request.ApprovalId, "rejected in self-check"),
+        failures);
+    await CheckP172TerminalTransitionAsync(
+        projectRoot,
+        service,
+        ApprovalDecision.Cancelled,
+        request => service.CancelAsync(projectRoot, request.ApprovalId, "cancelled in self-check"),
+        failures);
+    await CheckP172TerminalTransitionAsync(
+        projectRoot,
+        service,
+        ApprovalDecision.Expired,
+        request => service.ExpireAsync(projectRoot, request.ApprovalId, "expired in self-check"),
+        failures);
+    await CheckP172TerminalTransitionAsync(
+        projectRoot,
+        service,
+        ApprovalDecision.Superseded,
+        request => service.SupersedeAsync(projectRoot, request.ApprovalId, "superseded in self-check"),
+        failures);
+
+    await CheckP172ApprovedTransitionAsync(projectRoot, service, ApprovalDecision.Superseded, failures);
+    await CheckP172ApprovedTransitionAsync(projectRoot, service, ApprovalDecision.Expired, failures);
+    await CheckP172ApprovedRejectBlockedAsync(projectRoot, service, failures);
+
+    await CheckP172TaskHashInvalidationAsync(projectRoot, service, failures);
+    await CheckP172InstructionsHashInvalidationAsync(projectRoot, service, failures);
+
+    if (ApprovalArtifactsLeakSensitiveData(projectRoot))
+    {
+        failures.Add("Approval artifacts leaked a concrete local path or sensitive marker.");
+    }
+
+    CheckP172ApprovalGitIgnore(failures);
+
+    if (File.Exists(indexPath))
+    {
+        failures.Add("Approval gate validation created output-site/current/index.html.");
+        File.Delete(indexPath);
+    }
+}
+
+static async Task CheckP172TerminalTransitionAsync(
+    string projectRoot,
+    ApprovalGateService service,
+    ApprovalDecision expectedDecision,
+    Func<ApprovalGateRequest, Task<ApprovalGateResult>> transition,
+    List<string> failures)
+{
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeUploadingAnything,
+        $"Future {expectedDecision} transition approval gate",
+        "User approval state transition must be explicit.",
+        "This transition test records metadata only.");
+    var result = await transition(request);
+    if (result.Decision != expectedDecision)
+    {
+        failures.Add($"Approval transition did not set decision={expectedDecision}.");
+    }
+
+    try
+    {
+        await service.ApproveAsync(projectRoot, request.ApprovalId, "illegal approval after terminal state");
+        failures.Add($"ApprovalGateService allowed {expectedDecision} -> Approved.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+
+    var validation = await service.ValidateAsync(projectRoot, request.ApprovalId);
+    if (validation.IsExecutable)
+    {
+        failures.Add($"Approval decision {expectedDecision} should block execution.");
+    }
+}
+
+static async Task CheckP172ApprovedTransitionAsync(
+    string projectRoot,
+    ApprovalGateService service,
+    ApprovalDecision expectedDecision,
+    List<string> failures)
+{
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeExportZip,
+        $"Future approved to {expectedDecision} approval gate",
+        "Approved approvals may only become superseded or expired.",
+        "This transition test records metadata only.");
+    await service.ApproveAsync(projectRoot, request.ApprovalId, "approved before terminal transition");
+    var result = expectedDecision == ApprovalDecision.Superseded
+        ? await service.SupersedeAsync(projectRoot, request.ApprovalId, "superseded after approval")
+        : await service.ExpireAsync(projectRoot, request.ApprovalId, "expired after approval");
+    if (result.Decision != expectedDecision)
+    {
+        failures.Add($"ApprovalGateService did not allow Approved -> {expectedDecision}.");
+    }
+}
+
+static async Task CheckP172ApprovedRejectBlockedAsync(
+    string projectRoot,
+    ApprovalGateService service,
+    List<string> failures)
+{
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeWritingOutputSite,
+        "Future output-site write approval gate",
+        "Approved approval cannot later be rejected.",
+        "This transition test records metadata only.");
+    await service.ApproveAsync(projectRoot, request.ApprovalId, "approved before illegal reject");
+    try
+    {
+        await service.RejectAsync(projectRoot, request.ApprovalId, "illegal reject after approval");
+        failures.Add("ApprovalGateService allowed Approved -> Rejected.");
+    }
+    catch (InvalidOperationException)
+    {
+    }
+}
+
+static async Task CheckP172TaskHashInvalidationAsync(
+    string projectRoot,
+    ApprovalGateService service,
+    List<string> failures)
+{
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "Future task hash approval gate",
+        "Approval must bind to the exact task package hash.",
+        "Changing the task package must stale the approval.");
+    var taskPath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var originalTaskJson = await File.ReadAllTextAsync(taskPath);
+    try
+    {
+        var taskPackage = await ReadJsonAsync<CodexTaskPackage>(taskPath);
+        if (taskPackage is null)
+        {
+            failures.Add("Could not deserialize task package for P1.7.2 stale-hash check.");
+            return;
+        }
+
+        taskPackage.Warnings.Add("P1.7.2 task hash invalidation check.");
+        await WriteJsonAsync(taskPath, taskPackage);
+        var validation = await service.ValidateAsync(projectRoot, request.ApprovalId);
+        if (validation.IsBindingCurrent
+            || !HasApprovalValidationError(validation, "approval.binding.taskPackage.hashChanged"))
+        {
+            failures.Add($"Approval validation did not detect task package hash change: {DescribeApprovalValidationErrors(validation)}");
+        }
+
+        try
+        {
+            await service.ApproveAsync(projectRoot, request.ApprovalId, "should be blocked by task hash change");
+            failures.Add("ApproveAsync allowed a stale task package binding.");
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(taskPath, originalTaskJson, Encoding.UTF8);
+    }
+}
+
+static async Task CheckP172InstructionsHashInvalidationAsync(
+    string projectRoot,
+    ApprovalGateService service,
+    List<string> failures)
+{
+    var request = await service.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "Future instructions hash approval gate",
+        "Approval must bind to the exact instructions hash.",
+        "Changing instructions must stale the approval.");
+    var instructionsPath = CodexTaskPackageService.GetInstructionsPath(projectRoot);
+    var originalInstructions = await File.ReadAllTextAsync(instructionsPath);
+    try
+    {
+        await File.WriteAllTextAsync(
+            instructionsPath,
+            originalInstructions + Environment.NewLine + "P1.7.2 instructions hash invalidation check.",
+            Encoding.UTF8);
+        var validation = await service.ValidateAsync(projectRoot, request.ApprovalId);
+        if (validation.IsBindingCurrent
+            || !HasApprovalValidationError(validation, "approval.binding.instructions.hashChanged"))
+        {
+            failures.Add($"Approval validation did not detect instructions hash change: {DescribeApprovalValidationErrors(validation)}");
+        }
+
+        try
+        {
+            await service.ApproveAsync(projectRoot, request.ApprovalId, "should be blocked by instructions hash change");
+            failures.Add("ApproveAsync allowed a stale instructions binding.");
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(instructionsPath, originalInstructions, Encoding.UTF8);
+    }
+}
+
 static bool DryRunArtifactLeaksSensitiveData(
     string projectRoot,
     params string[] paths)
@@ -2787,6 +3105,20 @@ static bool HasProofValidationError(ProofCheckValidationResult result, string ke
         && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase));
 }
 
+static string DescribeApprovalValidationErrors(ApprovalGateValidationResult result)
+{
+    return string.Join("; ", result.Items
+        .Where(item => string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase))
+        .Select(item => $"{item.Key}:{item.RelativePath}:{item.Message}"));
+}
+
+static bool HasApprovalValidationError(ApprovalGateValidationResult result, string key)
+{
+    return result.Items.Any(item =>
+        string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(item.Severity, "error", StringComparison.OrdinalIgnoreCase));
+}
+
 static bool ProofReportLeaksConcreteLocalPath(
     string projectRoot,
     params string[] paths)
@@ -2811,6 +3143,57 @@ static bool ProofReportLeaksConcreteLocalPath(
     }
 
     return false;
+}
+
+static bool ApprovalArtifactsLeakSensitiveData(string projectRoot)
+{
+    var approvalsRoot = ApprovalGateService.GetApprovalsRootPath(projectRoot);
+    if (!Directory.Exists(approvalsRoot))
+    {
+        return true;
+    }
+
+    foreach (var path in Directory.EnumerateFiles(approvalsRoot, "*", SearchOption.AllDirectories))
+    {
+        var content = File.ReadAllText(path);
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+            || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("/home/", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".ssh", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".codex", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(".openai", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" token", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" password", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" secret", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(" cookie", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void CheckP172ApprovalGitIgnore(List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    var projectIgnorePath = Path.Combine(sourceRoot, ".gitignore");
+    var repositoryIgnorePath = Path.Combine(Directory.GetParent(sourceRoot)?.FullName ?? string.Empty, ".gitignore");
+
+    if (!File.Exists(projectIgnorePath)
+        || !File.ReadAllText(projectIgnorePath).Contains("codex-task/approvals", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Project .gitignore does not ignore codex-task/approvals runtime artifacts.");
+    }
+
+    if (File.Exists(repositoryIgnorePath)
+        && !File.ReadAllText(repositoryIgnorePath).Contains("codex-task/approvals", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Repository .gitignore does not ignore WebRebuildRecorder codex-task/approvals runtime artifacts.");
+    }
 }
 
 static string FindSourceRoot()
