@@ -1,14 +1,93 @@
 # PROJECT_MEMORY_FULL.md
 
+## WebMuse Sync Note
+
+P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+## 2026-06-04 P1.7.3 execution precondition service
+
+P1.7.3 implements execution precondition aggregation only.
+
+It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+This round lands the execution-precondition aggregation layer in the prototype repository first:
+
+- `WebRebuildRecorder.App/Core/ProjectSystem/ExecutionPrecondition.cs`
+- `WebRebuildRecorder.App/Core/ProjectSystem/ExecutionPreconditionService.cs`
+- expanded `WebRebuildRecorder.FoundationSelfTest/Program.cs`
+
+Execution precondition model coverage:
+
+- schema constants in `ExecutionPreconditionSchema`;
+- status enum: `Passed`, `Warning`, `Blocked`, `NotApplicable`, `NotImplemented`;
+- severity enum: `Info`, `Warning`, `Error`;
+- decision enum: `Blocked`, `ReadyForFutureProofCheckOnly`, `ReadyForFutureRealExecution`;
+- report/item/options models;
+- non-execution flags defaulting to false.
+
+Execution report persistence:
+
+```text
+codex-task/execution/<execution-id>/
+  execution-preconditions.json
+  execution-preconditions.md
+```
+
+Execution reports are runtime artifacts, are ignored by root and project `.gitignore`, and must not be committed from real project folders.
+
+`ExecutionPreconditionService.EvaluateAsync(...)` aggregates:
+
+- P1.5 PreCodexDryRun readiness;
+- P1.6 dry-run completion and non-execution flags;
+- P1.7.1 proof-check package validation;
+- missing real proof execution as `NotImplemented` and blocking;
+- P1.7.2 approval gate validation;
+- P1.4 rollback/safety snapshot availability;
+- allowed and forbidden sandbox roots;
+- secret and local-path scan results;
+- `output-site/current` safety without creating `index.html`;
+- `codex-workspace` safety;
+- logs writability;
+- task package hash stability against approval binding;
+- construction context freshness;
+- manual fallback input availability;
+- the P1.7.3 non-execution boundary.
+
+`ExecutionPreconditionService.LoadLatestAsync(...)` loads the newest persisted report and validates schema version.
+
+Current P1.7.3 normal result remains blocked. Real proof execution and real Codex execution are not implemented, so `AllowsRealCodexExecution` remains `false`. The service also forces `ExecutesCodexCli`, `CallsOpenAiApi`, `CallsLocalModel`, and `GeneratesWebsite` to `false`.
+
+FoundationSelfTest verifies:
+
+- enum string serialization;
+- JSON and Markdown report generation;
+- project-relative report paths;
+- required aggregation item keys;
+- missing readiness, dry-run, proof package, and proof execution blocking;
+- missing, pending, rejected, and stale approvals blocking;
+- secret/local path blocking and report sanitization;
+- execution runtime `.gitignore` coverage;
+- no `output-site/current/index.html` creation;
+- no Codex CLI, OpenAI API, local model, website generation, UI, or WebView2 change.
+
+Verification on 2026-06-04:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Both commands passed with 0 build warnings and 0 build errors. Next recommended round is P1.7.4 Failure recovery policy service, still without real execution or website generation.
+
 ## 2026-06-03 P1.7.2 approval gate models and persistence
 
 P1.7.2 implements approval gate models and persistence only.
 
 It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
-
-P1.7.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 This round lands the approval-gate portion of the P1.7 design in the prototype repository first:
 

@@ -41,6 +41,7 @@ try
     await CheckP16DryRunOrchestratorAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP171ProofCheckPackageAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP172ApprovalGateAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP173ExecutionPreconditionsAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -102,6 +103,11 @@ try
     Console.WriteLine("[P1.7.2] Approval binding hash validation verified.");
     Console.WriteLine("[P1.7.2] Approval state transitions verified.");
     Console.WriteLine("[P1.7.2] Approval non-execution boundary verified.");
+    Console.WriteLine("[P1.7.3] Execution precondition models verified.");
+    Console.WriteLine("[P1.7.3] Execution precondition persistence verified.");
+    Console.WriteLine("[P1.7.3] Readiness/dry-run/proof/approval aggregation verified.");
+    Console.WriteLine("[P1.7.3] Blocking preconditions verified.");
+    Console.WriteLine("[P1.7.3] Execution precondition non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -2896,6 +2902,456 @@ static async Task CheckP172InstructionsHashInvalidationAsync(
     }
 }
 
+static async Task CheckP173ExecutionPreconditionsAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    if (File.Exists(indexPath))
+    {
+        File.Delete(indexPath);
+    }
+
+    var service = new ExecutionPreconditionService();
+    var approvalService = new ApprovalGateService();
+    var taskService = new CodexTaskPackageService();
+    var contentBuilder = new ConstructionPackageContentBuilderService();
+
+    var enumJson = JsonSerializer.Serialize(ExecutionPreconditionDecision.Blocked, WrbJsonOptions.Default);
+    if (!enumJson.Contains("\"blocked\"", StringComparison.Ordinal))
+    {
+        failures.Add("ExecutionPreconditionDecision did not serialize as a JSON string enum.");
+    }
+
+    await CheckP173MissingApprovalAsync(projectRoot, service, failures);
+    await contentBuilder.BuildAsync(projectRoot);
+
+    var baseline = await service.EvaluateAsync(projectRoot);
+    if (!string.Equals(baseline.SchemaVersion, ExecutionPreconditionSchema.CurrentSchemaVersion, StringComparison.Ordinal)
+        || !string.Equals(baseline.ProjectId, projectId, StringComparison.Ordinal)
+        || string.IsNullOrWhiteSpace(baseline.ExecutionId))
+    {
+        failures.Add("ExecutionPreconditionService did not create a report with expected schema/project/execution identity.");
+    }
+
+    if (baseline.AllowsRealCodexExecution
+        || baseline.ExecutesCodexCli
+        || baseline.CallsOpenAiApi
+        || baseline.CallsLocalModel
+        || baseline.GeneratesWebsite
+        || baseline.Decision != ExecutionPreconditionDecision.Blocked)
+    {
+        failures.Add("ExecutionPreconditionService default report did not keep real execution blocked and non-executing.");
+    }
+
+    var jsonPath = ExecutionPreconditionService.GetPreconditionsPath(projectRoot, baseline.ExecutionId);
+    var markdownPath = ExecutionPreconditionService.GetPreconditionsMarkdownPath(projectRoot, baseline.ExecutionId);
+    if (!File.Exists(jsonPath) || !File.Exists(markdownPath))
+    {
+        failures.Add("ExecutionPreconditionService did not write JSON and Markdown reports.");
+    }
+    else
+    {
+        var reportJson = await File.ReadAllTextAsync(jsonPath);
+        var reportMarkdown = await File.ReadAllTextAsync(markdownPath);
+        if (!reportJson.Contains("\"decision\": \"blocked\"", StringComparison.Ordinal)
+            || reportJson.Contains("\"decision\": 0", StringComparison.Ordinal)
+            || !reportJson.Contains("\"status\": \"notImplemented\"", StringComparison.Ordinal))
+        {
+            failures.Add("execution-preconditions.json did not serialize enums as stable strings.");
+        }
+
+        foreach (var requiredText in new[]
+                 {
+                     "# Execution Preconditions Report",
+                     "Decision",
+                     "AllowsRealCodexExecution",
+                     "## Blocking Reasons",
+                     "## Warnings",
+                     "## Precondition Items"
+                 })
+        {
+            if (!reportMarkdown.Contains(requiredText, StringComparison.OrdinalIgnoreCase))
+            {
+                failures.Add($"execution-preconditions.md missing required section/text: {requiredText}");
+            }
+        }
+    }
+
+    if (Path.IsPathRooted(baseline.StoredRelativePath)
+        || baseline.StoredRelativePath.Contains("..", StringComparison.Ordinal)
+        || !baseline.StoredRelativePath.StartsWith(ExecutionPreconditionSchema.ExecutionRootRelativePath, StringComparison.Ordinal))
+    {
+        failures.Add($"Execution precondition stored path is not project-relative: {baseline.StoredRelativePath}");
+    }
+
+    var latest = await service.LoadLatestAsync(projectRoot);
+    if (string.IsNullOrWhiteSpace(latest.ExecutionId))
+    {
+        failures.Add("ExecutionPreconditionService.LoadLatestAsync did not load the latest report.");
+    }
+
+    foreach (var requiredKey in new[]
+             {
+                 "readiness.preCodexDryRun.passed",
+                 "dryRun.completed",
+                 "proof.package.valid",
+                 "proof.execution.passed",
+                 "approval.execution.approved",
+                 "rollback.safetySnapshot.available",
+                 "sandbox.allowedWriteRoots.verified",
+                 "sandbox.forbiddenRoots.verified",
+                 "security.secretScan.clean",
+                 "security.localPathScan.clean",
+                 "outputSite.current.safe",
+                 "codexWorkspace.safe",
+                 "logs.writable",
+                 "taskPackage.hashStable",
+                 "context.freshness.valid",
+                 "manualFallback.available",
+                 "nonExecutionBoundary.enforced"
+             })
+    {
+        if (!baseline.Items.Any(item => string.Equals(item.Key, requiredKey, StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add($"Execution precondition report missing item: {requiredKey}");
+        }
+    }
+
+    if (!HasExecutionItem(baseline, "proof.execution.passed", ExecutionPreconditionStatus.NotImplemented, blocks: true))
+    {
+        failures.Add("Execution precondition report did not block missing real proof execution as NotImplemented.");
+    }
+
+    var approvedRequest = await approvalService.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "P1.7.3 future execution approval",
+        "Approval is required before any future real execution can proceed.",
+        "This self-test approval records metadata only.");
+    await approvalService.ApproveAsync(projectRoot, approvedRequest.ApprovalId, "approved for P1.7.3 aggregation self-test");
+
+    var approvedReport = await service.EvaluateAsync(projectRoot);
+    foreach (var expectedPassed in new[]
+             {
+                 "readiness.preCodexDryRun.passed",
+                 "dryRun.completed",
+                 "proof.package.valid",
+                 "approval.execution.approved",
+                 "rollback.safetySnapshot.available",
+                 "sandbox.allowedWriteRoots.verified",
+                 "sandbox.forbiddenRoots.verified",
+                 "security.secretScan.clean",
+                 "security.localPathScan.clean",
+                 "outputSite.current.safe",
+                 "codexWorkspace.safe",
+                 "logs.writable",
+                 "taskPackage.hashStable",
+                 "context.freshness.valid",
+                 "manualFallback.available",
+                 "nonExecutionBoundary.enforced"
+             })
+    {
+        if (!HasExecutionItem(approvedReport, expectedPassed, ExecutionPreconditionStatus.Passed, blocks: false))
+        {
+            failures.Add($"Execution precondition aggregation did not pass expected item {expectedPassed}: {DescribeExecutionReport(approvedReport)}");
+        }
+    }
+
+    if (approvedReport.AllowsRealCodexExecution
+        || approvedReport.Decision != ExecutionPreconditionDecision.Blocked
+        || !HasExecutionItem(approvedReport, "proof.execution.passed", ExecutionPreconditionStatus.NotImplemented, blocks: true))
+    {
+        failures.Add("Approved aggregation should still block because real proof execution is not implemented.");
+    }
+
+    await CheckP173MissingReadinessAsync(projectRoot, service, contentBuilder, failures);
+    await CheckP173MissingDryRunAsync(projectRoot, service, failures);
+    await CheckP173MissingProofPackageAsync(projectRoot, service, failures);
+    await CheckP173ApprovalBlockingAsync(projectRoot, service, approvalService, failures);
+    await CheckP173SecretAndLocalPathBlockingAsync(projectRoot, service, taskService, contentBuilder, failures);
+
+    var leak = DescribeExecutionReportLeaks(projectRoot);
+    if (!string.IsNullOrWhiteSpace(leak))
+    {
+        failures.Add($"Execution precondition reports leaked a concrete local path or sensitive marker: {leak}");
+    }
+
+    CheckP173ExecutionGitIgnore(failures);
+
+    if (File.Exists(indexPath))
+    {
+        failures.Add("ExecutionPreconditionService created output-site/current/index.html.");
+        File.Delete(indexPath);
+    }
+}
+
+static async Task CheckP173MissingApprovalAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    List<string> failures)
+{
+    var approvalsRoot = ApprovalGateService.GetApprovalsRootPath(projectRoot);
+    var holdRoot = approvalsRoot + ".p173hold";
+    if (Directory.Exists(holdRoot))
+    {
+        Directory.Delete(holdRoot, recursive: true);
+    }
+
+    var moved = Directory.Exists(approvalsRoot);
+    if (moved)
+    {
+        Directory.Move(approvalsRoot, holdRoot);
+    }
+
+    try
+    {
+        var report = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(report, "approval.execution.approved", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block missing execution approval.");
+        }
+    }
+    finally
+    {
+        if (moved)
+        {
+            if (Directory.Exists(approvalsRoot))
+            {
+                Directory.Delete(approvalsRoot, recursive: true);
+            }
+
+            Directory.Move(holdRoot, approvalsRoot);
+        }
+    }
+}
+
+static async Task CheckP173MissingReadinessAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var packageIndexPath = Path.Combine(
+        projectRoot,
+        ConstructionPackageContextSchema.PackageIndexRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var original = await File.ReadAllTextAsync(packageIndexPath);
+    File.Delete(packageIndexPath);
+    try
+    {
+        var report = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(report, "readiness.preCodexDryRun.passed", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block missing/stale readiness inputs.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(packageIndexPath, original, Encoding.UTF8);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static async Task CheckP173MissingDryRunAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    List<string> failures)
+{
+    var dryRunsRoot = Path.Combine(projectRoot, CodexDryRunSchema.DryRunsRootRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var holdRoot = dryRunsRoot + ".p173hold";
+    if (Directory.Exists(holdRoot))
+    {
+        Directory.Delete(holdRoot, recursive: true);
+    }
+
+    var moved = Directory.Exists(dryRunsRoot);
+    if (moved)
+    {
+        Directory.Move(dryRunsRoot, holdRoot);
+    }
+
+    try
+    {
+        var report = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(report, "dryRun.completed", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block missing dry-run result.");
+        }
+    }
+    finally
+    {
+        if (moved)
+        {
+            if (Directory.Exists(dryRunsRoot))
+            {
+                Directory.Delete(dryRunsRoot, recursive: true);
+            }
+
+            Directory.Move(holdRoot, dryRunsRoot);
+        }
+    }
+}
+
+static async Task CheckP173MissingProofPackageAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    List<string> failures)
+{
+    var proofRoot = ProofCheckPackageService.GetProofRootPath(projectRoot);
+    var holdRoot = proofRoot + ".p173hold";
+    if (Directory.Exists(holdRoot))
+    {
+        Directory.Delete(holdRoot, recursive: true);
+    }
+
+    var moved = Directory.Exists(proofRoot);
+    if (moved)
+    {
+        Directory.Move(proofRoot, holdRoot);
+    }
+
+    try
+    {
+        var report = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(report, "proof.package.valid", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block missing proof-check package.");
+        }
+    }
+    finally
+    {
+        if (Directory.Exists(proofRoot))
+        {
+            Directory.Delete(proofRoot, recursive: true);
+        }
+
+        if (moved)
+        {
+            Directory.Move(holdRoot, proofRoot);
+        }
+    }
+}
+
+static async Task CheckP173ApprovalBlockingAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    ApprovalGateService approvalService,
+    List<string> failures)
+{
+    var pending = await approvalService.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "P1.7.3 pending approval",
+        "Pending approval must not authorize execution.",
+        "This approval remains pending for self-test.");
+    var pendingReport = await service.EvaluateAsync(projectRoot);
+    if (!HasExecutionItem(pendingReport, "approval.execution.approved", ExecutionPreconditionStatus.Blocked, blocks: true))
+    {
+        failures.Add($"Execution precondition service did not block pending approval {pending.ApprovalId}.");
+    }
+
+    var rejected = await approvalService.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "P1.7.3 rejected approval",
+        "Rejected approval must not authorize execution.",
+        "This approval is rejected for self-test.");
+    await approvalService.RejectAsync(projectRoot, rejected.ApprovalId, "rejected for P1.7.3 self-test");
+    var rejectedReport = await service.EvaluateAsync(projectRoot);
+    if (!HasExecutionItem(rejectedReport, "approval.execution.approved", ExecutionPreconditionStatus.Blocked, blocks: true))
+    {
+        failures.Add("Execution precondition service did not block rejected approval.");
+    }
+
+    var stale = await approvalService.CreatePendingAsync(
+        projectRoot,
+        ApprovalGateType.ApprovalRequiredBeforeRealCodexExecution,
+        "P1.7.3 stale approval",
+        "Stale approval must not authorize execution.",
+        "This approval is made stale by changing task package.");
+    await approvalService.ApproveAsync(projectRoot, stale.ApprovalId, "approved before stale hash self-test");
+    var taskPath = CodexTaskPackageService.GetPackagePath(projectRoot);
+    var originalTaskJson = await File.ReadAllTextAsync(taskPath);
+    try
+    {
+        var taskPackage = await ReadJsonAsync<CodexTaskPackage>(taskPath);
+        if (taskPackage is null)
+        {
+            failures.Add("Could not deserialize task package for P1.7.3 stale approval check.");
+            return;
+        }
+
+        taskPackage.Warnings.Add("P1.7.3 stale approval hash self-test.");
+        await WriteJsonAsync(taskPath, taskPackage);
+        var staleReport = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(staleReport, "approval.execution.approved", ExecutionPreconditionStatus.Blocked, blocks: true)
+            || !HasExecutionItem(staleReport, "taskPackage.hashStable", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block approved but stale approval binding.");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(taskPath, originalTaskJson, Encoding.UTF8);
+    }
+}
+
+static async Task CheckP173SecretAndLocalPathBlockingAsync(
+    string projectRoot,
+    ExecutionPreconditionService service,
+    CodexTaskPackageService taskService,
+    ConstructionPackageContentBuilderService contentBuilder,
+    List<string> failures)
+{
+    var instructionsPath = CodexTaskPackageService.GetInstructionsPath(projectRoot);
+    var originalInstructions = await File.ReadAllTextAsync(instructionsPath);
+    await File.WriteAllTextAsync(
+        instructionsPath,
+        originalInstructions + Environment.NewLine + @"OPENAI_API_KEY=sk-test C:\Users\test\.ssh token=password",
+        Encoding.UTF8);
+
+    try
+    {
+        var report = await service.EvaluateAsync(projectRoot);
+        if (!HasExecutionItem(report, "security.secretScan.clean", ExecutionPreconditionStatus.Blocked, blocks: true)
+            || !HasExecutionItem(report, "security.localPathScan.clean", ExecutionPreconditionStatus.Blocked, blocks: true))
+        {
+            failures.Add("Execution precondition service did not block secret and local path markers.");
+        }
+
+        var leak = DescribeExecutionReportLeaks(projectRoot);
+        if (!string.IsNullOrWhiteSpace(leak))
+        {
+            failures.Add($"Execution precondition sanitizer did not remove sensitive/local markers from reports: {leak}");
+        }
+    }
+    finally
+    {
+        await File.WriteAllTextAsync(instructionsPath, originalInstructions, Encoding.UTF8);
+        var cleanTask = await taskService.LoadAsync(projectRoot);
+        await taskService.WriteInstructionsAsync(projectRoot, cleanTask);
+        await contentBuilder.BuildAsync(projectRoot);
+    }
+}
+
+static bool HasExecutionItem(
+    ExecutionPreconditionReport report,
+    string key,
+    ExecutionPreconditionStatus status,
+    bool blocks)
+{
+    return report.Items.Any(item =>
+        string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase)
+        && item.Status == status
+        && item.BlocksExecution == blocks);
+}
+
+static string DescribeExecutionReport(ExecutionPreconditionReport report)
+{
+    return string.Join("; ", report.Items.Select(item => $"{item.Key}:{item.Status}:{item.BlocksExecution}:{item.Message}"));
+}
+
 static bool DryRunArtifactLeaksSensitiveData(
     string projectRoot,
     params string[] paths)
@@ -3162,9 +3618,7 @@ static bool ApprovalArtifactsLeakSensitiveData(string projectRoot)
             || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
             || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
             || content.Contains("/home/", StringComparison.OrdinalIgnoreCase)
-            || content.Contains(".ssh", StringComparison.OrdinalIgnoreCase)
-            || content.Contains(".codex", StringComparison.OrdinalIgnoreCase)
-            || content.Contains(".openai", StringComparison.OrdinalIgnoreCase)
+            || ContainsCredentialDirectoryMarker(content)
             || content.Contains(" token", StringComparison.OrdinalIgnoreCase)
             || content.Contains(" password", StringComparison.OrdinalIgnoreCase)
             || content.Contains(" secret", StringComparison.OrdinalIgnoreCase)
@@ -3175,6 +3629,58 @@ static bool ApprovalArtifactsLeakSensitiveData(string projectRoot)
     }
 
     return false;
+}
+
+static string DescribeExecutionReportLeaks(string projectRoot)
+{
+    var executionRoot = Path.Combine(
+        projectRoot,
+        ExecutionPreconditionSchema.ExecutionRootRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    if (!Directory.Exists(executionRoot))
+    {
+        return "execution root missing";
+    }
+
+    foreach (var path in Directory.EnumerateFiles(executionRoot, "*", SearchOption.AllDirectories))
+    {
+        var content = File.ReadAllText(path);
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+            || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("/home/", StringComparison.OrdinalIgnoreCase)
+            || ContainsCredentialDirectoryMarker(content)
+            || content.Contains("token=", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("password=", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("cookie=", StringComparison.OrdinalIgnoreCase))
+        {
+            var relativePath = Path.GetRelativePath(projectRoot, path)
+                .Replace(Path.DirectorySeparatorChar, '/')
+                .Replace(Path.AltDirectorySeparatorChar, '/');
+            var marker = content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase) ? "projectRoot"
+                : content.Contains("sk-test", StringComparison.OrdinalIgnoreCase) ? "sk-test"
+                : content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase) ? "OPENAI_API_KEY"
+                : content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase) ? "C:\\Users"
+                : content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase) ? "E:\\"
+                : content.Contains("/home/", StringComparison.OrdinalIgnoreCase) ? "/home/"
+                : ContainsCredentialDirectoryMarker(content) ? "credential-dir"
+                : content.Contains("token=", StringComparison.OrdinalIgnoreCase) ? "token="
+                : content.Contains("password=", StringComparison.OrdinalIgnoreCase) ? "password="
+                : content.Contains("cookie=", StringComparison.OrdinalIgnoreCase) ? "cookie="
+                : "unknown";
+            var markerIndex = content.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            var snippet = markerIndex < 0
+                ? string.Empty
+                : content.Substring(
+                        Math.Max(0, markerIndex - 40),
+                        Math.Min(120, content.Length - Math.Max(0, markerIndex - 40)))
+                    .ReplaceLineEndings(" ");
+            return $"{relativePath}:{marker}:{snippet}";
+        }
+    }
+
+    return string.Empty;
 }
 
 static void CheckP172ApprovalGitIgnore(List<string> failures)
@@ -3193,6 +3699,56 @@ static void CheckP172ApprovalGitIgnore(List<string> failures)
         && !File.ReadAllText(repositoryIgnorePath).Contains("codex-task/approvals", StringComparison.OrdinalIgnoreCase))
     {
         failures.Add("Repository .gitignore does not ignore WebRebuildRecorder codex-task/approvals runtime artifacts.");
+    }
+}
+
+static bool ContainsCredentialDirectoryMarker(string content)
+{
+    foreach (var marker in new[] { ".ssh", ".codex", ".openai" })
+    {
+        var index = 0;
+        while (index < content.Length)
+        {
+            index = content.IndexOf(marker, index, StringComparison.OrdinalIgnoreCase);
+            if (index < 0)
+            {
+                break;
+            }
+
+            var nextIndex = index + marker.Length;
+            if (nextIndex >= content.Length || IsCredentialMarkerBoundary(content[nextIndex]))
+            {
+                return true;
+            }
+
+            index = nextIndex;
+        }
+    }
+
+    return false;
+}
+
+static bool IsCredentialMarkerBoundary(char value)
+{
+    return value is '/' or '\\' or ' ' or '.' or ':' or ';' or '"' or '\'' or '`' or ',' or ')' or ']';
+}
+
+static void CheckP173ExecutionGitIgnore(List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    var projectIgnorePath = Path.Combine(sourceRoot, ".gitignore");
+    var repositoryIgnorePath = Path.Combine(Directory.GetParent(sourceRoot)?.FullName ?? string.Empty, ".gitignore");
+
+    if (!File.Exists(projectIgnorePath)
+        || !File.ReadAllText(projectIgnorePath).Contains("codex-task/execution", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Project .gitignore does not ignore codex-task/execution runtime artifacts.");
+    }
+
+    if (File.Exists(repositoryIgnorePath)
+        && !File.ReadAllText(repositoryIgnorePath).Contains("codex-task/execution", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Repository .gitignore does not ignore WebRebuildRecorder codex-task/execution runtime artifacts.");
     }
 }
 

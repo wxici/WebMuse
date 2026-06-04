@@ -21,6 +21,7 @@ extracted-frames/
 output-site/current/
 codex-task/dry-runs/
 codex-task/runs/
+codex-task/execution/
 codex-task/approvals/
 codex-task/proof/
 

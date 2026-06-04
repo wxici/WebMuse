@@ -1,22 +1,32 @@
 # Project Roadmap
 
+## WebMuse Sync Note
+
+P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
 ## Current Recommended Next Stage
 
-After P1.7.2, continue strengthening execution preconditions before entering real Codex execution, WebView2, or website generation.
+After P1.7.3, continue strengthening failure recovery policy before entering real Codex execution, WebView2, or website generation.
 
 P1.7-0 defined proof-check and approval-gate design only. P1.7.1 was first implemented in `wxici/WebMuse` as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9` and has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder`.
 
-P1.7.2 now implements approval gate models and persistence only. It adds project-relative approval request/result/report files, approval binding hashes, state transitions, stale-binding validation, and FoundationSelfTest coverage.
+P1.7.2 implements approval gate models and persistence only. It adds project-relative approval request/result/report files, approval binding hashes, state transitions, stale-binding validation, and FoundationSelfTest coverage.
 
 P1.7.2 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
 
-P1.7.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+P1.7.3 now implements execution precondition aggregation only. It adds `ExecutionPrecondition.cs`, `ExecutionPreconditionService.cs`, `EvaluateAsync(...)`, `LoadLatestAsync(...)`, runtime execution-precondition reports, aggregation over readiness/dry-run/proof package/approval/rollback/sandbox/security/output/context/manual fallback checks, and FoundationSelfTest coverage.
+
+P1.7.3 still does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`. In the current phase, missing real proof execution remains `NotImplemented` and blocks real execution; `AllowsRealCodexExecution` remains `false`.
 
 Next immediate implementation round should be:
 
-1. P1.7.3 Execution precondition service.
+1. P1.7.4 Failure recovery policy service.
 
-P1.7.3 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
+P1.7.4 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
 
 Repository workflow rule: implementation and verification land first in `wxici/codex/WebRebuildRecorder`; `wxici/WebMuse` receives public-safe synchronized source and documentation after prototype verification.
 
@@ -53,6 +63,7 @@ P1.7 should still avoid real execution unless explicitly authorized. It should d
 Future directions that must not enter P1.7 unless explicitly authorized:
 
 - Design Context Library implementation;
+- Design Asset Pipeline implementation beyond documentation/schema reservation;
 - Reference Portal UI or remote portal integration;
 - Reference Site Library UI, database, crawler, submission system, or community layer;
 - Frontend Effect Recipe Library implementation;
@@ -111,6 +122,35 @@ Formal construction candidate
 
 The adapter must not delay the main product path: P1.7 safety closure -> P2 professional UI shell -> WebView2 preview -> official Codex minimum construction -> basic color palette selection -> basic tuning -> export and validation.
 
+## Future Design Asset Pipeline
+
+A future architecture direction is recorded in:
+
+```text
+PROJECT_BLUEPRINT_DESIGN_ASSET_PIPELINE.md
+```
+
+The Design Asset Pipeline governs future external DESIGN.md files, Design Skills, Taste Skills, Agent Skills, reference design libraries, and competitor pattern notes.
+
+Current status:
+
+- record architecture only;
+- do not build the full asset library in P1.7;
+- do not build a design asset UI in P1.7;
+- do not bulk-import external design files in P1.7;
+- do not offer direct customer-facing brand-template selection in P1.7;
+- keep all external design assets as candidates until classified, normalized, and reviewed.
+
+Future design assets should move through:
+
+```text
+collect -> classify -> normalize -> risk review -> derive -> project-context injection
+```
+
+The long-term goal is to derive WebMuse-owned neutral style profiles and rulesets, then inject only safe merged project context such as `merged.DESIGN.md`, `style-profile.json`, `quality-rules.md`, `forbidden-patterns.md`, `asset-slot-guide.md`, and `license-risk-report.md` into construction packages.
+
+The pipeline must not delay the main product path: P1.7 safety closure -> P2 professional UI shell -> WebView2 preview -> official Codex minimum construction -> basic color palette selection -> basic tuning -> export and validation.
+
 ## P0: Engineering Foundation
 
 Goal: establish the safe project base before product expansion.
@@ -151,6 +191,7 @@ Scope:
 - `content-map` and `data-tune-id` rules
 - `current/versions` snapshot foundation
 - layered logs
+- optional awareness of future design-context and design-asset-pipeline directories only
 
 ## P2: Main UI Skeleton, Preview, Color Candidates, Task Package
 
@@ -165,6 +206,8 @@ Scope:
 - construction package generator
 - Codex CLI task orchestration foundation
 - failure classification foundation
+- project-level design-context directory stubs when explicitly authorized
+- small WebMuse-owned profile stubs when explicitly authorized
 
 ## P3: Codex Execution, Validation, Tuning, Fallback
 
@@ -184,7 +227,8 @@ Future optional extension after the official construction route is stable:
 - Local Responses Adapter experimental awareness;
 - adapter-backed provider proof checks;
 - provider capability labels;
-- adapter-backed documentation or draft-coding mode only after proof success.
+- adapter-backed documentation or draft-coding mode only after proof success;
+- external DESIGN.md or Skill import after design-asset-pipeline review.
 
 ## P4: Export, Validation Reports, Correction Tools, Templates, Archives
 
@@ -200,6 +244,7 @@ Scope:
 - sample project tests
 - `.wrb` / `.wrbpkg` archive packages
 - version comparison foundation
+- design acceptance checks using WebMuse-owned rulesets when the design asset pipeline is mature
 
 ## P5: Productization And Extension
 
@@ -214,6 +259,7 @@ Scope:
 - multi-version comparison UI
 - full production hardening
 - future AI Engine settings for official Codex, OpenAI API mode, Local Responses Adapter, Ollama, LM Studio, and manual construction package export
+- future Design Asset Registry UI and profile/version management after the core delivery path is stable
 
 ## Historical Recommended Stage
 
