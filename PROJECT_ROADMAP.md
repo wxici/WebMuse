@@ -2,6 +2,12 @@
 
 ## WebMuse Sync Note
 
+P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.8-0 is an early alpha validation probe. It does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
 P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
@@ -10,7 +16,13 @@ P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, cal
 
 ## Current Recommended Next Stage
 
-After P1.7.3, continue strengthening failure recovery policy before entering real Codex execution, WebView2, or website generation.
+After P1.8-0, continue strengthening failure recovery policy before entering real Codex execution, WebView2, or website generation.
+
+Next immediate implementation round should be:
+
+1. P1.7.4-A Failure recovery models + static policy table.
+
+P1.7.4-A still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
 
 P1.7-0 defined proof-check and approval-gate design only. P1.7.1 was first implemented in `wxici/WebMuse` as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9` and has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder`.
 
@@ -21,12 +33,6 @@ P1.7.2 does not execute Codex CLI, run any `codex` command, call OpenAI API, cal
 P1.7.3 now implements execution precondition aggregation only. It adds `ExecutionPrecondition.cs`, `ExecutionPreconditionService.cs`, `EvaluateAsync(...)`, `LoadLatestAsync(...)`, runtime execution-precondition reports, aggregation over readiness/dry-run/proof package/approval/rollback/sandbox/security/output/context/manual fallback checks, and FoundationSelfTest coverage.
 
 P1.7.3 still does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`. In the current phase, missing real proof execution remains `NotImplemented` and blocks real execution; `AllowsRealCodexExecution` remains `false`.
-
-Next immediate implementation round should be:
-
-1. P1.7.4 Failure recovery policy service.
-
-P1.7.4 still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, or generate websites.
 
 Repository workflow rule: implementation and verification land first in `wxici/codex/WebRebuildRecorder`; `wxici/WebMuse` receives public-safe synchronized source and documentation after prototype verification.
 

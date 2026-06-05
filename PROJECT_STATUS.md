@@ -1,5 +1,38 @@
 # Project Status
 
+## Latest P1.8-0 Early Alpha Validation Probe
+
+Snapshot time: 2026-06-05.
+
+WebMuse sync status: P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.8-0 is an early alpha validation probe. It does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+It also does not run any `codex` command, implement P1.7.4 failure recovery, implement a manual export fallback writer, or change UI/WebView2/Source Snapshot/ProposalPreview behavior.
+
+Synced source:
+
+1. `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbe.cs`
+2. `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbeService.cs`
+3. `WebRebuildRecorder.FoundationSelfTest/Program.cs`
+
+The probe writes runtime reports under ignored `codex-task/alpha-validation/<probe-id>/alpha-validation-report.json` and `alpha-validation-report.md`.
+
+The probe composes existing P0/P1 foundations into one explainable local report: V2 project structure, project manifest, assets/theme/content-map, observation package, construction package, task package/instructions, P1.5 readiness, P1.6 dry-run, P1.7.1 proof package, P1.7.2 approval artifacts, P1.7.3 execution precondition, manual fallback evidence, runtime artifact ignore coverage, and non-execution boundary checks.
+
+Prototype verification before sync:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Result: passed in the prototype repository and printed the five required P1.8-0 verification lines.
+
+Next recommended round: P1.7.4-A Failure recovery models + static policy table.
+
 ## Latest P1.7.3 Execution Precondition Service
 
 Snapshot time: 2026-06-04 16:37 +08:00.

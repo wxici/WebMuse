@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using WebRebuildRecorder.App.Core.Logging;
@@ -42,6 +43,7 @@ try
     await CheckP171ProofCheckPackageAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP172ApprovalGateAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP173ExecutionPreconditionsAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP180AlphaValidationProbeAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -108,6 +110,11 @@ try
     Console.WriteLine("[P1.7.3] Readiness/dry-run/proof/approval aggregation verified.");
     Console.WriteLine("[P1.7.3] Blocking preconditions verified.");
     Console.WriteLine("[P1.7.3] Execution precondition non-execution boundary verified.");
+    Console.WriteLine("[P1.8-0] Alpha validation probe models verified.");
+    Console.WriteLine("[P1.8-0] Alpha validation probe persistence verified.");
+    Console.WriteLine("[P1.8-0] Local pipeline probe steps verified.");
+    Console.WriteLine("[P1.8-0] Blocked-but-explainable alpha evidence verified.");
+    Console.WriteLine("[P1.8-0] Alpha validation non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -3087,6 +3094,241 @@ static async Task CheckP173ExecutionPreconditionsAsync(
     }
 }
 
+static async Task CheckP180AlphaValidationProbeAsync(
+    string projectRoot,
+    string projectId,
+    List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    if (!File.Exists(Path.Combine(sourceRoot, "WebRebuildRecorder.App", "Core", "ProjectSystem", "AlphaValidationProbe.cs")))
+    {
+        failures.Add("AlphaValidationProbe.cs was not found in the project-system source folder.");
+    }
+
+    if (!File.Exists(Path.Combine(sourceRoot, "WebRebuildRecorder.App", "Core", "ProjectSystem", "AlphaValidationProbeService.cs")))
+    {
+        failures.Add("AlphaValidationProbeService.cs was not found in the project-system source folder.");
+    }
+
+    var indexPath = Path.Combine(projectRoot, ProjectDirectoryV2.OutputCurrent, "index.html");
+    if (File.Exists(indexPath))
+    {
+        File.Delete(indexPath);
+    }
+
+    var service = new AlphaValidationProbeService();
+    var enumJson = JsonSerializer.Serialize(AlphaValidationStepStatus.NotImplemented, WrbJsonOptions.Default);
+    if (!enumJson.Contains("\"notImplemented\"", StringComparison.Ordinal))
+    {
+        failures.Add("AlphaValidationStepStatus did not serialize as a JSON string enum.");
+    }
+
+    var report = await service.RunAsync(projectRoot);
+    if (!string.Equals(report.SchemaVersion, AlphaValidationProbeSchema.CurrentSchemaVersion, StringComparison.Ordinal)
+        || !string.Equals(report.ProjectId, projectId, StringComparison.Ordinal)
+        || string.IsNullOrWhiteSpace(report.ProbeId))
+    {
+        failures.Add("AlphaValidationProbeService did not create a report with expected schema/project/probe identity.");
+    }
+
+    if (!report.IsUsableAsAlphaEvidence
+        || report.ExecutesCodexCli
+        || report.CallsOpenAiApi
+        || report.CallsLocalModel
+        || report.GeneratesWebsite)
+    {
+        failures.Add("Alpha validation report did not preserve usable alpha evidence with non-execution flags false.");
+    }
+
+    var jsonPath = AlphaValidationProbeService.GetReportJsonPath(projectRoot, report.ProbeId);
+    var markdownPath = AlphaValidationProbeService.GetReportMarkdownPath(projectRoot, report.ProbeId);
+    if (!File.Exists(jsonPath) || !File.Exists(markdownPath))
+    {
+        failures.Add("AlphaValidationProbeService.RunAsync did not write JSON and Markdown reports.");
+    }
+    else
+    {
+        var reportJson = await File.ReadAllTextAsync(jsonPath);
+        var reportMarkdown = await File.ReadAllTextAsync(markdownPath);
+        if (!reportJson.Contains("\"status\": \"notImplemented\"", StringComparison.Ordinal)
+            || reportJson.Contains("\"status\": 4", StringComparison.Ordinal))
+        {
+            failures.Add("alpha-validation-report.json did not serialize step enums as stable strings.");
+        }
+
+        foreach (var requiredText in new[]
+                 {
+                     "# Alpha Validation Probe Report",
+                     "ProjectId",
+                     "ProbeId",
+                     "CreatedAt",
+                     "IsUsableAsAlphaEvidence",
+                     "## Summary",
+                     "## Steps",
+                     "## Blocking Reasons",
+                     "## Warnings",
+                     "## Next Recommended Action",
+                     "This probe does not execute Codex CLI.",
+                     "This probe does not run any codex command.",
+                     "This probe does not call OpenAI API.",
+                     "This probe does not call local model engines.",
+                     "This probe does not generate a website.",
+                     "This probe does not write output-site/current/index.html."
+                 })
+        {
+            if (!reportMarkdown.Contains(requiredText, StringComparison.OrdinalIgnoreCase))
+            {
+                failures.Add($"alpha-validation-report.md missing required text: {requiredText}");
+            }
+        }
+    }
+
+    if (Path.IsPathRooted(report.StoredRelativePath)
+        || report.StoredRelativePath.Contains("..", StringComparison.Ordinal)
+        || !report.StoredRelativePath.StartsWith(AlphaValidationProbeSchema.AlphaValidationRootRelativePath, StringComparison.Ordinal))
+    {
+        failures.Add($"Alpha validation stored path is not project-relative: {report.StoredRelativePath}");
+    }
+
+    var latest = await service.LoadLatestAsync(projectRoot);
+    if (string.IsNullOrWhiteSpace(latest.ProbeId))
+    {
+        failures.Add("AlphaValidationProbeService.LoadLatestAsync did not load the latest report.");
+    }
+
+    foreach (var requiredKey in new[]
+             {
+                 "project.v2Structure.exists",
+                 "project.manifest.exists",
+                 "assets.manifest.exists",
+                 "theme.exists",
+                 "contentMap.exists",
+                 "observation.package.exists",
+                 "construction.package.exists",
+                 "task.package.exists",
+                 "instructions.exists",
+                 "readiness.preCodexDryRun.runs",
+                 "dryRun.runsOrLatestExists",
+                 "proof.package.valid",
+                 "approval.requestOrResult.exists",
+                 "executionPrecondition.runs",
+                 "executionPrecondition.blocksRealExecution",
+                 "manualFallback.evidenceExists",
+                 "runtimeArtifacts.ignored",
+                 "nonExecutionBoundary.enforced"
+             })
+    {
+        if (!report.Steps.Any(step => string.Equals(step.Key, requiredKey, StringComparison.OrdinalIgnoreCase)))
+        {
+            failures.Add($"Alpha validation report missing step: {requiredKey}");
+        }
+    }
+
+    if (!HasAlphaStep(report, "executionPrecondition.blocksRealExecution", AlphaValidationStepStatus.Passed)
+        || !HasAlphaStep(report, "nonExecutionBoundary.enforced", AlphaValidationStepStatus.Passed))
+    {
+        failures.Add("Alpha validation did not record execution precondition blocking as valid alpha evidence.");
+    }
+
+    foreach (var expectedStatus in new[]
+             {
+                 AlphaValidationStepStatus.Passed,
+                 AlphaValidationStepStatus.Warning,
+                 AlphaValidationStepStatus.NotImplemented
+             })
+    {
+        if (!report.Steps.Any(step => step.Status == expectedStatus))
+        {
+            failures.Add($"Alpha validation report missing expected status: {expectedStatus}.");
+        }
+    }
+
+    await CheckP180BlockedButExplainableAsync(projectRoot, service, failures);
+
+    var leak = DescribeAlphaValidationReportLeaks(projectRoot);
+    if (!string.IsNullOrWhiteSpace(leak))
+    {
+        failures.Add($"Alpha validation reports leaked a concrete local path or sensitive marker: {leak}");
+    }
+
+    CheckP180AlphaGitIgnore(failures);
+    CheckP180NoForbiddenScopeDiff(failures);
+
+    if (File.Exists(indexPath))
+    {
+        failures.Add("AlphaValidationProbeService created output-site/current/index.html.");
+        File.Delete(indexPath);
+    }
+}
+
+static async Task CheckP180BlockedButExplainableAsync(
+    string projectRoot,
+    AlphaValidationProbeService service,
+    List<string> failures)
+{
+    var packagePath = Path.Combine(projectRoot, ConstructionPackageSchema.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+    var holdPath = packagePath + ".p180hold";
+    if (File.Exists(holdPath))
+    {
+        File.Delete(holdPath);
+    }
+
+    if (!File.Exists(packagePath))
+    {
+        failures.Add("Cannot run P1.8-0 blocked-but-explainable check because construction-package.json is missing before the check.");
+        return;
+    }
+
+    File.Move(packagePath, holdPath);
+    try
+    {
+        var blockedReport = await service.RunAsync(projectRoot);
+        if (!blockedReport.IsUsableAsAlphaEvidence)
+        {
+            failures.Add("Alpha validation blocked scenario was not usable as explainable alpha evidence.");
+        }
+
+        if (blockedReport.BlockingReasons.Count == 0
+            || !HasAlphaStep(blockedReport, "construction.package.exists", AlphaValidationStepStatus.Blocked)
+            || !blockedReport.Steps.Any(step => step.Status == AlphaValidationStepStatus.Blocked)
+            || !blockedReport.Steps.Any(step => step.Status == AlphaValidationStepStatus.Passed)
+            || !blockedReport.Steps.Any(step => step.Status == AlphaValidationStepStatus.Warning)
+            || !blockedReport.Steps.Any(step => step.Status == AlphaValidationStepStatus.NotImplemented))
+        {
+            failures.Add($"Alpha validation did not record missing package as blocked-but-explainable evidence: {DescribeAlphaReport(blockedReport)}");
+        }
+
+        if (!HasAlphaStep(blockedReport, "executionPrecondition.blocksRealExecution", AlphaValidationStepStatus.Passed))
+        {
+            failures.Add("Alpha validation blocked scenario did not preserve execution precondition blocking as evidence.");
+        }
+    }
+    finally
+    {
+        if (File.Exists(packagePath))
+        {
+            File.Delete(packagePath);
+        }
+
+        File.Move(holdPath, packagePath);
+    }
+}
+
+static bool HasAlphaStep(
+    AlphaValidationProbeReport report,
+    string key,
+    AlphaValidationStepStatus status)
+{
+    return report.Steps.Any(step =>
+        string.Equals(step.Key, key, StringComparison.OrdinalIgnoreCase)
+        && step.Status == status);
+}
+
+static string DescribeAlphaReport(AlphaValidationProbeReport report)
+{
+    return string.Join("; ", report.Steps.Select(step => $"{step.Key}:{step.Status}:{step.Message}"));
+}
+
 static async Task CheckP173MissingApprovalAsync(
     string projectRoot,
     ExecutionPreconditionService service,
@@ -3681,6 +3923,140 @@ static string DescribeExecutionReportLeaks(string projectRoot)
     }
 
     return string.Empty;
+}
+
+static string DescribeAlphaValidationReportLeaks(string projectRoot)
+{
+    var alphaRoot = Path.Combine(
+        projectRoot,
+        AlphaValidationProbeSchema.AlphaValidationRootRelativePath.Replace('/', Path.DirectorySeparatorChar));
+    if (!Directory.Exists(alphaRoot))
+    {
+        return "alpha validation root missing";
+    }
+
+    foreach (var path in Directory.EnumerateFiles(alphaRoot, "*", SearchOption.AllDirectories))
+    {
+        var content = File.ReadAllText(path);
+        if (content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase)
+            || content.Contains("sk-test", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase)
+            || content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("/home/", StringComparison.OrdinalIgnoreCase)
+            || ContainsCredentialDirectoryMarker(content)
+            || content.Contains("token=", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("password=", StringComparison.OrdinalIgnoreCase)
+            || content.Contains("cookie=", StringComparison.OrdinalIgnoreCase))
+        {
+            var relativePath = Path.GetRelativePath(projectRoot, path)
+                .Replace(Path.DirectorySeparatorChar, '/')
+                .Replace(Path.AltDirectorySeparatorChar, '/');
+            var marker = content.Contains(projectRoot, StringComparison.OrdinalIgnoreCase) ? "projectRoot"
+                : content.Contains("sk-test", StringComparison.OrdinalIgnoreCase) ? "sk-test"
+                : content.Contains("OPENAI_API_KEY", StringComparison.OrdinalIgnoreCase) ? "OPENAI_API_KEY"
+                : content.Contains(@"C:\Users", StringComparison.OrdinalIgnoreCase) ? "C:\\Users"
+                : content.Contains(@"E:\", StringComparison.OrdinalIgnoreCase) ? "E:\\"
+                : content.Contains("/home/", StringComparison.OrdinalIgnoreCase) ? "/home/"
+                : ContainsCredentialDirectoryMarker(content) ? "credential-dir"
+                : content.Contains("token=", StringComparison.OrdinalIgnoreCase) ? "token="
+                : content.Contains("password=", StringComparison.OrdinalIgnoreCase) ? "password="
+                : content.Contains("cookie=", StringComparison.OrdinalIgnoreCase) ? "cookie="
+                : "unknown";
+            var markerIndex = content.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            var snippet = markerIndex < 0
+                ? string.Empty
+                : content.Substring(
+                        Math.Max(0, markerIndex - 40),
+                        Math.Min(120, content.Length - Math.Max(0, markerIndex - 40)))
+                    .ReplaceLineEndings(" ");
+            return $"{relativePath}:{marker}:{snippet}";
+        }
+    }
+
+    return string.Empty;
+}
+
+static void CheckP180AlphaGitIgnore(List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    var projectIgnorePath = Path.Combine(sourceRoot, ".gitignore");
+    var repositoryIgnorePath = Path.Combine(Directory.GetParent(sourceRoot)?.FullName ?? string.Empty, ".gitignore");
+
+    if (!File.Exists(projectIgnorePath)
+        || !File.ReadAllText(projectIgnorePath).Contains("codex-task/alpha-validation", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Project .gitignore does not ignore codex-task/alpha-validation runtime artifacts.");
+    }
+
+    if (File.Exists(repositoryIgnorePath)
+        && !File.ReadAllText(repositoryIgnorePath).Contains("codex-task/alpha-validation", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("Repository .gitignore does not ignore WebRebuildRecorder codex-task/alpha-validation runtime artifacts.");
+    }
+}
+
+static void CheckP180NoForbiddenScopeDiff(List<string> failures)
+{
+    var sourceRoot = FindSourceRoot();
+    var repositoryRoot = Directory.GetParent(sourceRoot)?.FullName ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(repositoryRoot)
+        || !Directory.Exists(Path.Combine(repositoryRoot, ".git")))
+    {
+        return;
+    }
+
+    try
+    {
+        using var process = new Process();
+        process.StartInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "diff --name-only HEAD -- WebRebuildRecorder",
+            WorkingDirectory = repositoryRoot,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        process.Start();
+        var output = process.StandardOutput.ReadToEnd();
+        var error = process.StandardError.ReadToEnd();
+        if (!process.WaitForExit(10000))
+        {
+            process.Kill(entireProcessTree: true);
+            failures.Add("Could not verify P1.8-0 forbidden UI/WebView2 scope diff because git diff timed out.");
+            return;
+        }
+
+        if (process.ExitCode != 0)
+        {
+            failures.Add($"Could not verify P1.8-0 forbidden UI/WebView2 scope diff: {error.Trim()}");
+            return;
+        }
+
+        var forbidden = output
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(path =>
+                path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("WebRebuildRecorder.App\\Views\\", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("WebView2", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("SourceSnapshot", StringComparison.OrdinalIgnoreCase)
+                || path.Contains("ProposalPreview", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (forbidden.Count != 0)
+        {
+            failures.Add($"P1.8-0 changed forbidden UI/WebView2/SourceSnapshot/ProposalPreview scope files: {string.Join(", ", forbidden)}");
+        }
+    }
+    catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
+    {
+        failures.Add($"Could not verify P1.8-0 forbidden UI/WebView2 scope diff: {ex.Message}");
+    }
 }
 
 static void CheckP172ApprovalGitIgnore(List<string> failures)

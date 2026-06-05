@@ -24,6 +24,7 @@ codex-task/runs/
 codex-task/execution/
 codex-task/approvals/
 codex-task/proof/
+codex-task/alpha-validation/
 
 # Secrets and local configuration
 .env

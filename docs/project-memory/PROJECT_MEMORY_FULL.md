@@ -2,11 +2,51 @@
 
 ## WebMuse Sync Note
 
+P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.8-0 is an early alpha validation probe. It does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
 P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+## 2026-06-05 P1.8-0 early alpha validation probe
+
+P1.8-0 implements an early alpha validation probe only.
+
+It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+The purpose is to prove the P0/P1 foundation can be composed into a local explainable pipeline report before continuing deeper P1.7.4 failure recovery work.
+
+P1.7.4 Failure recovery policy service is postponed, not cancelled.
+
+Synced source:
+
+- `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbe.cs`
+- `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbeService.cs`
+- expanded `WebRebuildRecorder.FoundationSelfTest/Program.cs`
+
+Runtime report layout:
+
+```text
+codex-task/alpha-validation/<probe-id>/
+  alpha-validation-report.json
+  alpha-validation-report.md
+```
+
+These files are runtime artifacts and must not be committed.
+
+The probe composes Project Directory V2, project manifest, assets manifest, theme, content map, observation package, construction package, task package, instructions, P1.5 readiness, P1.6 dry-run, P1.7.1 proof package, P1.7.2 approval artifacts, P1.7.3 execution precondition, manual fallback evidence, runtime artifact ignore coverage, and non-execution boundary checks.
+
+Blocked-but-explainable findings can still be Alpha evidence when the critical non-execution boundary is preserved and real execution remains blocked.
+
+FoundationSelfTest verifies model/source presence, enum string serialization, JSON and Markdown report generation, required step keys, blocked-but-explainable evidence, missing package handling, `.gitignore` coverage, no `output-site/current/index.html`, and no UI/WebView2/Source Snapshot/ProposalPreview change.
+
+Next recommended round: P1.7.4-A Failure recovery models + static policy table.
 
 ## 2026-06-04 P1.7.3 execution precondition service
 
