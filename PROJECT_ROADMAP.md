@@ -2,6 +2,11 @@
 
 ## WebMuse Sync Note
 
+P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
+
+2026-06-05 direction reset:
+After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
 P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
@@ -16,13 +21,32 @@ P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, cal
 
 ## Current Recommended Next Stage
 
-After P1.8-0, continue strengthening failure recovery policy before entering real Codex execution, WebView2, or website generation.
+The next stage is P2A Structural Alpha, not P1.7.4-A.
 
-Next immediate implementation round should be:
+P1.7.4 Failure recovery policy service is postponed, not cancelled.
 
-1. P1.7.4-A Failure recovery models + static policy table.
+Reason:
+The old project already supports a manual observation/GPT/Codex/website zip loop. The rebuilt project now needs to demonstrate structural advantages that the old workflow did not provide.
 
-P1.7.4-A still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+Next immediate implementation round:
+P2A-0 WebView2 Preview Shell.
+
+P2A roadmap:
+1. P2A-0 WebView2 Preview Shell.
+2. P2A-1 Source Snapshot MVP.
+3. P2A-2 Codex CLI Proof Runner.
+4. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
+5. P2A-4 Minimal Tuning / Color Controls.
+
+P2A-0 scope:
+- add minimal WebView2 preview shell to the existing WPF app;
+- support opening reference URL;
+- support opening local output-site/current/index.html;
+- show preview status;
+- do not remove old recording/frame extraction/ChatGPT package workflow;
+- do not implement Source Snapshot, Codex CLI execution, tuning, color system, or full UI redesign in P2A-0.
+
+## Historical P1.7/P1.8 Context
 
 P1.7-0 defined proof-check and approval-gate design only. P1.7.1 was first implemented in `wxici/WebMuse` as commit `2d2cb82a02992103d292f16bb80d25ae1a2a94b9` and has now been backfilled into the primary prototype repository `wxici/codex/WebRebuildRecorder`.
 
@@ -82,7 +106,7 @@ Future directions that must not enter P1.7 unless explicitly authorized:
 
 Later real Codex CLI execution can be considered only after rollback, strict readiness, dry-run orchestration, proof checks, sandbox policy, run records, and failure recovery are stable.
 
-Still do not start WebView2 preview, tuning UI, color-system UI, real Codex CLI execution, or Local Responses Adapter implementation.
+Historical P1.7 boundary note: before the 2026-06-05 direction reset, WebView2 preview, tuning UI, color-system UI, real Codex CLI execution, and Local Responses Adapter implementation were kept out of the immediate P1.7/P1.8 foundation track. The current next stage is now P2A Structural Alpha, starting with P2A-0 WebView2 Preview Shell.
 
 ## Future AI Engine Extension: Local Responses Adapter
 

@@ -1,48 +1,30 @@
-# Current Task
+# CURRENT_TASK
 
-## P1.8-0 Early Alpha Validation Probe / Local Pipeline Probe
+## Current task
 
-Status: synchronized to WebMuse as public-safe source and documentation after prototype verification and push.
+P1.8-direction-close: Complete Structural Alpha Direction Synthesis
 
-P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+## WebMuse sync status
+
+P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-P1.8-0 is an early alpha validation probe.
+## Direction reset
 
-It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+2026-06-05 direction reset:
+After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-The purpose is to prove the P0/P1 foundation can be composed into a local explainable pipeline report before continuing deeper P1.7.4 failure recovery work.
+## Decision
 
-P1.7.4 Failure recovery policy service is postponed, not cancelled.
+The project exits the direction fog by moving from pure foundation work into P2A Structural Alpha.
 
-## Synced Source
+P1.7.4-A Failure recovery models + static policy table is postponed, not cancelled.
 
-- `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbe.cs`
-- `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbeService.cs`
-- `WebRebuildRecorder.FoundationSelfTest/Program.cs`
+## Next implementation task
 
-## Synced Documentation
+P2A-0 WebView2 Preview Shell.
 
-- `CURRENT_TASK.md`
-- `PROJECT_STATUS.md`
-- `PROJECT_ROADMAP.md`
-- `docs/project-memory/PROJECT_MEMORY_FULL.md`
+## Hard boundary
 
-## Runtime Artifacts
-
-Alpha validation reports are runtime artifacts under:
-
-```text
-codex-task/alpha-validation/<probe-id>/
-  alpha-validation-report.json
-  alpha-validation-report.md
-```
-
-They are ignored and must not be committed.
-
-## Next Recommended Round
-
-P1.7.4-A Failure recovery models + static policy table.
-
-P1.7.4-A still must not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+This sync contains documentation only. It does not modify source, XAML, build files, runtime artifacts, generated sites, logs, or customer material.

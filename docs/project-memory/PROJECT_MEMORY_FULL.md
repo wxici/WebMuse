@@ -2,6 +2,11 @@
 
 ## WebMuse Sync Note
 
+P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
+
+2026-06-05 direction reset:
+After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
 P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
@@ -13,6 +18,36 @@ P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, t
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
+
+## 2026-06-05 direction reset
+
+P1.8-0 completed alpha validation probe, but the project will not continue immediately into P1.7.4-A. The next stage is P2A Structural Alpha because the old project already had a manual GPT/Codex/zip loop, and the rebuilt project must now demonstrate structural advantages: WebView2 preview, Source Snapshot, controlled Codex CLI, output-site/current preview, and minimal tuning/color controls.
+
+Current decision:
+
+- Pause P1.7.4-A.
+- P1.7.4 failure recovery policy service is postponed, not cancelled.
+- Do not continue old-UI-only alpha validation.
+- Move next into P2A Structural Alpha.
+
+Immediate P2A roadmap:
+
+1. P2A-0 WebView2 Preview Shell.
+2. P2A-1 Source Snapshot MVP.
+3. P2A-2 Codex CLI Proof Runner.
+4. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
+5. P2A-4 Minimal Tuning / Color Controls.
+
+P2A-0 scope:
+
+- add minimal WebView2 preview shell to the existing WPF app;
+- support opening reference URL;
+- support opening local output-site/current/index.html;
+- show preview status;
+- do not remove old recording/frame extraction/ChatGPT package workflow;
+- do not implement Source Snapshot, Codex CLI execution, tuning, color system, or full UI redesign in P2A-0.
+
+P2A remains structural alpha, not a finished product. It must remain static-site focused and must not expand into CMS, database backend, payment, login, membership, e-commerce, forum, complex page editor, marketplace, CRM, or mass email.
 
 ## 2026-06-05 P1.8-0 early alpha validation probe
 
@@ -46,7 +81,7 @@ Blocked-but-explainable findings can still be Alpha evidence when the critical n
 
 FoundationSelfTest verifies model/source presence, enum string serialization, JSON and Markdown report generation, required step keys, blocked-but-explainable evidence, missing package handling, `.gitignore` coverage, no `output-site/current/index.html`, and no UI/WebView2/Source Snapshot/ProposalPreview change.
 
-Next recommended round: P1.7.4-A Failure recovery models + static policy table.
+Previous next recommendation was P1.7.4-A Failure recovery models + static policy table. The 2026-06-05 direction reset postpones P1.7.4-A and moves the immediate next implementation task to P2A-0 WebView2 Preview Shell.
 
 ## 2026-06-04 P1.7.3 execution precondition service
 

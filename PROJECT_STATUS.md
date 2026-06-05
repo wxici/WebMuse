@@ -1,5 +1,22 @@
 # Project Status
 
+## 2026-06-05 Direction Reset
+
+2026-06-05 direction reset:
+After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
+
+Reason: the old WebRebuildRecorder workflow already had a manual observation/GPT/Codex/zip loop. A meaningful alpha must now demonstrate rebuilt-architecture advantages: embedded WebView2 preview, Source Snapshot MVP, controlled Codex CLI execution, output-site/current preview, and minimal tuning/color controls.
+
+P2A roadmap:
+
+1. P2A-0 WebView2 Preview Shell.
+2. P2A-1 Source Snapshot MVP.
+3. P2A-2 Codex CLI Proof Runner.
+4. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
+5. P2A-4 Minimal Tuning / Color Controls.
+
 ## Latest P1.8-0 Early Alpha Validation Probe
 
 Snapshot time: 2026-06-05.
@@ -31,7 +48,7 @@ dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuild
 
 Result: passed in the prototype repository and printed the five required P1.8-0 verification lines.
 
-Next recommended round: P1.7.4-A Failure recovery models + static policy table.
+Previous next recommendation was P1.7.4-A Failure recovery models + static policy table. The 2026-06-05 direction reset supersedes that immediate sequence: P1.7.4 is postponed, not cancelled, and the next stage is P2A Structural Alpha starting with P2A-0 WebView2 Preview Shell.
 
 ## Latest P1.7.3 Execution Precondition Service
 
