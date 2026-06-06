@@ -1,5 +1,19 @@
 # CURRENT_TASK
 
+## P2A-0 WebView2 Preview Shell
+
+P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+P2A-0 adds a minimal embedded WebView2 preview shell. It can open the reference URL and an existing local `output-site/current/index.html`.
+
+It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, or full UI redesign.
+
+The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+Next implementation stage: P2A-1 Source Snapshot MVP.
+
 ## Current task
 
 P1.8-direction-close: Complete Structural Alpha Direction Synthesis

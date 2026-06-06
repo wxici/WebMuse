@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Web.WebView2.Core;
 using WebRebuildRecorder.App.Models;
 using WebRebuildRecorder.App.Services;
 using WebRebuildRecorder.App.ViewModels;
@@ -59,6 +60,7 @@ public partial class MainWindow : Window
     private bool _automaticPipelineRunning;
     private bool _currentRecordingIsAutoObserve;
     private bool _currentRecordingStartedBeforeOpenUrl;
+    private bool _embeddedPreviewInitialized;
     private RecordingStartMode _currentRecordingStartMode = RecordingStartMode.RecordBeforeOpenUrl;
     private int _manualScreenshotCounter;
     private int _estimatedFrameCount;
@@ -70,6 +72,7 @@ public partial class MainWindow : Window
     private CodexPackageResult? _codexPackageResult;
     private AssetRequirementReport? _assetRequirementReport;
     private string? _currentRunId;
+    private string? _lastEmbeddedPreviewUri;
     private bool _useFallbackForCodex;
     private ActionProfile _activeActionProfile = new();
     private readonly List<HotKeyRegistrationFailure> _hotkeyFailures = [];
@@ -166,6 +169,37 @@ public partial class MainWindow : Window
     private async void OpenWebsiteButton_Click(object sender, RoutedEventArgs e)
     {
         await SafeRunAsync(OpenWebsiteAsync);
+    }
+
+    private async void PreviewReferenceInWebViewButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(PreviewReferenceInWebViewAsync);
+    }
+
+    private async void PreviewOutputSiteInWebViewButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(PreviewOutputSiteInWebViewAsync);
+    }
+
+    private async void RefreshEmbeddedPreviewButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(RefreshEmbeddedPreviewAsync);
+    }
+
+    private void OpenPreviewInExternalBrowserButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri))
+        {
+            _logger.Warn("当前没有可外部打开的内嵌预览地址。");
+            EmbeddedPreviewStatusText.Text = "WebView2 预览：当前没有可外部打开的地址。";
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = _lastEmbeddedPreviewUri,
+            UseShellExecute = true
+        });
     }
 
     private async void StartRecordingButton_Click(object sender, RoutedEventArgs e)
@@ -670,6 +704,90 @@ public partial class MainWindow : Window
             ShowFloatingWindow("待录屏");
             SetWorkflowState(WorkflowState.ToolbarReady);
         }
+    }
+
+    private async Task EnsureEmbeddedPreviewAsync()
+    {
+        if (_embeddedPreviewInitialized)
+        {
+            return;
+        }
+
+        EmbeddedPreviewStatusText.Text = "WebView2 预览：正在初始化...";
+        try
+        {
+            await EmbeddedPreviewWebView.EnsureCoreWebView2Async();
+            EmbeddedPreviewWebView.CoreWebView2.NavigationStarting += (_, args) =>
+            {
+                EmbeddedPreviewStatusText.Text = $"WebView2 预览：正在加载 {args.Uri}";
+            };
+            EmbeddedPreviewWebView.CoreWebView2.NavigationCompleted += (_, args) =>
+            {
+                EmbeddedPreviewStatusText.Text = args.IsSuccess
+                    ? $"WebView2 预览：加载完成 {_lastEmbeddedPreviewUri}"
+                    : $"WebView2 预览：加载失败，错误 {args.WebErrorStatus}";
+            };
+            _embeddedPreviewInitialized = true;
+            EmbeddedPreviewStatusText.Text = "WebView2 预览：初始化完成。";
+        }
+        catch (WebView2RuntimeNotFoundException ex)
+        {
+            EmbeddedPreviewStatusText.Text = "WebView2 预览：未检测到 WebView2 Runtime。请安装 Microsoft Edge WebView2 Runtime。";
+            _logger.Error("WebView2 Runtime not found.", ex);
+            throw;
+        }
+    }
+
+    private async Task PreviewReferenceInWebViewAsync()
+    {
+        var project = _project ?? throw new InvalidOperationException("请先新建或打开一个项目。");
+        var rawUrl = string.IsNullOrWhiteSpace(UrlBox.Text)
+            ? project.ReferenceUrl
+            : UrlBox.Text;
+        var url = NormalizeUrl(rawUrl);
+
+        UrlBox.Text = url;
+        await _projectService.UpdateReferenceUrlAsync(project, url);
+        await NavigateEmbeddedPreviewAsync(url, "参考站");
+    }
+
+    private async Task PreviewOutputSiteInWebViewAsync()
+    {
+        var project = _project ?? throw new InvalidOperationException("请先新建或打开一个项目。");
+        var indexPath = Path.Combine(project.ProjectDirectory, "output-site", "current", "index.html");
+
+        if (!File.Exists(indexPath))
+        {
+            EmbeddedPreviewStatusText.Text = $"WebView2 预览：未找到 {indexPath}";
+            _logger.Warn($"output-site/current/index.html not found: {indexPath}");
+            return;
+        }
+
+        await NavigateEmbeddedPreviewAsync(new Uri(indexPath).AbsoluteUri, "output-site/current");
+    }
+
+    private async Task RefreshEmbeddedPreviewAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri))
+        {
+            EmbeddedPreviewStatusText.Text = "WebView2 预览：没有可刷新的页面。";
+            return;
+        }
+
+        await EnsureEmbeddedPreviewAsync();
+        EmbeddedPreviewWebView.Reload();
+        EmbeddedPreviewStatusText.Text = $"WebView2 预览：刷新 {_lastEmbeddedPreviewUri}";
+    }
+
+    private async Task NavigateEmbeddedPreviewAsync(string uri, string label)
+    {
+        await EnsureEmbeddedPreviewAsync();
+
+        _lastEmbeddedPreviewUri = uri;
+        EmbeddedPreviewStatusText.Text = $"WebView2 预览：打开 {label} - {uri}";
+        _logger.Info($"Embedded WebView2 preview navigate: {label} {uri}");
+        EmbeddedPreviewWebView.Source = new Uri(uri);
+        UpdateButtonStates();
     }
 
     private async Task StartRecordingAsync()
@@ -1926,7 +2044,9 @@ public partial class MainWindow : Window
         _codexPackageResult = null;
         _assetRequirementReport = null;
         _currentRunId = null;
+        _lastEmbeddedPreviewUri = null;
         _useFallbackForCodex = false;
+        EmbeddedPreviewStatusText.Text = "WebView2 预览：尚未启动";
         RecordingStateText.Text = "录屏：未开始";
         FramesCountText.Text = "截图数量：--";
         VideoDurationText.Text = "时长：--";
@@ -2455,6 +2575,10 @@ public partial class MainWindow : Window
         StartupRemoveRecentButton.IsEnabled = !isRecording;
         OpenWebsiteToolbarButton.IsEnabled = canOpenWebsite;
         OpenWebsiteWorkflowButton.IsEnabled = canOpenWebsite;
+        PreviewReferenceInWebViewButton.IsEnabled = hasProject;
+        PreviewOutputSiteInWebViewButton.IsEnabled = hasProject;
+        RefreshEmbeddedPreviewButton.IsEnabled = hasProject && !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
+        OpenPreviewInExternalBrowserButton.IsEnabled = !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
         AutoObserveRecordingToolbarButton.IsEnabled = canStartRecording;
         AutoObserveRecordingWorkflowButton.IsEnabled = canStartRecording;
         StartRecordingToolbarButton.IsEnabled = canStartRecording;

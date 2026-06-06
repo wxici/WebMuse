@@ -1,5 +1,13 @@
 # Project Roadmap
 
+## P2A-0 Sync Status
+
+P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+The minimal embedded WebView2 preview shell is complete. It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, or full UI redesign.
+
+Next recommended round: P2A-1 Source Snapshot MVP.
+
 ## WebMuse Sync Note
 
 P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.

@@ -1,5 +1,17 @@
 # Project Status
 
+## Latest P2A-0 WebView2 Preview Shell Sync
+
+P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+P2A-0 adds a minimal embedded WebView2 preview shell. It supports reference URL preview, existing local output preview, refresh, status reporting, and external-browser fallback.
+
+It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, or full UI redesign.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+Next implementation stage: P2A-1 Source Snapshot MVP.
+
 ## 2026-06-05 Direction Reset
 
 2026-06-05 direction reset:

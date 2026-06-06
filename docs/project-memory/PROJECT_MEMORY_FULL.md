@@ -1,5 +1,17 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-06 P2A-0 WebView2 preview shell sync
+
+P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+P2A-0 adds a minimal embedded WebView2 preview shell to the existing WPF workflow. It supports the reference URL, an existing local `output-site/current/index.html`, refresh, status reporting, and external-browser fallback.
+
+It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, JavaScript injection, DOM reading, screenshots, or full UI redesign.
+
+The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
+
+Next recommended round: P2A-1 Source Snapshot MVP.
+
 ## WebMuse Sync Note
 
 P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
