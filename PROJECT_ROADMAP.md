@@ -1,58 +1,30 @@
 # Project Roadmap
 
-## P2A-0 Sync Status
-
-P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-The minimal embedded WebView2 preview shell is complete. It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, or full UI redesign.
-
-Next recommended round: P2A-1 Source Snapshot MVP.
-
-## WebMuse Sync Note
-
-P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
-
-2026-06-05 direction reset:
-After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.8-0 is an early alpha validation probe. It does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
-
-P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
-
 ## Current Recommended Next Stage
 
-The next stage is P2A Structural Alpha, not P1.7.4-A.
+P2A-0 WebView2 Preview Shell is implemented and verified.
 
-P1.7.4 Failure recovery policy service is postponed, not cancelled.
+P2A-0 adds a minimal embedded WebView2 preview card to the existing WPF workflow. It can open the reference URL and an existing local `output-site/current/index.html`, refresh the embedded preview, and open the same URI in the external browser.
 
-Reason:
-The old project already supports a manual observation/GPT/Codex/website zip loop. The rebuilt project now needs to demonstrate structural advantages that the old workflow did not provide.
+P2A-0 does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, or full UI redesign. The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
+
+P2A-0.1 Detached WebView2 Preview Window was inserted before P2A-1 because P2A-0's fixed embedded preview can be too small for desktop reference sites.
+
+P2A-0.1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+P2A-0.1 adds a separate resizable WebView2 window with `1366x768`, `1440x900`, `1920x1080`, `1024x768`, and `390x844` presets. It preserves the embedded preview and does not introduce a Docking framework.
 
 Next immediate implementation round:
-P2A-0 WebView2 Preview Shell.
+P2A-1 Internal Source Snapshot MVP.
 
-P2A roadmap:
-1. P2A-0 WebView2 Preview Shell.
-2. P2A-1 Source Snapshot MVP.
-3. P2A-2 Codex CLI Proof Runner.
-4. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
-5. P2A-4 Minimal Tuning / Color Controls.
+Remaining P2A roadmap:
 
-P2A-0 scope:
-- add minimal WebView2 preview shell to the existing WPF app;
-- support opening reference URL;
-- support opening local output-site/current/index.html;
-- show preview status;
-- do not remove old recording/frame extraction/ChatGPT package workflow;
-- do not implement Source Snapshot, Codex CLI execution, tuning, color system, or full UI redesign in P2A-0.
+1. P2A-1 Internal Source Snapshot MVP.
+2. P2A-2 Codex CLI Proof Runner.
+3. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
+4. P2A-4 Minimal Tuning / Color Controls.
+
+P1.7.4 Failure recovery policy service remains postponed, not cancelled.
 
 ## Historical P1.7/P1.8 Context
 

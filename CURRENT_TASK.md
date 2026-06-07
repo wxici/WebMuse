@@ -1,44 +1,37 @@
 # CURRENT_TASK
 
-## P2A-0 WebView2 Preview Shell
-
-P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-P2A-0 adds a minimal embedded WebView2 preview shell. It can open the reference URL and an existing local `output-site/current/index.html`.
-
-It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, or full UI redesign.
-
-The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-Next implementation stage: P2A-1 Source Snapshot MVP.
-
 ## Current task
 
-P1.8-direction-close: Complete Structural Alpha Direction Synthesis
+P2A-0.1 Detached WebView2 Preview Window / Adjustable Preview Surface
 
-## WebMuse sync status
+## Status
 
-P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
+Implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-## Direction reset
+## Completed scope
 
-2026-06-05 direction reset:
-After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+- Added a separate resizable and maximizable WebView2 preview window with its own WebView2 control.
+- Kept the existing P2A-0 embedded preview unchanged.
+- Added desktop, tablet, and phone window-size presets: `1366x768`, `1440x900`, `1920x1080`, `1024x768`, and `390x844`.
+- Reuses the current embedded-preview URI when available, otherwise uses the current project reference URL.
+- Added address navigation, refresh, external-browser fallback, and live window-size status.
+- Closes the detached preview when the project or main window closes.
+- Preserved the old recording, frame extraction, ChatGPT package, and final Codex package workflow.
 
-## Decision
+## Verification
 
-The project exits the direction fog by moving from pure foundation work into P2A Structural Alpha.
-
-P1.7.4-A Failure recovery models + static policy table is postponed, not cancelled.
-
-## Next implementation task
-
-P2A-0 WebView2 Preview Shell.
+- `dotnet build WebRebuildRecorder.slnx`: passed with 0 warnings and 0 errors.
+- FoundationSelfTest: passed after a narrow P2A-0.1 allowlist update to the historical P1.8 scope guard.
+- UI smoke: passed for app startup, embedded-preview preservation, detached-window launch, five size presets, maximize/free resize, WebView2 Runtime initialization, reference URL navigation, refresh, external-browser fallback, project-close cleanup, main-window cleanup, and old workflow controls.
 
 ## Hard boundary
 
-This sync contains documentation only. It does not modify source, XAML, build files, runtime artifacts, generated sites, logs, or customer material.
+P2A-0.1 does not implement Source Snapshot, Codex CLI execution, OpenAI API calls, local model calls, site generation, tuning, color controls, asset-slot overlays, a Docking framework, or full UI redesign.
+
+P2A-0.1 adds a detached adjustable WebView2 preview window with desktop/tablet/mobile size presets. It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, or full Docking UI.
+
+## Next planned stage
+
+P2A-1 Internal Source Snapshot MVP.

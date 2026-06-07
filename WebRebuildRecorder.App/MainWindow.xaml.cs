@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     private Task? _autoObserveTask;
     private FloatingRecorderWindow? _floatingWindow;
     private CompletionWindow? _completionWindow;
+    private DetachedPreviewWindow? _detachedPreviewWindow;
     private AppSettings _appSettings = new();
     private DateTime _recordingStart;
     private DateTime _recordingEnd;
@@ -147,6 +148,7 @@ public partial class MainWindow : Window
             await SafeRunAsync(async () =>
             {
                 await StopRecordingAsync();
+                CloseDetachedPreviewWindow();
                 Closing -= Window_Closing;
                 Close();
             });
@@ -157,6 +159,7 @@ public partial class MainWindow : Window
         _hotKeyService?.Dispose();
         _floatingWindow?.Close();
         _completionWindow?.Close();
+        CloseDetachedPreviewWindow();
         _autoObserveCancellation?.Cancel();
         await SafeRunAsync(SaveAppSettingsAsync);
     }
@@ -200,6 +203,11 @@ public partial class MainWindow : Window
             FileName = _lastEmbeddedPreviewUri,
             UseShellExecute = true
         });
+    }
+
+    private async void OpenDetachedPreviewWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(OpenDetachedPreviewWindowAsync);
     }
 
     private async void StartRecordingButton_Click(object sender, RoutedEventArgs e)
@@ -788,6 +796,76 @@ public partial class MainWindow : Window
         _logger.Info($"Embedded WebView2 preview navigate: {label} {uri}");
         EmbeddedPreviewWebView.Source = new Uri(uri);
         UpdateButtonStates();
+    }
+
+    private async Task OpenDetachedPreviewWindowAsync()
+    {
+        var uri = await ResolvePreviewUriForDetachedWindowAsync();
+
+        if (_detachedPreviewWindow is null)
+        {
+            _detachedPreviewWindow = new DetachedPreviewWindow(_logger)
+            {
+                Owner = this
+            };
+            _detachedPreviewWindow.Closed += (_, _) =>
+            {
+                _detachedPreviewWindow = null;
+                UpdateButtonStates();
+            };
+        }
+
+        if (!_detachedPreviewWindow.IsVisible)
+        {
+            _detachedPreviewWindow.Show();
+        }
+
+        if (_detachedPreviewWindow.WindowState == WindowState.Minimized)
+        {
+            _detachedPreviewWindow.WindowState = WindowState.Normal;
+        }
+
+        _detachedPreviewWindow.Activate();
+        await _detachedPreviewWindow.NavigateAsync(uri);
+
+        _lastEmbeddedPreviewUri = uri;
+        EmbeddedPreviewStatusText.Text = $"WebView2 预览：已弹出独立窗口 - {uri}";
+        UpdateButtonStates();
+    }
+
+    private async Task<string> ResolvePreviewUriForDetachedWindowAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri))
+        {
+            return _lastEmbeddedPreviewUri;
+        }
+
+        var project = _project ?? throw new InvalidOperationException("请先新建或打开一个项目。");
+        var rawUrl = string.IsNullOrWhiteSpace(UrlBox.Text)
+            ? project.ReferenceUrl
+            : UrlBox.Text;
+        var url = NormalizeUrl(rawUrl);
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new InvalidOperationException("请先填写参考站 URL，或先在内嵌预览中打开一个页面。");
+        }
+
+        UrlBox.Text = url;
+        await _projectService.UpdateReferenceUrlAsync(project, url);
+        return url;
+    }
+
+    private void CloseDetachedPreviewWindow()
+    {
+        if (_detachedPreviewWindow is null)
+        {
+            return;
+        }
+
+        var window = _detachedPreviewWindow;
+        _detachedPreviewWindow = null;
+        window.Close();
     }
 
     private async Task StartRecordingAsync()
@@ -1992,6 +2070,7 @@ public partial class MainWindow : Window
             await SaveProfilesAsync();
         }
 
+        CloseDetachedPreviewWindow();
         await _projectService.CloseCurrentProjectAsync();
         _project = null;
         ClearRuntimeState();
@@ -2579,6 +2658,7 @@ public partial class MainWindow : Window
         PreviewOutputSiteInWebViewButton.IsEnabled = hasProject;
         RefreshEmbeddedPreviewButton.IsEnabled = hasProject && !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
         OpenPreviewInExternalBrowserButton.IsEnabled = !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
+        OpenDetachedPreviewWindowButton.IsEnabled = hasProject;
         AutoObserveRecordingToolbarButton.IsEnabled = canStartRecording;
         AutoObserveRecordingWorkflowButton.IsEnabled = canStartRecording;
         StartRecordingToolbarButton.IsEnabled = canStartRecording;

@@ -4000,6 +4000,25 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
 {
     var sourceRoot = FindSourceRoot();
     var repositoryRoot = Directory.GetParent(sourceRoot)?.FullName ?? string.Empty;
+    var currentTaskPath = Path.Combine(sourceRoot, "CURRENT_TASK.md");
+    var isP2A0PreviewShell = File.Exists(currentTaskPath)
+        && File.ReadAllText(currentTaskPath).Contains("P2A-0 WebView2 Preview Shell", StringComparison.Ordinal);
+    var isP2A01DetachedPreview = File.Exists(currentTaskPath)
+        && File.ReadAllText(currentTaskPath).Contains("P2A-0.1 Detached WebView2 Preview Window", StringComparison.Ordinal);
+    var p2A0AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "WebRebuildRecorder/WebRebuildRecorder.App/WebRebuildRecorder.App.csproj",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs"
+    };
+    var p2A01AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Views/DetachedPreviewWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Views/DetachedPreviewWindow.xaml.cs"
+    };
+
     if (string.IsNullOrWhiteSpace(repositoryRoot)
         || !Directory.Exists(Path.Combine(repositoryRoot, ".git")))
     {
@@ -4038,14 +4057,16 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
 
         var forbidden = output
             .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(path => path.Replace('\\', '/'))
             .Where(path =>
-                path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
-                || path.Contains("WebRebuildRecorder.App\\Views\\", StringComparison.OrdinalIgnoreCase)
-                || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
-                || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
-                || path.Contains("WebView2", StringComparison.OrdinalIgnoreCase)
-                || path.Contains("SourceSnapshot", StringComparison.OrdinalIgnoreCase)
-                || path.Contains("ProposalPreview", StringComparison.OrdinalIgnoreCase))
+                !((isP2A0PreviewShell && p2A0AllowedFiles.Contains(path))
+                    || (isP2A01DetachedPreview && p2A01AllowedFiles.Contains(path)))
+                && (path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
+                    || path.Contains("WebView2", StringComparison.OrdinalIgnoreCase)
+                    || path.Contains("SourceSnapshot", StringComparison.OrdinalIgnoreCase)
+                    || path.Contains("ProposalPreview", StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
         if (forbidden.Count != 0)

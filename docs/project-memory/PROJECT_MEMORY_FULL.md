@@ -1,39 +1,77 @@
 # PROJECT_MEMORY_FULL.md
 
-## 2026-06-06 P2A-0 WebView2 preview shell sync
+## 2026-06-07 P2A-0.1 detached WebView2 preview window
 
-P2A-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+P2A-0.1 adds a detached adjustable WebView2 preview window.
 
-P2A-0 adds a minimal embedded WebView2 preview shell to the existing WPF workflow. It supports the reference URL, an existing local `output-site/current/index.html`, refresh, status reporting, and external-browser fallback.
+P2A-0.1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+It solves the fixed 360-height embedded preview limitation where some reference sites detect a small or vertical viewport.
+
+The detached window uses its own WebView2 control. The P2A-0 `EmbeddedPreviewWebView` remains in MainWindow and is not moved between visual parents.
+
+Implemented:
+
+- separate resizable and maximizable `DetachedPreviewWindow`;
+- address navigation, refresh, external-browser fallback, and viewport status;
+- desktop/tablet/mobile presets: `1366x768`, `1440x900`, `1920x1080`, `1024x768`, and `390x844`;
+- reuse of the current embedded-preview URI, with project reference URL fallback;
+- one detached window per MainWindow;
+- cleanup when the project or main window closes;
+- preservation of the old embedded preview and recording/frame/package workflow.
+
+Verification passed:
+
+- solution build with 0 warnings and 0 errors;
+- FoundationSelfTest after a narrow four-file P2A-0.1 scope allowlist;
+- actual app launch and UI Automation checks;
+- temporary repository-external WPF smoke host for all presets, maximize/free resize, WebView2 Runtime initialization, reference navigation, refresh, and external-browser fallback;
+- project-close and main-window-close cleanup.
+
+P2A-0.1 does not implement Source Snapshot, Codex CLI, site generation, tuning, color controls, asset-slot overlays, or full Docking UI.
+
+Next recommended stage: P2A-1 Internal Source Snapshot MVP.
+
+## 2026-06-06 P2A-0 WebView2 preview shell
+
+P2A-0 implements a minimal embedded WebView2 preview shell.
+
+It can open the reference URL and local `output-site/current/index.html` when present.
 
 It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, JavaScript injection, DOM reading, screenshots, or full UI redesign.
 
 The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
 
+Implementation:
+
+- `Microsoft.Web.WebView2` version `1.0.3967.48`.
+- WebView2 WPF namespace in `MainWindow.xaml`.
+- Fixed-height preview card above the existing center workflow cards.
+- `EnsureEmbeddedPreviewAsync()`.
+- `PreviewReferenceInWebViewAsync()`.
+- `PreviewOutputSiteInWebViewAsync()`.
+- `RefreshEmbeddedPreviewAsync()`.
+- `NavigateEmbeddedPreviewAsync(...)`.
+- External-browser fallback using the current embedded preview URI.
+- Project reset and button-state integration.
+
+The local output preview only reads an existing `output-site/current/index.html`. P2A-0 does not create or modify that file.
+
+Verification:
+
+- solution build passed with 0 warnings and 0 errors;
+- FoundationSelfTest passed after a narrow update to the historical P1.8 scope guard;
+- UI smoke test verified app startup, card/control visibility, WebView2 Runtime initialization, reference URL loading, missing local index handling, refresh, external-browser fallback, and preservation of old workflow controls.
+
 Next recommended round: P2A-1 Source Snapshot MVP.
-
-## WebMuse Sync Note
-
-P1.8-direction-close was completed first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe documentation.
-
-2026-06-05 direction reset:
-After P1.8-0, the project enters P2A Structural Alpha. P1.7.4 is postponed, not cancelled. The next implementation task is P2A-0 WebView2 Preview Shell. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.8-0 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.8-0 is an early alpha validation probe. It does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
-
-P1.7.3 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
-
-P1.7.3 does not execute Codex CLI, run any `codex` command, call OpenAI API, call local model engines, generate websites, or write `output-site/current/index.html`.
 
 ## 2026-06-05 direction reset
 
 P1.8-0 completed alpha validation probe, but the project will not continue immediately into P1.7.4-A. The next stage is P2A Structural Alpha because the old project already had a manual GPT/Codex/zip loop, and the rebuilt project must now demonstrate structural advantages: WebView2 preview, Source Snapshot, controlled Codex CLI, output-site/current preview, and minimal tuning/color controls.
+
+This reset exists because P0/P1 foundation services are valuable but mostly invisible in the running application. A pure P1.7.4 continuation would deepen the foundation while delaying visible structural validation. An old-UI-only alpha that merely exposes readiness, dry-run, proof, approval, execution precondition, and alpha reports would still be too close to the old manual workflow.
 
 Current decision:
 
@@ -71,13 +109,21 @@ The purpose is to prove the P0/P1 foundation can be composed into a local explai
 
 P1.7.4 Failure recovery policy service is postponed, not cancelled.
 
-Synced source:
+This round lands the local alpha-validation layer in the prototype repository first:
 
 - `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbe.cs`
 - `WebRebuildRecorder.App/Core/ProjectSystem/AlphaValidationProbeService.cs`
 - expanded `WebRebuildRecorder.FoundationSelfTest/Program.cs`
 
-Runtime report layout:
+Alpha validation model coverage:
+
+- schema constants in `AlphaValidationProbeSchema`;
+- status enum: `Passed`, `Warning`, `Blocked`, `Skipped`, `NotImplemented`;
+- report and step models;
+- non-execution flags defaulting to false;
+- `IsUsableAsAlphaEvidence` for blocked-but-explainable Alpha proof.
+
+Alpha validation report persistence:
 
 ```text
 codex-task/alpha-validation/<probe-id>/
@@ -85,15 +131,65 @@ codex-task/alpha-validation/<probe-id>/
   alpha-validation-report.md
 ```
 
-These files are runtime artifacts and must not be committed.
+Alpha validation reports are runtime artifacts, are ignored by root and project `.gitignore`, and must not be committed from real project folders.
 
-The probe composes Project Directory V2, project manifest, assets manifest, theme, content map, observation package, construction package, task package, instructions, P1.5 readiness, P1.6 dry-run, P1.7.1 proof package, P1.7.2 approval artifacts, P1.7.3 execution precondition, manual fallback evidence, runtime artifact ignore coverage, and non-execution boundary checks.
+`AlphaValidationProbeService.RunAsync(...)` composes:
 
-Blocked-but-explainable findings can still be Alpha evidence when the critical non-execution boundary is preserved and real execution remains blocked.
+- Project Directory V2 structure;
+- `project.wrbproj`;
+- assets manifest;
+- theme;
+- content map;
+- observation package;
+- construction package;
+- task package;
+- instructions;
+- P1.5 PreCodexDryRun readiness;
+- P1.6 dry-run or latest dry-run evidence;
+- P1.7.1 proof package validation;
+- P1.7.2 approval request/result artifact presence;
+- P1.7.3 execution precondition run;
+- explicit real-execution blocking;
+- manual fallback evidence inputs without implementing a fallback writer;
+- `.gitignore` runtime artifact coverage;
+- non-execution boundary enforcement.
 
-FoundationSelfTest verifies model/source presence, enum string serialization, JSON and Markdown report generation, required step keys, blocked-but-explainable evidence, missing package handling, `.gitignore` coverage, no `output-site/current/index.html`, and no UI/WebView2/Source Snapshot/ProposalPreview change.
+The report explicitly states:
 
-Previous next recommendation was P1.7.4-A Failure recovery models + static policy table. The 2026-06-05 direction reset postpones P1.7.4-A and moves the immediate next implementation task to P2A-0 WebView2 Preview Shell.
+- This probe does not execute Codex CLI.
+- This probe does not run any `codex` command.
+- This probe does not call OpenAI API.
+- This probe does not call local model engines.
+- This probe does not generate a website.
+- This probe does not write `output-site/current/index.html`.
+
+`AlphaValidationProbeService.LoadLatestAsync(...)` loads the newest persisted report and validates schema version.
+
+FoundationSelfTest verifies:
+
+- model/source file presence;
+- enum string serialization;
+- JSON and Markdown report generation;
+- project-relative report paths;
+- required local pipeline step keys;
+- `Passed`, `Warning`, `Blocked`, and `NotImplemented` step status coverage;
+- execution precondition blocking recorded as usable Alpha evidence;
+- missing package handling without throwing;
+- blocked-but-explainable Alpha evidence;
+- alpha-validation `.gitignore` coverage;
+- no `output-site/current/index.html` creation;
+- no Codex CLI, `codex` command, OpenAI API, local model, website generation, UI, WebView2, Source Snapshot, or ProposalPreview change.
+
+Verification on 2026-06-05:
+
+```powershell
+dotnet build WebRebuildRecorder.slnx
+dotnet run --no-build --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj
+```
+
+Build passed with 0 warnings and 0 errors. The first full self-test attempt exceeded a shorter shell timeout without returning a failure; the longer `--no-build` rerun passed and printed the five required P1.8-0 alpha validation verification lines.
+
+Previous next recommendation was P1.7.4-A Failure recovery models + static policy table, still without real execution or website generation. The 2026-06-05 direction reset postpones P1.7.4-A and moves the immediate next implementation task to P2A-0 WebView2 Preview Shell.
 
 ## 2026-06-04 P1.7.3 execution precondition service
 
