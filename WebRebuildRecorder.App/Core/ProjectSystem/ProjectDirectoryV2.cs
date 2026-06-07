@@ -10,6 +10,11 @@ public static class ProjectDirectoryV2
     public const string Observation = "observation";
     public const string ObservationScreenshots = "observation/screenshots";
     public const string ObservationDom = "observation/dom";
+    public const string SourceSnapshot = "source-snapshot";
+    public const string SourceSnapshotRaw = "source-snapshot/raw";
+    public const string SourceSnapshotRendered = "source-snapshot/rendered";
+    public const string SourceSnapshotResources = "source-snapshot/resources";
+    public const string SourceSnapshotAnalysis = "source-snapshot/analysis";
     public const string CodexTask = "codex-task";
     public const string OutputSite = "output-site";
     public const string OutputCurrent = "output-site/current";
@@ -33,6 +38,11 @@ public static class ProjectDirectoryV2
         Observation,
         ObservationScreenshots,
         ObservationDom,
+        SourceSnapshot,
+        SourceSnapshotRaw,
+        SourceSnapshotRendered,
+        SourceSnapshotResources,
+        SourceSnapshotAnalysis,
         CodexTask,
         OutputSite,
         OutputCurrent,
@@ -57,6 +67,7 @@ public static class ProjectDirectoryV2
             ["assetsSelected"] = AssetsSelected,
             ["theme"] = Theme,
             ["observation"] = Observation,
+            ["sourceSnapshot"] = SourceSnapshot,
             ["codexTask"] = CodexTask,
             ["outputCurrent"] = OutputCurrent,
             ["outputVersions"] = OutputVersions,

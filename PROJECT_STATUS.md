@@ -1,12 +1,43 @@
 # Project Status
 
-## Latest P2A-0.1 Detached WebView2 Preview Window
+## Latest P2A-1 Internal Source Snapshot MVP
 
 Snapshot time: 2026-06-07.
 
-P2A-0.1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+P2A-1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P2A-1 implements Internal Source Snapshot MVP.
+
+It captures one current reference URL only. It performs bounded HTTP raw HTML capture and WebView2 rendered evidence capture, then writes deterministic text, JSON, and Markdown evidence under `source-snapshot/`.
+
+Completed:
+
+1. Added `SourceSnapshotModels.cs` and `SourceSnapshotService.cs`.
+2. Added `source-snapshot/raw`, `rendered`, `resources`, and `analysis` paths to Project Directory V2 and `WrbProjectPaths`.
+3. Added a 4MB raw HTML limit and clear truncation warning.
+4. Added sanitized response-header persistence without cookie, auth, token, key, secret, or session headers/values.
+5. Added resource URL manifests for CSS, JavaScript, images, fonts, videos, and other links without downloading those resources.
+6. Added WebView2 rendered DOM, visible text, viewport, element map, and style-signal extraction.
+7. Added deterministic layout, color, typography, asset-slot candidate, JSON report, and Markdown report output.
+8. Added MainWindow generation and snapshot-directory controls while preserving P2A-0, P2A-0.1, recording, frame extraction, ChatGPT package, and final Codex package workflows.
+9. Added a network-free FoundationSelfTest path using known HTML and fake rendered evidence.
+
+Verification:
+
+- Solution build passed with 0 warnings and 0 errors.
+- FoundationSelfTest passed, including sensitive-header filtering, resource classification, required file persistence, no resource downloads, and no output-site index generation.
+- UI smoke captured `https://example.com/` successfully with HTTP 200 and rendered evidence, generated all 18 required files, opened the snapshot directory action, and did not create `output-site/current/index.html`.
+- WebView2 Runtime is installed and functional.
+
+P2A-1 does not download site assets, recursively crawl, bypass anti-automation, access authenticated/paid content, execute Codex CLI, call OpenAI API or local models, generate a website, or write `output-site/current/index.html`.
+
+Next recommended stage: P2A-2 Codex CLI Single Page Generation.
+
+## Latest P2A-0.1 Detached WebView2 Preview Window
+
+Snapshot time: 2026-06-07.
 
 P2A-0.1 adds a detached adjustable WebView2 preview window.
 

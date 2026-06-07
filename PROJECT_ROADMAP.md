@@ -2,26 +2,24 @@
 
 ## Current Recommended Next Stage
 
-P2A-0 WebView2 Preview Shell is implemented and verified.
+P2A-0 WebView2 Preview Shell and P2A-0.1 Detached WebView2 Preview Window are implemented and verified.
 
-P2A-0 adds a minimal embedded WebView2 preview card to the existing WPF workflow. It can open the reference URL and an existing local `output-site/current/index.html`, refresh the embedded preview, and open the same URI in the external browser.
+P2A-1 Internal Source Snapshot MVP was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
-P2A-0 does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, or full UI redesign. The old recording/frame extraction/ChatGPT package/final Codex package workflow remains intact.
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-P2A-0.1 Detached WebView2 Preview Window was inserted before P2A-1 because P2A-0's fixed embedded preview can be too small for desktop reference sites.
+P2A-1 captures one reference URL with bounded HTTP raw HTML and WebView2 rendered evidence. It writes structured `source-snapshot/` text, JSON, and Markdown evidence without downloading resources or recursively crawling.
 
-P2A-0.1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-P2A-0.1 adds a separate resizable WebView2 window with `1366x768`, `1440x900`, `1920x1080`, `1024x768`, and `390x844` presets. It preserves the embedded preview and does not introduce a Docking framework.
+P2A-1 does not execute Codex CLI, call OpenAI API or local models, generate a website, or write `output-site/current/index.html`.
 
 Next immediate implementation round:
-P2A-1 Internal Source Snapshot MVP.
+P2A-2 Codex CLI Single Page Generation.
 
 Remaining P2A roadmap:
 
-1. P2A-1 Internal Source Snapshot MVP.
-2. P2A-2 Codex CLI Proof Runner.
-3. P2A-3 Codex CLI Controlled Site Generation + WebView2 Preview.
+1. P2A-1 Internal Source Snapshot MVP - implemented.
+2. P2A-2 Codex CLI Single Page Generation - next.
+3. P2A-3 Output Validation + WebView2 Preview.
 4. P2A-4 Minimal Tuning / Color Controls.
 
 P1.7.4 Failure recovery policy service remains postponed, not cancelled.

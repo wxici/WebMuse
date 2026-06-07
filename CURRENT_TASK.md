@@ -2,36 +2,34 @@
 
 ## Current task
 
-P2A-0.1 Detached WebView2 Preview Window / Adjustable Preview Surface
+P2A-1 Internal Source Snapshot MVP / Deterministic Site Capture Engine
 
 ## Status
 
-Implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+P2A-1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
-## Completed scope
+## Scope
 
-- Added a separate resizable and maximizable WebView2 preview window with its own WebView2 control.
-- Kept the existing P2A-0 embedded preview unchanged.
-- Added desktop, tablet, and phone window-size presets: `1366x768`, `1440x900`, `1920x1080`, `1024x768`, and `390x844`.
-- Reuses the current embedded-preview URI when available, otherwise uses the current project reference URL.
-- Added address navigation, refresh, external-browser fallback, and live window-size status.
-- Closes the detached preview when the project or main window closes.
-- Preserved the old recording, frame extraction, ChatGPT package, and final Codex package workflow.
+- Capture one current reference URL only.
+- Save bounded raw HTML and sanitized response headers.
+- Capture WebView2 rendered DOM, visible text, viewport, element map, and style samples.
+- Write deterministic resource manifests and analysis reports under `source-snapshot/`.
+- Record resource URLs only; do not download site assets.
+- Provide a network-free deterministic service path for FoundationSelfTest.
 
 ## Verification
 
 - `dotnet build WebRebuildRecorder.slnx`: passed with 0 warnings and 0 errors.
-- FoundationSelfTest: passed after a narrow P2A-0.1 allowlist update to the historical P1.8 scope guard.
-- UI smoke: passed for app startup, embedded-preview preservation, detached-window launch, five size presets, maximize/free resize, WebView2 Runtime initialization, reference URL navigation, refresh, external-browser fallback, project-close cleanup, main-window cleanup, and old workflow controls.
+- FoundationSelfTest: passed with deterministic known-HTML capture and no network/WebView2 initialization.
+- UI smoke: passed for real HTTP capture, WebView2 rendered evidence, all required files, snapshot-directory action, old workflow controls, and no output-site index creation.
+- WebView2 Runtime: installed and functional.
 
 ## Hard boundary
 
-P2A-0.1 does not implement Source Snapshot, Codex CLI execution, OpenAI API calls, local model calls, site generation, tuning, color controls, asset-slot overlays, a Docking framework, or full UI redesign.
-
-P2A-0.1 adds a detached adjustable WebView2 preview window with desktop/tablet/mobile size presets. It does not implement Source Snapshot, Codex CLI execution, site generation, tuning, color controls, asset-slot overlays, or full Docking UI.
+P2A-1 does not recursively crawl, bypass anti-automation, access authenticated or paid content, persist cookies/tokens/authorization headers, execute Codex CLI, call OpenAI or local models, generate a website, or write `output-site/current/index.html`.
 
 ## Next planned stage
 
-P2A-1 Internal Source Snapshot MVP.
+P2A-2 Codex CLI Single Page Generation.

@@ -1,12 +1,42 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-07 P2A-1 Internal Source Snapshot MVP
+
+P2A-1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P2A-1 implements Internal Source Snapshot MVP.
+
+It captures one current reference URL only. The application performs HTTP raw HTML capture and WebView2 rendered evidence capture, then writes deterministic `source-snapshot/` text, JSON, and Markdown files.
+
+Persisted evidence:
+
+- bounded raw HTML and sanitized response headers;
+- rendered DOM, visible text, viewport, and element map;
+- CSS, JavaScript, image, font, video, and other resource URL manifests;
+- layout, color, typography, and asset-slot candidate signals;
+- JSON and human-readable Markdown reports with a protected-brand-asset AI handoff warning.
+
+Security and scope:
+
+- raw HTML is limited to 4MB;
+- cookie/auth/token/key/secret/session headers and sensitive URL query parameters are not persisted;
+- site resources are listed but not downloaded;
+- no recursive crawl, anti-automation bypass, authenticated-content access, or paid-content access;
+- no Codex CLI, OpenAI API, local model, website generation, or `output-site/current/index.html` write.
+
+Verification passed:
+
+- solution build with 0 warnings and 0 errors;
+- network-free deterministic FoundationSelfTest using known HTML and fake rendered evidence;
+- real UI capture of `https://example.com/` with HTTP 200, successful WebView2 evidence, all required files, snapshot-directory action, old workflow preservation, and no output-site index creation.
+
+Next recommended stage: P2A-2 Codex CLI Single Page Generation.
+
 ## 2026-06-07 P2A-0.1 detached WebView2 preview window
 
 P2A-0.1 adds a detached adjustable WebView2 preview window.
-
-P2A-0.1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 It solves the fixed 360-height embedded preview limitation where some reference sites detect a small or vertical viewport.
 

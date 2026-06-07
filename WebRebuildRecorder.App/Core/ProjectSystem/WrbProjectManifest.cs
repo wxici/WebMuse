@@ -30,6 +30,7 @@ public sealed class WrbProjectPaths
     public string Assets { get; set; } = ProjectDirectoryV2.Assets;
     public string Theme { get; set; } = ProjectDirectoryV2.Theme;
     public string Observation { get; set; } = ProjectDirectoryV2.Observation;
+    public string SourceSnapshot { get; set; } = ProjectDirectoryV2.SourceSnapshot;
     public string CodexTask { get; set; } = ProjectDirectoryV2.CodexTask;
     public string OutputCurrent { get; set; } = ProjectDirectoryV2.OutputCurrent;
     public string OutputVersions { get; set; } = ProjectDirectoryV2.OutputVersions;

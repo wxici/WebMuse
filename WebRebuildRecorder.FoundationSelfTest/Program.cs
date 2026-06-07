@@ -6,6 +6,7 @@ using WebRebuildRecorder.App.Core.ProjectSystem;
 using WebRebuildRecorder.App.Core.Security;
 using WebRebuildRecorder.App.Core.Serialization;
 using WebRebuildRecorder.App.Core.State;
+using WebRebuildRecorder.App.Models;
 using WebRebuildRecorder.App.Services;
 
 var failures = new List<string>();
@@ -44,6 +45,7 @@ try
     await CheckP172ApprovalGateAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP173ExecutionPreconditionsAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP180AlphaValidationProbeAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP2A1SourceSnapshotAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -115,6 +117,9 @@ try
     Console.WriteLine("[P1.8-0] Local pipeline probe steps verified.");
     Console.WriteLine("[P1.8-0] Blocked-but-explainable alpha evidence verified.");
     Console.WriteLine("[P1.8-0] Alpha validation non-execution boundary verified.");
+    Console.WriteLine("[P2A-1] Source Snapshot deterministic persistence verified.");
+    Console.WriteLine("[P2A-1] Source Snapshot resource manifest verified.");
+    Console.WriteLine("[P2A-1] Source Snapshot report and non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -131,6 +136,11 @@ static void CheckV2Directories(string projectRoot, List<string> failures)
         ProjectDirectoryV2.Assets,
         ProjectDirectoryV2.Theme,
         ProjectDirectoryV2.Observation,
+        ProjectDirectoryV2.SourceSnapshot,
+        ProjectDirectoryV2.SourceSnapshotRaw,
+        ProjectDirectoryV2.SourceSnapshotRendered,
+        ProjectDirectoryV2.SourceSnapshotResources,
+        ProjectDirectoryV2.SourceSnapshotAnalysis,
         ProjectDirectoryV2.CodexTask,
         ProjectDirectoryV2.OutputCurrent,
         ProjectDirectoryV2.Tune,
@@ -4005,6 +4015,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         && File.ReadAllText(currentTaskPath).Contains("P2A-0 WebView2 Preview Shell", StringComparison.Ordinal);
     var isP2A01DetachedPreview = File.Exists(currentTaskPath)
         && File.ReadAllText(currentTaskPath).Contains("P2A-0.1 Detached WebView2 Preview Window", StringComparison.Ordinal);
+    var isP2A1SourceSnapshot = File.Exists(currentTaskPath)
+        && File.ReadAllText(currentTaskPath).Contains("P2A-1 Internal Source Snapshot MVP", StringComparison.Ordinal);
     var p2A0AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "WebRebuildRecorder/WebRebuildRecorder.App/WebRebuildRecorder.App.csproj",
@@ -4017,6 +4029,16 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/Views/DetachedPreviewWindow.xaml",
         "WebRebuildRecorder/WebRebuildRecorder.App/Views/DetachedPreviewWindow.xaml.cs"
+    };
+    var p2A1AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "WebRebuildRecorder/WebRebuildRecorder.App/Core/ProjectSystem/ProjectDirectoryV2.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Core/ProjectSystem/WrbProjectManifest.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Models/SourceSnapshotModels.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Services/SourceSnapshotService.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.FoundationSelfTest/Program.cs"
     };
 
     if (string.IsNullOrWhiteSpace(repositoryRoot)
@@ -4060,7 +4082,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
             .Select(path => path.Replace('\\', '/'))
             .Where(path =>
                 !((isP2A0PreviewShell && p2A0AllowedFiles.Contains(path))
-                    || (isP2A01DetachedPreview && p2A01AllowedFiles.Contains(path)))
+                    || (isP2A01DetachedPreview && p2A01AllowedFiles.Contains(path))
+                    || (isP2A1SourceSnapshot && p2A1AllowedFiles.Contains(path)))
                 && (path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
@@ -4146,6 +4169,207 @@ static void CheckP173ExecutionGitIgnore(List<string> failures)
         && !File.ReadAllText(repositoryIgnorePath).Contains("codex-task/execution", StringComparison.OrdinalIgnoreCase))
     {
         failures.Add("Repository .gitignore does not ignore WebRebuildRecorder codex-task/execution runtime artifacts.");
+    }
+}
+
+static async Task CheckP2A1SourceSnapshotAsync(
+    string projectDirectory,
+    string projectId,
+    List<string> failures)
+{
+    var logger = new AppLogger();
+    var service = new SourceSnapshotService(logger);
+    var project = new RebuildProject
+    {
+        ProjectId = projectId,
+        ProjectName = "Foundation Self Check",
+        Slug = "foundation-self-check",
+        ReferenceUrl = "https://example.com/",
+        ProjectDirectory = projectDirectory,
+        RootDirectory = Directory.GetParent(projectDirectory)?.FullName ?? projectDirectory
+    };
+
+    var html = """
+<!doctype html>
+<html>
+<head>
+<title>Example Source Snapshot</title>
+<meta name="description" content="A sample page for snapshot testing">
+<link rel="stylesheet" href="/site.css">
+<link rel="preload" as="font" href="/fonts/sample.woff2">
+<script src="/app.js"></script>
+</head>
+<body>
+<header><h1>Hero Title</h1><a href="/contact">Contact</a></header>
+<section class="hero"><button>Start</button><img src="/hero.webp" alt="Hero"></section>
+<video src="/intro.mp4"></video>
+</body>
+</html>
+""";
+    var rendered = new SourceSnapshotRenderedEvidence
+    {
+        RenderSucceeded = true,
+        DomHtml = html,
+        VisibleText = "Hero Title Contact Start",
+        Viewport = new SourceSnapshotViewport
+        {
+            Width = 1366,
+            Height = 768,
+            DevicePixelRatio = 1,
+            ScrollHeight = 1600
+        },
+        Elements =
+        [
+            new SourceSnapshotElementItem
+            {
+                Tag = "header",
+                Text = "Hero Title Contact",
+                Width = 1366,
+                Height = 96
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "h1",
+                Text = "Hero Title",
+                Width = 400,
+                Height = 80
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "button",
+                Text = "Start",
+                Width = 120,
+                Height = 44
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "img",
+                Src = "https://example.com/hero.webp",
+                Width = 640,
+                Height = 360
+            }
+        ],
+        StyleSamples =
+        [
+            new SourceSnapshotStyleSignal
+            {
+                Selector = "body",
+                Color = "rgb(20, 20, 20)",
+                BackgroundColor = "rgb(255, 255, 255)",
+                FontFamily = "Inter",
+                FontSize = "16px",
+                FontWeight = "400"
+            }
+        ]
+    };
+
+    var result = await service.CaptureFromKnownHtmlAsync(
+        project,
+        project.ReferenceUrl,
+        html,
+        new Dictionary<string, string>
+        {
+            ["content-type"] = "text/html",
+            ["set-cookie"] = "session=must-not-persist",
+            ["authorization"] = "must-not-persist"
+        },
+        rendered);
+
+    var root = Path.Combine(projectDirectory, ProjectDirectoryV2.SourceSnapshot);
+    var requiredFiles = new[]
+    {
+        Path.Combine(root, "snapshot-manifest.json"),
+        Path.Combine(root, "raw", "index.html"),
+        Path.Combine(root, "raw", "response-headers.json"),
+        Path.Combine(root, "rendered", "dom.html"),
+        Path.Combine(root, "rendered", "visible-text.txt"),
+        Path.Combine(root, "rendered", "viewport.json"),
+        Path.Combine(root, "rendered", "element-map.json"),
+        Path.Combine(root, "resources", "resource-manifest.json"),
+        Path.Combine(root, "resources", "css-links.json"),
+        Path.Combine(root, "resources", "js-links.json"),
+        Path.Combine(root, "resources", "image-links.json"),
+        Path.Combine(root, "resources", "font-links.json"),
+        Path.Combine(root, "analysis", "source-snapshot-report.md"),
+        Path.Combine(root, "analysis", "source-snapshot-report.json"),
+        Path.Combine(root, "analysis", "layout-signals.json"),
+        Path.Combine(root, "analysis", "color-signals.json"),
+        Path.Combine(root, "analysis", "typography-signals.json"),
+        Path.Combine(root, "analysis", "asset-slot-candidates.json")
+    };
+
+    foreach (var file in requiredFiles)
+    {
+        if (!File.Exists(file))
+        {
+            failures.Add($"P2A-1 Source Snapshot missing file: {file}");
+        }
+    }
+
+    if (!result.HttpSucceeded || result.StatusCode != 200)
+    {
+        failures.Add("P2A-1 Source Snapshot known-HTML capture should mark HTTP 200 success.");
+    }
+
+    if (!result.RenderSucceeded)
+    {
+        failures.Add("P2A-1 Source Snapshot should preserve successful rendered evidence.");
+    }
+
+    if (result.ResourceManifest.Css.Count == 0
+        || result.ResourceManifest.JavaScript.Count == 0
+        || result.ResourceManifest.Images.Count == 0
+        || result.ResourceManifest.Fonts.Count == 0
+        || result.ResourceManifest.Videos.Count == 0)
+    {
+        failures.Add("P2A-1 Source Snapshot did not classify all expected resource link kinds.");
+    }
+
+    if (!result.ResourceManifest.Images.Any(item =>
+            item.Url == "https://example.com/hero.webp"
+            && item.IsSameOrigin))
+    {
+        failures.Add("P2A-1 Source Snapshot did not normalize the same-origin image URL.");
+    }
+
+    var headersText = File.ReadAllText(Path.Combine(root, "raw", "response-headers.json"));
+    if (headersText.Contains("set-cookie", StringComparison.OrdinalIgnoreCase)
+        || headersText.Contains("authorization", StringComparison.OrdinalIgnoreCase)
+        || headersText.Contains("must-not-persist", StringComparison.Ordinal))
+    {
+        failures.Add("P2A-1 Source Snapshot persisted a sensitive response header.");
+    }
+
+    var reportText = File.ReadAllText(
+        Path.Combine(root, "analysis", "source-snapshot-report.md"));
+    if (!reportText.Contains("AI handoff note", StringComparison.OrdinalIgnoreCase)
+        || !reportText.Contains("not permission to copy protected brand assets", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("P2A-1 Source Snapshot report should contain the protected-asset AI handoff note.");
+    }
+
+    if (result.Analysis.Title != "Example Source Snapshot"
+        || result.Analysis.Description != "A sample page for snapshot testing"
+        || !result.Analysis.Headings.Contains("Hero Title")
+        || !result.Analysis.Buttons.Contains("Start"))
+    {
+        failures.Add("P2A-1 Source Snapshot deterministic analysis did not preserve expected page signals.");
+    }
+
+    var downloadedAsset = Directory
+        .EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        .FirstOrDefault(path => Path.GetExtension(path).ToLowerInvariant()
+            is ".css" or ".js" or ".jpg" or ".jpeg" or ".png" or ".webp"
+            or ".gif" or ".svg" or ".avif" or ".woff" or ".woff2" or ".ttf"
+            or ".otf" or ".eot" or ".mp4" or ".webm" or ".mov" or ".m4v");
+    if (downloadedAsset is not null)
+    {
+        failures.Add($"P2A-1 Source Snapshot downloaded a site asset: {downloadedAsset}");
+    }
+
+    if (File.Exists(Path.Combine(projectDirectory, "output-site", "current", "index.html")))
+    {
+        failures.Add("P2A-1 Source Snapshot must not generate output-site/current/index.html.");
     }
 }
 

@@ -1,10 +1,12 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
+using WebRebuildRecorder.App.Core.Serialization;
 using WebRebuildRecorder.App.Models;
 using WebRebuildRecorder.App.Services;
 using WebRebuildRecorder.App.ViewModels;
@@ -18,6 +20,7 @@ public partial class MainWindow : Window
     private readonly AppLogger _logger;
     private readonly AppSettingsService _appSettingsService;
     private readonly ProjectService _projectService;
+    private readonly SourceSnapshotService _sourceSnapshotService;
     private readonly FfmpegScreenRecorder _recorder;
     private readonly FfprobeService _ffprobeService;
     private readonly FfmpegFrameExtractor _frameExtractor;
@@ -72,11 +75,80 @@ public partial class MainWindow : Window
     private ChatGptPackageResult? _chatGptPackageResult;
     private CodexPackageResult? _codexPackageResult;
     private AssetRequirementReport? _assetRequirementReport;
+    private SourceSnapshotResult? _lastSourceSnapshotResult;
     private string? _currentRunId;
     private string? _lastEmbeddedPreviewUri;
     private bool _useFallbackForCodex;
     private ActionProfile _activeActionProfile = new();
     private readonly List<HotKeyRegistrationFailure> _hotkeyFailures = [];
+
+    private const string SourceSnapshotRenderedEvidenceScript = """
+(() => {
+  const clean = (value, max = 500) => (value || '').toString().replace(/\s+/g, ' ').trim().slice(0, max);
+  const rectOf = (el) => {
+    const r = el.getBoundingClientRect();
+    return {
+      x: Math.round(r.x),
+      y: Math.round(r.y),
+      width: Math.round(r.width),
+      height: Math.round(r.height)
+    };
+  };
+  const selectorOf = (el) => {
+    if (el.id) return '#' + el.id;
+    if (el.className && typeof el.className === 'string') {
+      return el.tagName.toLowerCase() + '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.');
+    }
+    return el.tagName.toLowerCase();
+  };
+  const candidates = Array.from(document.querySelectorAll(
+    'header,nav,main,section,article,footer,h1,h2,h3,p,a,button,img,[role="button"],[class*="hero"],[class*="card"]'
+  )).slice(0, 160);
+
+  const elements = candidates.map(el => {
+    const r = rectOf(el);
+    return {
+      tag: el.tagName.toLowerCase(),
+      id: el.id || '',
+      className: typeof el.className === 'string' ? el.className : '',
+      text: clean(el.innerText || el.alt || el.getAttribute('aria-label') || '', 240),
+      href: el.href || '',
+      src: el.currentSrc || el.src || '',
+      x: r.x,
+      y: r.y,
+      width: r.width,
+      height: r.height
+    };
+  });
+
+  const styleSamples = candidates.slice(0, 60).map(el => {
+    const cs = window.getComputedStyle(el);
+    return {
+      selector: selectorOf(el),
+      color: cs.color || '',
+      backgroundColor: cs.backgroundColor || '',
+      fontFamily: cs.fontFamily || '',
+      fontSize: cs.fontSize || '',
+      fontWeight: cs.fontWeight || ''
+    };
+  });
+
+  return {
+    renderSucceeded: true,
+    renderError: '',
+    domHtml: document.documentElement.outerHTML.slice(0, 1000000),
+    visibleText: (document.body ? document.body.innerText : '').slice(0, 50000),
+    viewport: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      scrollHeight: document.documentElement.scrollHeight || document.body.scrollHeight || 0
+    },
+    elements,
+    styleSamples
+  };
+})()
+""";
 
     public MainWindow()
     {
@@ -85,6 +157,7 @@ public partial class MainWindow : Window
         _logger = new AppLogger();
         _appSettingsService = new AppSettingsService();
         _projectService = new ProjectService(_logger);
+        _sourceSnapshotService = new SourceSnapshotService(_logger);
         _recorder = new FfmpegScreenRecorder(_logger);
         _ffprobeService = new FfprobeService(_logger);
         _frameExtractor = new FfmpegFrameExtractor(_logger);
@@ -208,6 +281,32 @@ public partial class MainWindow : Window
     private async void OpenDetachedPreviewWindowButton_Click(object sender, RoutedEventArgs e)
     {
         await SafeRunAsync(OpenDetachedPreviewWindowAsync);
+    }
+
+    private async void GenerateSourceSnapshotButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(RunSourceSnapshotAsync);
+    }
+
+    private void OpenSourceSnapshotDirectoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_project is null)
+        {
+            return;
+        }
+
+        var directory = Path.Combine(_project.ProjectDirectory, "source-snapshot");
+        if (!Directory.Exists(directory))
+        {
+            SourceSnapshotStatusText.Text = "Source Snapshot：快照目录尚不存在。";
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = directory,
+            UseShellExecute = true
+        });
     }
 
     private async void StartRecordingButton_Click(object sender, RoutedEventArgs e)
@@ -798,6 +897,121 @@ public partial class MainWindow : Window
         UpdateButtonStates();
     }
 
+    private async Task RunSourceSnapshotAsync()
+    {
+        var project = _project ?? throw new InvalidOperationException("请先新建或打开一个项目。");
+        var rawUrl = string.IsNullOrWhiteSpace(UrlBox.Text)
+            ? project.ReferenceUrl
+            : UrlBox.Text;
+        var url = NormalizeUrl(rawUrl);
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new InvalidOperationException("请先填写参考站 URL。");
+        }
+
+        UrlBox.Text = url;
+        await _projectService.UpdateReferenceUrlAsync(project, url);
+
+        SourceSnapshotStatusText.Text = "Source Snapshot：正在渲染页面并提取结构化证据...";
+        _logger.Info($"Source Snapshot started: {url}");
+
+        var renderedEvidence = await CaptureRenderedSnapshotEvidenceAsync(url);
+
+        SourceSnapshotStatusText.Text = "Source Snapshot：正在抓取 HTML 与生成资源清单...";
+        var result = await _sourceSnapshotService.CaptureAsync(project, url, renderedEvidence);
+
+        _lastSourceSnapshotResult = result;
+        SourceSnapshotStatusText.Text =
+            $"Source Snapshot：已生成 {result.Paths.Root}，资源 {CountResources(result.ResourceManifest)} 个，元素 {renderedEvidence.Elements.Count} 个，警告 {result.Analysis.Warnings.Count} 个。";
+        _logger.Info($"Source Snapshot completed: {result.Paths.Root}");
+        UpdateButtonStates();
+    }
+
+    private async Task<SourceSnapshotRenderedEvidence> CaptureRenderedSnapshotEvidenceAsync(string url)
+    {
+        try
+        {
+            await NavigateEmbeddedPreviewAndWaitAsync(url, TimeSpan.FromSeconds(35));
+            var scriptResult = await EmbeddedPreviewWebView.CoreWebView2.ExecuteScriptAsync(
+                SourceSnapshotRenderedEvidenceScript);
+            var evidence = JsonSerializer.Deserialize<SourceSnapshotRenderedEvidence>(
+                scriptResult,
+                WrbJsonOptions.Default);
+
+            if (evidence is null)
+            {
+                return new SourceSnapshotRenderedEvidence
+                {
+                    RenderSucceeded = false,
+                    RenderError = "WebView2 returned empty rendered evidence."
+                };
+            }
+
+            evidence.RenderSucceeded = true;
+            return evidence;
+        }
+        catch (Exception ex)
+        {
+            _logger.Error("Source Snapshot rendered evidence capture failed.", ex);
+            return new SourceSnapshotRenderedEvidence
+            {
+                RenderSucceeded = false,
+                RenderError = ex.Message
+            };
+        }
+    }
+
+    private async Task NavigateEmbeddedPreviewAndWaitAsync(string url, TimeSpan timeout)
+    {
+        await EnsureEmbeddedPreviewAsync();
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void Handler(object? sender, CoreWebView2NavigationCompletedEventArgs args)
+        {
+            if (args.IsSuccess)
+            {
+                tcs.TrySetResult(true);
+            }
+            else
+            {
+                tcs.TrySetException(
+                    new InvalidOperationException($"WebView2 navigation failed: {args.WebErrorStatus}"));
+            }
+        }
+
+        EmbeddedPreviewWebView.CoreWebView2.NavigationCompleted += Handler;
+        try
+        {
+            _lastEmbeddedPreviewUri = url;
+            EmbeddedPreviewStatusText.Text = $"WebView2 预览：Source Snapshot 正在加载 {url}";
+            EmbeddedPreviewWebView.Source = new Uri(url);
+
+            var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+            if (completed != tcs.Task)
+            {
+                throw new TimeoutException(
+                    $"WebView2 navigation timed out after {timeout.TotalSeconds:n0} seconds.");
+            }
+
+            await tcs.Task;
+        }
+        finally
+        {
+            EmbeddedPreviewWebView.CoreWebView2.NavigationCompleted -= Handler;
+        }
+    }
+
+    private static int CountResources(SourceSnapshotResourceManifest manifest)
+    {
+        return manifest.Css.Count
+            + manifest.JavaScript.Count
+            + manifest.Images.Count
+            + manifest.Fonts.Count
+            + manifest.Videos.Count
+            + manifest.Other.Count;
+    }
+
     private async Task OpenDetachedPreviewWindowAsync()
     {
         var uri = await ResolvePreviewUriForDetachedWindowAsync();
@@ -1082,6 +1296,7 @@ public partial class MainWindow : Window
         _chatGptPackageResult = null;
         _codexPackageResult = null;
         _assetRequirementReport = null;
+        _lastSourceSnapshotResult = null;
         _currentRunId = null;
         _useFallbackForCodex = false;
         project.LastRunId = string.Empty;
@@ -2126,6 +2341,7 @@ public partial class MainWindow : Window
         _lastEmbeddedPreviewUri = null;
         _useFallbackForCodex = false;
         EmbeddedPreviewStatusText.Text = "WebView2 预览：尚未启动";
+        SourceSnapshotStatusText.Text = "Source Snapshot：尚未生成";
         RecordingStateText.Text = "录屏：未开始";
         FramesCountText.Text = "截图数量：--";
         VideoDurationText.Text = "时长：--";
@@ -2659,6 +2875,8 @@ public partial class MainWindow : Window
         RefreshEmbeddedPreviewButton.IsEnabled = hasProject && !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
         OpenPreviewInExternalBrowserButton.IsEnabled = !string.IsNullOrWhiteSpace(_lastEmbeddedPreviewUri);
         OpenDetachedPreviewWindowButton.IsEnabled = hasProject;
+        GenerateSourceSnapshotButton.IsEnabled = hasProject && !isRecording;
+        OpenSourceSnapshotDirectoryButton.IsEnabled = hasProject;
         AutoObserveRecordingToolbarButton.IsEnabled = canStartRecording;
         AutoObserveRecordingWorkflowButton.IsEnabled = canStartRecording;
         StartRecordingToolbarButton.IsEnabled = canStartRecording;
