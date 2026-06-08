@@ -1,12 +1,57 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06-08 P2A-2-A single page generation package builder
+
+P2A-2-A only creates a Codex single-page generation package.
+
+P2A-2-A was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+It reads P2A-1.2 reconstruction evidence:
+
+- `source-snapshot/analysis/ai-reconstruction-brief.md`
+- `source-snapshot/analysis/reconstruction-evidence-graph.json`
+- `source-snapshot/analysis/section-map.json`
+- `source-snapshot/analysis/media-placement-map.json`
+- `source-snapshot/analysis/behavior-map.json`
+- `source-snapshot/analysis/css-rule-map.json`
+- `source-snapshot/analysis/js-behavior-reference-map.json`
+- `source-snapshot/rendered/first-screen.png`
+
+It writes runtime package files under:
+
+```text
+codex-task/single-page-generation/<package-id>/
+```
+
+Package contents:
+
+- `generation-manifest.json`
+- `CONSTRUCTION_BRIEF.md`
+- `PROMPT_FOR_CODEX.md`
+- `OUTPUT_CONTRACT.md`
+- `FORBIDDEN_CONTENT.md`
+- `ASSET_SLOT_PLAN.md`
+- `EVIDENCE_INDEX.md`
+- `REVIEW_CHECKLIST.md`
+
+P2A-2-A filters tracker, analytics, recaptcha, cookie, backend form, favourite, server endpoint, and original logo/image/video/font asset reuse from the later generation target.
+
+It does not execute Codex CLI, run any `codex` command, call OpenAI API, call local models, generate website output, or write `output-site/current/index.html`.
+
+It prepares P2A-2-B Controlled Codex CLI Single Page Generation.
+
+Verification completed in the prototype worktree:
+
+- build passed;
+- FoundationSelfTest passed;
+- UI smoke generated an AirCenter single-page generation package;
+- runtime review zip was exported outside Git as `aircenter-p2a-2-a-generation-package-review_20260608-201820.zip`.
+
 ## 2026-06-08 P2A-1.2 controlled desktop Source Snapshot reconstruction evidence
 
 P2A-1.2-A implements controlled desktop Source Snapshot capture and core reconstruction evidence graph.
-
-P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 It fixes the previous embedded viewport problem by using a dedicated WebView2 capture window. The old embedded `587 x 359` preview surface is not used as the primary reconstruction evidence path.
 
@@ -33,7 +78,7 @@ Runtime review package:
 aircenter-p2a-1-2-reconstruction-review_<timestamp>.zip
 ```
 
-The runtime package remains outside WebMuse and is not committed here.
+The runtime review package remains outside WebMuse and is not committed here.
 
 Scope boundary:
 

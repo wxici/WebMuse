@@ -2,9 +2,27 @@
 
 ## Current Recommended Next Stage
 
-P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph is implemented and verified in the prototype worktree.
+P2A-2-A Single Page Generation Package Builder is the current narrow implementation step.
 
-P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+P2A-2-A was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+P2A-2-A only creates a Codex single-page generation package from P2A-1.2 reconstruction evidence. It does not execute Codex CLI, call OpenAI API, generate website output, or write `output-site/current/index.html`.
+
+It prepares:
+
+```text
+P2A-2-B Controlled Codex CLI Single Page Generation
+```
+
+P2A-2-B should start only after the package builder and runtime review package pass.
+
+Current verification status: P2A-2-A build, FoundationSelfTest, UI smoke, and runtime review package export have passed in the prototype worktree. The runtime review zip is outside Git:
+
+```text
+aircenter-p2a-2-a-generation-package-review_<timestamp>.zip
+```
+
+P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph is implemented and verified in the prototype worktree.
 
 It now uses a dedicated controlled capture window instead of the embedded `587 x 359` preview as primary evidence. It writes `rendered/first-screen.png`, fetches bounded frontend text resources, generates dependency/section/media/behavior/css/js/reconstruction evidence outputs, and writes `analysis/ai-reconstruction-brief.md`.
 

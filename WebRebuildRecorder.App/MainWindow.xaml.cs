@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly AppSettingsService _appSettingsService;
     private readonly ProjectService _projectService;
     private readonly SourceSnapshotService _sourceSnapshotService;
+    private readonly SinglePageGenerationPackageService _singlePageGenerationPackageService;
     private readonly FfmpegScreenRecorder _recorder;
     private readonly FfprobeService _ffprobeService;
     private readonly FfmpegFrameExtractor _frameExtractor;
@@ -76,6 +77,7 @@ public partial class MainWindow : Window
     private CodexPackageResult? _codexPackageResult;
     private AssetRequirementReport? _assetRequirementReport;
     private SourceSnapshotResult? _lastSourceSnapshotResult;
+    private SinglePageGenerationPackage? _lastSinglePageGenerationPackage;
     private string? _currentRunId;
     private string? _lastEmbeddedPreviewUri;
     private bool _useFallbackForCodex;
@@ -178,6 +180,7 @@ public partial class MainWindow : Window
         _appSettingsService = new AppSettingsService();
         _projectService = new ProjectService(_logger);
         _sourceSnapshotService = new SourceSnapshotService(_logger);
+        _singlePageGenerationPackageService = new SinglePageGenerationPackageService(_logger);
         _recorder = new FfmpegScreenRecorder(_logger);
         _ffprobeService = new FfprobeService(_logger);
         _frameExtractor = new FfmpegFrameExtractor(_logger);
@@ -325,6 +328,33 @@ public partial class MainWindow : Window
         Process.Start(new ProcessStartInfo
         {
             FileName = directory,
+            UseShellExecute = true
+        });
+    }
+
+    private async void CreateSinglePageGenerationPackageButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SafeRunAsync(CreateSinglePageGenerationPackageAsync);
+    }
+
+    private void OpenSinglePageGenerationPackageButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lastSinglePageGenerationPackage is null
+            || string.IsNullOrWhiteSpace(_lastSinglePageGenerationPackage.PackageRoot))
+        {
+            SinglePageGenerationPackageStatusText.Text = "单页施工包：尚未生成。";
+            return;
+        }
+
+        if (!Directory.Exists(_lastSinglePageGenerationPackage.PackageRoot))
+        {
+            SinglePageGenerationPackageStatusText.Text = "单页施工包：目录不存在。";
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = _lastSinglePageGenerationPackage.PackageRoot,
             UseShellExecute = true
         });
     }
@@ -956,6 +986,23 @@ public partial class MainWindow : Window
         SourceSnapshotStatusText.Text =
             $"Source Snapshot：已生成 {result.Paths.Root}，视口 {capture.Evidence.Viewport.Width}×{capture.Evidence.Viewport.Height}，资源 {CountResources(result.ResourceManifest)} 个，元素 {capture.Evidence.Elements.Count} 个，警告 {result.Analysis.Warnings.Count} 个。";
         _logger.Info($"Source Snapshot completed: {result.Paths.Root}");
+        UpdateButtonStates();
+    }
+
+    private async Task CreateSinglePageGenerationPackageAsync()
+    {
+        var project = _project ?? throw new InvalidOperationException("请先新建或打开一个项目。");
+
+        SinglePageGenerationPackageStatusText.Text = "单页施工包：正在读取 Source Snapshot 重建证据...";
+        _logger.Info("Single page generation package started.");
+
+        var package = await _singlePageGenerationPackageService.CreateAsync(project);
+        _lastSinglePageGenerationPackage = package;
+
+        SinglePageGenerationPackageStatusText.Text =
+            $"单页施工包：已生成 {package.PackageRoot}，证据 {package.InputEvidenceFiles.Count} 个，输出文件 {package.OutputFiles.Count} 个。";
+
+        _logger.Info($"Single page generation package completed: {package.PackageRoot}");
         UpdateButtonStates();
     }
 
@@ -2429,7 +2476,9 @@ public partial class MainWindow : Window
         _assetRequirementReport = null;
         _currentRunId = null;
         _lastEmbeddedPreviewUri = null;
+        _lastSinglePageGenerationPackage = null;
         _useFallbackForCodex = false;
+        SinglePageGenerationPackageStatusText.Text = "单页施工包：尚未生成";
         EmbeddedPreviewStatusText.Text = "WebView2 预览：尚未启动";
         SourceSnapshotStatusText.Text = "Source Snapshot：尚未生成";
         RecordingStateText.Text = "录屏：未开始";
@@ -2967,6 +3016,8 @@ public partial class MainWindow : Window
         OpenDetachedPreviewWindowButton.IsEnabled = hasProject;
         GenerateSourceSnapshotButton.IsEnabled = hasProject && !isRecording;
         OpenSourceSnapshotDirectoryButton.IsEnabled = hasProject;
+        CreateSinglePageGenerationPackageButton.IsEnabled = hasProject && !isRecording;
+        OpenSinglePageGenerationPackageButton.IsEnabled = hasProject;
         AutoObserveRecordingToolbarButton.IsEnabled = canStartRecording;
         AutoObserveRecordingWorkflowButton.IsEnabled = canStartRecording;
         StartRecordingToolbarButton.IsEnabled = canStartRecording;

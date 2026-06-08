@@ -2,7 +2,52 @@
 
 ## Current task
 
-P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph
+P2A-2-A Single Page Generation Package Builder
+
+P2A-2-A was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+## Scope
+
+P2A-2-A only creates a Codex single-page generation package from the latest P2A-1.2 Source Snapshot reconstruction evidence.
+
+It reads:
+
+```text
+source-snapshot/analysis/ai-reconstruction-brief.md
+source-snapshot/analysis/reconstruction-evidence-graph.json
+source-snapshot/analysis/section-map.json
+source-snapshot/analysis/media-placement-map.json
+source-snapshot/analysis/behavior-map.json
+source-snapshot/analysis/css-rule-map.json
+source-snapshot/analysis/js-behavior-reference-map.json
+source-snapshot/rendered/first-screen.png
+```
+
+It writes runtime package files under:
+
+```text
+codex-task/single-page-generation/<package-id>/
+```
+
+It does not execute Codex CLI.
+
+It does not call OpenAI API.
+
+It does not generate website output.
+
+It does not write `output-site/current/index.html`.
+
+It prepares P2A-2-B Controlled Codex CLI Single Page Generation.
+
+Runtime verification generated:
+
+```text
+aircenter-p2a-2-a-generation-package-review_<timestamp>.zip
+```
+
+This zip is a runtime review artifact and must not be committed.
 
 ## P2A-1.2-A implementation status
 
@@ -25,10 +70,6 @@ Runtime verification was performed against:
 ```text
 https://aircenter.space/
 ```
-
-P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 The runtime review package was exported outside the repository and is not included in WebMuse:
 

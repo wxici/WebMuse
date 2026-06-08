@@ -47,6 +47,7 @@ try
     await CheckP180AlphaValidationProbeAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP2A1SourceSnapshotAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP2A12ReconstructionEvidenceAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP2A2SinglePageGenerationPackageAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -124,6 +125,9 @@ try
     Console.WriteLine("[P2A-1.2] Controlled Source Snapshot reconstruction outputs verified.");
     Console.WriteLine("[P2A-1.2] Frontend text-resource and behavior evidence verified.");
     Console.WriteLine("[P2A-1.2] AI reconstruction brief and non-execution boundary verified.");
+    Console.WriteLine("[P2A-2-A] Single page generation package builder verified.");
+    Console.WriteLine("[P2A-2-A] Package content and forbidden-content filtering verified.");
+    Console.WriteLine("[P2A-2-A] Generation package non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -4023,6 +4027,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         && File.ReadAllText(currentTaskPath).Contains("P2A-1 Internal Source Snapshot MVP", StringComparison.Ordinal);
     var isP2A12SourceSnapshot = File.Exists(currentTaskPath)
         && File.ReadAllText(currentTaskPath).Contains("P2A-1.2 Controlled Desktop Source Snapshot", StringComparison.Ordinal);
+    var isP2A2SinglePagePackage = File.Exists(currentTaskPath)
+        && File.ReadAllText(currentTaskPath).Contains("P2A-2-A Single Page Generation Package Builder", StringComparison.Ordinal);
     var p2A0AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "WebRebuildRecorder/WebRebuildRecorder.App/WebRebuildRecorder.App.csproj",
@@ -4054,6 +4060,14 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         "WebRebuildRecorder/WebRebuildRecorder.App/Services/SourceSnapshotReconstructionAnalyzer.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/Views/SourceSnapshotCaptureWindow.xaml",
         "WebRebuildRecorder/WebRebuildRecorder.App/Views/SourceSnapshotCaptureWindow.xaml.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.FoundationSelfTest/Program.cs"
+    };
+    var p2A2AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "WebRebuildRecorder/WebRebuildRecorder.App/Models/SinglePageGenerationPackageModels.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Services/SinglePageGenerationPackageService.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
         "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
         "WebRebuildRecorder/WebRebuildRecorder.FoundationSelfTest/Program.cs"
@@ -4102,7 +4116,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
                 !((isP2A0PreviewShell && p2A0AllowedFiles.Contains(path))
                     || (isP2A01DetachedPreview && p2A01AllowedFiles.Contains(path))
                     || (isP2A1SourceSnapshot && p2A1AllowedFiles.Contains(path))
-                    || (isP2A12SourceSnapshot && p2A12AllowedFiles.Contains(path)))
+                    || (isP2A12SourceSnapshot && p2A12AllowedFiles.Contains(path))
+                    || (isP2A2SinglePagePackage && p2A2AllowedFiles.Contains(path)))
                 && (path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
@@ -4724,6 +4739,274 @@ static async Task CheckP2A12ReconstructionEvidenceAsync(
     if (File.Exists(Path.Combine(projectDirectory, "output-site", "current", "index.html")))
     {
         failures.Add("P2A-1.2 Source Snapshot must not generate output-site/current/index.html.");
+    }
+}
+
+static async Task CheckP2A2SinglePageGenerationPackageAsync(
+    string projectDirectory,
+    string projectId,
+    List<string> failures)
+{
+    var analysisRoot = Path.Combine(projectDirectory, ProjectDirectoryV2.SourceSnapshotAnalysis);
+    var renderedRoot = Path.Combine(projectDirectory, ProjectDirectoryV2.SourceSnapshotRendered);
+    Directory.CreateDirectory(analysisRoot);
+    Directory.CreateDirectory(renderedRoot);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "ai-reconstruction-brief.md"),
+        """
+# AI Reconstruction Brief
+
+Hero Vimeo background evidence should become a safe user-owned hero media slot.
+Responsive picture/source rules should become new static picture/source markup with replacement assets.
+Parallax and contentAnimation intent should be rebuilt with small static CSS/JS.
+Sticky and reveal behavior should be represented without original scripts.
+The rebuild must avoid tracker/backend/cookie/favourite behavior.
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "reconstruction-evidence-graph.json"),
+        """
+{
+  "summary": ["Hero Vimeo background detected", "Responsive picture/source rules detected"],
+  "sections": [
+    {
+      "sectionKey": "section-01-hero",
+      "selector": "section.hero",
+      "role": "hero",
+      "heading": "THE ARCHITECTURE OF NEW SUCCESS",
+      "visualRole": "full-screen premium business real-estate hero"
+    }
+  ],
+  "media": [
+    {
+      "sectionKey": "section-01-hero",
+      "selector": "iframe.hero__video",
+      "role": "hero video background",
+      "url": "https://player.vimeo.com/video/123?background=1",
+      "tag": "iframe",
+      "aspectRatio": "16:9"
+    }
+  ],
+  "behaviors": [
+    {
+      "sectionKey": "section-01-hero",
+      "selector": "section.hero",
+      "trigger": "scroll",
+      "plugin": "parallax contentAnimation",
+      "pattern": "landingIntroMove",
+      "animationName": "contentAnimation",
+      "rawDeclaration": "data-plugin data-parallax-pattern data-content-animation-animations"
+    }
+  ],
+  "cssRules": [
+    {
+      "selector": ".hero",
+      "sourceCssFile": "global.css",
+      "importantProperties": ["min-height:100vh", "position:relative"]
+    }
+  ],
+  "jsReferences": [
+    {
+      "sourceJsFile": "landing.js",
+      "pluginNamesFound": ["parallax", "contentAnimation"],
+      "dataAttributeNamesFound": ["data-parallax-pattern", "data-content-animation-animations"]
+    }
+  ]
+}
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "section-map.json"),
+        """
+[
+  {
+    "sectionKey": "section-01-hero",
+    "selector": "section.hero",
+    "role": "hero",
+    "heading": "THE ARCHITECTURE OF NEW SUCCESS",
+    "visualRole": "full-screen premium business real-estate hero"
+  },
+  {
+    "sectionKey": "section-02-momentum",
+    "selector": "section.sticky",
+    "role": "content",
+    "heading": "THE MOMENTUM TO RISE HIGHER",
+    "visualRole": "sticky image clip section"
+  }
+]
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "media-placement-map.json"),
+        """
+[
+  {
+    "sectionKey": "section-01-hero",
+    "selector": "iframe.hero__video",
+    "role": "hero video background",
+    "url": "https://player.vimeo.com/video/123?background=1",
+    "tag": "iframe",
+    "aspectRatio": "16:9"
+  },
+  {
+    "sectionKey": "section-02-momentum",
+    "selector": "img.slider__image",
+    "role": "slider/card image",
+    "url": "/media/image-1.webp",
+    "tag": "img",
+    "aspectRatio": "4:3"
+  }
+]
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "behavior-map.json"),
+        """
+[
+  {
+    "sectionKey": "section-01-hero",
+    "selector": "section.hero",
+    "trigger": "scroll",
+    "plugin": "parallax contentAnimation",
+    "pattern": "landingIntroMove",
+    "animationName": "contentAnimation",
+    "rawDeclaration": "data-parallax-pattern data-content-animation-animations"
+  },
+  {
+    "sectionKey": "section-02-momentum",
+    "selector": "section.sticky",
+    "trigger": "scroll",
+    "plugin": "reveal sticky",
+    "pattern": "data-scroll-sticky",
+    "animationName": "reveal",
+    "rawDeclaration": "data-reveal data-scroll-sticky"
+  }
+]
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "css-rule-map.json"),
+        """
+[
+  {
+    "selector": ".hero",
+    "sourceCssFile": "global.css",
+    "importantProperties": ["min-height:100vh", "overflow:hidden"],
+    "rebuildSuggestion": "Use full viewport hero with layered replacement media."
+  },
+  {
+    "selector": ".btn",
+    "sourceCssFile": "landing.css",
+    "importantProperties": ["border-radius", "uppercase"],
+    "rebuildSuggestion": "Use minimal monochrome CTA button."
+  }
+]
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllTextAsync(
+        Path.Combine(analysisRoot, "js-behavior-reference-map.json"),
+        """
+[
+  {
+    "sourceJsFile": "landing.js",
+    "minifiedLikely": true,
+    "pluginNamesFound": ["parallax", "contentAnimation", "reveal"],
+    "dataAttributeNamesFound": ["data-parallax-pattern", "data-content-animation-animations", "data-reveal"],
+    "notes": "Rebuild with small static JS helpers only."
+  }
+]
+""",
+        Encoding.UTF8);
+
+    await File.WriteAllBytesAsync(
+        Path.Combine(renderedRoot, "first-screen.png"),
+        Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lwC6VwAAAABJRU5ErkJggg=="));
+
+    var logger = new AppLogger();
+    var service = new SinglePageGenerationPackageService(logger);
+    var project = new RebuildProject
+    {
+        ProjectId = projectId,
+        ProjectName = "Foundation Self Check",
+        Slug = "foundation-self-check",
+        ReferenceUrl = "https://aircenter.space/",
+        ProjectDirectory = projectDirectory,
+        RootDirectory = Directory.GetParent(projectDirectory)?.FullName ?? projectDirectory
+    };
+
+    var package = await service.CreateAsync(project);
+    var requiredFiles = new[]
+    {
+        SinglePageGenerationPackageSchema.ManifestFileName,
+        SinglePageGenerationPackageSchema.ConstructionBriefFileName,
+        SinglePageGenerationPackageSchema.PromptForCodexFileName,
+        SinglePageGenerationPackageSchema.OutputContractFileName,
+        SinglePageGenerationPackageSchema.ForbiddenContentFileName,
+        SinglePageGenerationPackageSchema.AssetSlotPlanFileName,
+        SinglePageGenerationPackageSchema.EvidenceIndexFileName,
+        SinglePageGenerationPackageSchema.ReviewChecklistFileName
+    };
+
+    foreach (var fileName in requiredFiles)
+    {
+        if (!File.Exists(Path.Combine(package.PackageRoot, fileName)))
+        {
+            failures.Add($"P2A-2-A package missing file: {fileName}");
+        }
+    }
+
+    if (!package.IsReadyForCodexCli)
+    {
+        failures.Add("P2A-2-A generation package did not mark itself ready for later Codex CLI handoff.");
+    }
+
+    if (package.InputEvidenceFiles.Count < 8 || package.OutputFiles.Count < 8)
+    {
+        failures.Add("P2A-2-A generation package manifest did not record required evidence/output files.");
+    }
+
+    var constructionBrief = File.ReadAllText(Path.Combine(package.PackageRoot, SinglePageGenerationPackageSchema.ConstructionBriefFileName));
+    foreach (var required in new[] { "Hero Plan", "Animation Plan", "Output Requirements" })
+    {
+        if (!constructionBrief.Contains(required, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"P2A-2-A construction brief missing required section: {required}");
+        }
+    }
+
+    var forbiddenContent = File.ReadAllText(Path.Combine(package.PackageRoot, SinglePageGenerationPackageSchema.ForbiddenContentFileName));
+    foreach (var forbidden in new[] { "Cloudflare", "Mindbox", "recaptcha", "cookie consent" })
+    {
+        if (!forbiddenContent.Contains(forbidden, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"P2A-2-A forbidden-content file missing filtered item: {forbidden}");
+        }
+    }
+
+    var prompt = File.ReadAllText(Path.Combine(package.PackageRoot, SinglePageGenerationPackageSchema.PromptForCodexFileName));
+    if (!prompt.Contains("output-site/current/index.html", StringComparison.OrdinalIgnoreCase)
+        || !prompt.Contains("static only", StringComparison.OrdinalIgnoreCase)
+        || !prompt.Contains("no external tracking", StringComparison.OrdinalIgnoreCase))
+    {
+        failures.Add("P2A-2-A prompt does not define the required static output contract.");
+    }
+
+    var latest = await service.LoadLatestAsync(project);
+    if (latest is null || latest.PackageId != package.PackageId)
+    {
+        failures.Add("P2A-2-A LoadLatestAsync did not load the newest package.");
+    }
+
+    if (File.Exists(Path.Combine(projectDirectory, "output-site", "current", "index.html")))
+    {
+        failures.Add("P2A-2-A package builder must not generate output-site/current/index.html.");
     }
 }
 

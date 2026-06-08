@@ -814,6 +814,16 @@
                                 <Button x:Name="OpenSourceSnapshotDirectoryButton"
                                         Content="打开快照目录"
                                         Click="OpenSourceSnapshotDirectoryButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="CreateSinglePageGenerationPackageButton"
+                                        Content="生成单页施工包"
+                                        Click="CreateSinglePageGenerationPackageButton_Click"
+                                        Padding="12,6"
+                                        Margin="0,0,8,0" />
+                                <Button x:Name="OpenSinglePageGenerationPackageButton"
+                                        Content="打开施工包目录"
+                                        Click="OpenSinglePageGenerationPackageButton_Click"
                                         Padding="12,6" />
                             </WrapPanel>
                             <StackPanel Orientation="Horizontal"
@@ -832,6 +842,11 @@
                             </StackPanel>
                             <TextBlock x:Name="SourceSnapshotStatusText"
                                        Text="Source Snapshot：尚未生成"
+                                       Foreground="#57606A"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0" />
+                            <TextBlock x:Name="SinglePageGenerationPackageStatusText"
+                                       Text="单页施工包：尚未生成"
                                        Foreground="#57606A"
                                        TextWrapping="Wrap"
                                        Margin="0,8,0,0" />

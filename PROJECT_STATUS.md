@@ -1,14 +1,54 @@
 # Project Status
 
+## Latest P2A-2-A Single Page Generation Package Builder
+
+Snapshot time: 2026-06-08.
+
+P2A-2-A only creates a Codex single-page generation package.
+
+P2A-2-A was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+
+WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+It reads the latest P2A-1.2 Source Snapshot reconstruction evidence and writes a runtime construction package under:
+
+```text
+codex-task/single-page-generation/<package-id>/
+```
+
+Package files:
+
+- `generation-manifest.json`
+- `CONSTRUCTION_BRIEF.md`
+- `PROMPT_FOR_CODEX.md`
+- `OUTPUT_CONTRACT.md`
+- `FORBIDDEN_CONTENT.md`
+- `ASSET_SLOT_PLAN.md`
+- `EVIDENCE_INDEX.md`
+- `REVIEW_CHECKLIST.md`
+
+The package explicitly filters analytics/tracking scripts, Cloudflare beacon, Mindbox tracker, recaptcha, cookie consent UI, hidden modal forms, favourites, office backend forms, server-side endpoints, and original logo/image/video/font assets from later final delivery.
+
+P2A-2-A does not execute Codex CLI, run any `codex` command, call OpenAI API, call local models, generate website output, or write `output-site/current/index.html`.
+
+Verification:
+
+- `dotnet build WebRebuildRecorder.slnx`: passed with 0 warnings and 0 errors.
+- `FoundationSelfTest`: passed, including P2A-2-A package-builder checks.
+- UI smoke: passed against the AirCenter P2A-1.2 runtime project.
+- Runtime review package: generated outside the repository as `aircenter-p2a-2-a-generation-package-review_<timestamp>.zip`; not synchronized to WebMuse.
+
+Next planned stage:
+
+```text
+P2A-2-B Controlled Codex CLI Single Page Generation
+```
+
 ## Latest P2A-1.2 Controlled Desktop Source Snapshot
 
 Snapshot time: 2026-06-08.
 
 P2A-1.2-A implements controlled desktop Source Snapshot capture and core reconstruction evidence graph.
-
-P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 It fixes the previous embedded viewport problem by using a dedicated capture window. The embedded `587 x 359` WebView2 preview is no longer used as the primary Source Snapshot evidence path.
 
