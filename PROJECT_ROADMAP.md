@@ -2,25 +2,76 @@
 
 ## Current Recommended Next Stage
 
+P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph is implemented and verified in the prototype worktree.
+
+P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+It now uses a dedicated controlled capture window instead of the embedded `587 x 359` preview as primary evidence. It writes `rendered/first-screen.png`, fetches bounded frontend text resources, generates dependency/section/media/behavior/css/js/reconstruction evidence outputs, and writes `analysis/ai-reconstruction-brief.md`.
+
+The AirCenter runtime package was exported outside the repository and is not included in WebMuse:
+
+```text
+aircenter-p2a-1-2-reconstruction-review_<timestamp>.zip
+```
+
+P2A-1.2-A does not execute Codex CLI, call OpenAI API, call local models, generate a website, recursively crawl, download original binary image/font/video resources, or write `output-site/current/index.html`.
+
+Next immediate decision:
+
+```text
+If the runtime review passes: P2A-2 Codex CLI Single Page Generation.
+If the runtime review does not pass: P2A-1.2-B evidence graph gap fixes.
+```
+
 P2A-0 WebView2 Preview Shell and P2A-0.1 Detached WebView2 Preview Window are implemented and verified.
 
-P2A-1 Internal Source Snapshot MVP was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
-
-WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+P2A-1 Internal Source Snapshot MVP is implemented and locally verified.
 
 P2A-1 captures one reference URL with bounded HTTP raw HTML and WebView2 rendered evidence. It writes structured `source-snapshot/` text, JSON, and Markdown evidence without downloading resources or recursively crawling.
 
 P2A-1 does not execute Codex CLI, call OpenAI API or local models, generate a website, or write `output-site/current/index.html`.
 
-Next immediate implementation round:
-P2A-2 Codex CLI Single Page Generation.
+A real `aircenter.space` runtime review package was generated and reviewed after P2A-1. It proved the package structure and basic capture pipeline, but it also found two blocking issues before P2A-2:
 
-Remaining P2A roadmap:
+1. Rendered evidence was captured from the small embedded WebView2 viewport around `587 x 359`, not from a controlled desktop viewport.
+2. `OBSERVATION_FROM_SNAPSHOT.md` was too shallow. It missed or under-described the hero Vimeo background, responsive picture/source rules, AIR SVG/preloader structure, sticky/parallax/reveal/contentAnimation behavior, image clip slider behavior, and CSS/JS relationship evidence.
+
+Next immediate implementation round:
+
+```text
+P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph
+```
+
+P2A-2 Codex CLI Single Page Generation is postponed until P2A-1.2 produces a useful reconstruction evidence graph and `analysis/ai-reconstruction-brief.md`.
+
+Updated P2A roadmap:
 
 1. P2A-1 Internal Source Snapshot MVP - implemented.
-2. P2A-2 Codex CLI Single Page Generation - next.
-3. P2A-3 Output Validation + WebView2 Preview.
-4. P2A-4 Minimal Tuning / Color Controls.
+2. P2A-1 runtime review package for `aircenter.space` - completed; found viewport and shallow-report issues.
+3. P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph - next.
+4. P2A-2 Codex CLI Single Page Generation - postponed until P2A-1.2 passes review.
+5. P2A-3 Output Validation + WebView2 Preview.
+6. P2A-4 Minimal Tuning / Color Controls.
+
+P2A-1.2 must add or prepare these evidence outputs:
+
+```text
+rendered/first-screen.png
+analysis/dependency-graph.json
+analysis/section-map.json
+analysis/media-placement-map.json
+analysis/responsive-media-map.json
+analysis/behavior-map.json
+analysis/animation-signal-map.json
+analysis/css-rule-map.json
+analysis/js-behavior-reference-map.json
+analysis/reconstruction-evidence-graph.json
+analysis/ai-reconstruction-brief.md
+```
+
+P2A-1.2 should begin bounded fetching and analysis of text frontend resources such as CSS, JavaScript, SVG, manifest, JSON config, and source maps if present. Binary images, fonts, and videos can initially remain URL/metadata evidence, with screenshots and metadata extraction allowed.
+
+The next Codex instruction must explicitly carry forward the known audit issues from the `aircenter.space` package review.
 
 P1.7.4 Failure recovery policy service remains postponed, not cancelled.
 
@@ -139,142 +190,3 @@ PROJECT_BLUEPRINT_DESIGN_ASSET_PIPELINE.md
 ```
 
 The Design Asset Pipeline governs future external DESIGN.md files, Design Skills, Taste Skills, Agent Skills, reference design libraries, and competitor pattern notes.
-
-Current status:
-
-- record architecture only;
-- do not build the full asset library in P1.7;
-- do not build a design asset UI in P1.7;
-- do not bulk-import external design files in P1.7;
-- do not offer direct customer-facing brand-template selection in P1.7;
-- keep all external design assets as candidates until classified, normalized, and reviewed.
-
-Future design assets should move through:
-
-```text
-collect -> classify -> normalize -> risk review -> derive -> project-context injection
-```
-
-The long-term goal is to derive WebMuse-owned neutral style profiles and rulesets, then inject only safe merged project context such as `merged.DESIGN.md`, `style-profile.json`, `quality-rules.md`, `forbidden-patterns.md`, `asset-slot-guide.md`, and `license-risk-report.md` into construction packages.
-
-The pipeline must not delay the main product path: P1.7 safety closure -> P2 professional UI shell -> WebView2 preview -> official Codex minimum construction -> basic color palette selection -> basic tuning -> export and validation.
-
-## P0: Engineering Foundation
-
-Goal: establish the safe project base before product expansion.
-
-Scope:
-
-- product positioning
-- project directory model
-- `project.wrbproj`
-- `schemaVersion`
-- `ProjectState` state machine
-- `project.lock`
-- sandbox boundaries
-- project status files
-- user environment detection
-- Codex dependency notice
-- record UI icon resource direction if needed, without prioritizing icon implementation over the engineering foundation
-
-Out of scope:
-
-- WebView2 preview implementation unless explicitly authorized
-- Codex CLI full execution
-- color-system UI
-- tuning panel
-- icon asset production beyond directory/specification notes
-- drag-and-drop editor
-
-## P1: Input, Assets, Theme, Mapping, Versions, Logs
-
-Goal: make project input and durable project data reliable.
-
-Scope:
-
-- one-pass input form
-- asset copy pipeline
-- `assets-manifest.json`
-- basic `theme.json` color system
-- `content-map` and `data-tune-id` rules
-- `current/versions` snapshot foundation
-- layered logs
-- optional awareness of future design-context and design-asset-pipeline directories only
-
-## P2: Main UI Skeleton, Preview, Color Candidates, Task Package
-
-Goal: shape the product shell around the central preview stage and construction package generation.
-
-Scope:
-
-- main UI skeleton
-- WebView2 preview
-- candidate color palettes
-- miniature color cards
-- construction package generator
-- Codex CLI task orchestration foundation
-- failure classification foundation
-- project-level design-context directory stubs when explicitly authorized
-- small WebMuse-owned profile stubs when explicitly authorized
-
-## P3: Codex Execution, Validation, Tuning, Fallback
-
-Goal: stabilize black-box generation and light result calibration.
-
-Scope:
-
-- Codex CLI black-box execution
-- output validation
-- lightweight aesthetic tuning panel
-- save `tune-overrides.css`
-- content-map validation
-- observation failure fallback
-
-Future optional extension after the official construction route is stable:
-
-- Local Responses Adapter experimental awareness;
-- adapter-backed provider proof checks;
-- provider capability labels;
-- adapter-backed documentation or draft-coding mode only after proof success;
-- external DESIGN.md or Skill import after design-asset-pipeline review.
-
-## P4: Export, Validation Reports, Correction Tools, Templates, Archives
-
-Goal: prepare reliable delivery and review workflows.
-
-Scope:
-
-- export integrity check
-- sensitive information check
-- automatic validation report
-- local recording/frame extraction correction
-- industry template packs
-- sample project tests
-- `.wrb` / `.wrbpkg` archive packages
-- version comparison foundation
-- design acceptance checks using WebMuse-owned rulesets when the design asset pipeline is mature
-
-## P5: Productization And Extension
-
-Goal: complete the professional product surface.
-
-Scope:
-
-- normal/advanced/developer mode polish
-- plugin manifest foundation
-- more industry packs
-- local section regeneration
-- multi-version comparison UI
-- full production hardening
-- future AI Engine settings for official Codex, OpenAI API mode, Local Responses Adapter, Ollama, LM Studio, and manual construction package export
-- future Design Asset Registry UI and profile/version management after the core delivery path is stable
-
-## Historical Recommended Stage
-
-The original blueprint handoff recommended the first formal P0 construction round:
-
-```text
-第 1 轮正式施工指令：P0 工程底盘迁移与总控文件建立
-```
-
-P0, P1.1, P1.2, P1.3, P1.4, and P1.5 foundation rounds have now landed as scaffold/data-flow/data-safety/readiness source and self-test coverage.

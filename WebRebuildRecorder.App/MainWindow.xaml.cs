@@ -96,24 +96,44 @@ public partial class MainWindow : Window
   };
   const selectorOf = (el) => {
     if (el.id) return '#' + el.id;
-    if (el.className && typeof el.className === 'string') {
-      return el.tagName.toLowerCase() + '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.');
+    const className = classText(el);
+    if (className) {
+      return el.tagName.toLowerCase() + '.' + className.trim().split(/\s+/).slice(0, 3).join('.');
     }
     return el.tagName.toLowerCase();
   };
+  const classText = (el) => {
+    if (!el.className) return '';
+    if (typeof el.className === 'string') return el.className;
+    if (typeof el.className.baseVal === 'string') return el.className.baseVal;
+    return '';
+  };
+  const stringValue = (value) => typeof value === 'string' ? value : '';
+  const dataAttributesOf = (el) => {
+    const result = {};
+    for (const attr of Array.from(el.attributes || [])) {
+      if (attr.name && attr.name.toLowerCase().startsWith('data-')) {
+        result[attr.name] = clean(attr.value, 600);
+      }
+    }
+    return result;
+  };
   const candidates = Array.from(document.querySelectorAll(
-    'header,nav,main,section,article,footer,h1,h2,h3,p,a,button,img,[role="button"],[class*="hero"],[class*="card"]'
-  )).slice(0, 160);
+    'header,nav,main,section,article,footer,h1,h2,h3,h4,h5,h6,p,a,button,img,picture,source,video,iframe,svg,use,[role="button"],[data-plugin],[data-parallax-pattern],[data-content-animation-animations],[data-reveal],[data-scroll-section],[data-scroll-sticky],[data-scroll-snap-point],[class*="hero"],[class*="card"],[class*="background"],[class*="slider"],[class*="sticky"]'
+  )).slice(0, 500);
 
   const elements = candidates.map(el => {
     const r = rectOf(el);
     return {
       tag: el.tagName.toLowerCase(),
       id: el.id || '',
-      className: typeof el.className === 'string' ? el.className : '',
+      className: classText(el),
       text: clean(el.innerText || el.alt || el.getAttribute('aria-label') || '', 240),
-      href: el.href || '',
-      src: el.currentSrc || el.src || '',
+      href: stringValue(el.href) || el.getAttribute('href') || el.getAttribute('xlink:href') || '',
+      src: stringValue(el.currentSrc) || stringValue(el.src) || el.getAttribute('src') || el.getAttribute('href') || el.getAttribute('xlink:href') || '',
+      selector: selectorOf(el),
+      dataAttributes: dataAttributesOf(el),
+      cssClasses: classText(el).trim() ? classText(el).trim().split(/\s+/).slice(0, 40) : [],
       x: r.x,
       y: r.y,
       width: r.width,
@@ -121,7 +141,7 @@ public partial class MainWindow : Window
     };
   });
 
-  const styleSamples = candidates.slice(0, 60).map(el => {
+  const styleSamples = candidates.slice(0, 160).map(el => {
     const cs = window.getComputedStyle(el);
     return {
       selector: selectorOf(el),
@@ -916,16 +936,86 @@ public partial class MainWindow : Window
         SourceSnapshotStatusText.Text = "Source Snapshot：正在渲染页面并提取结构化证据...";
         _logger.Info($"Source Snapshot started: {url}");
 
-        var renderedEvidence = await CaptureRenderedSnapshotEvidenceAsync(url);
+        var viewport = GetSelectedSourceSnapshotViewport();
+        SourceSnapshotStatusText.Text =
+            $"Source Snapshot：正在使用受控视口 {viewport.Width}×{viewport.Height} 渲染页面...";
+        var capture = await CaptureControlledSourceSnapshotEvidenceAsync(url, viewport);
 
-        SourceSnapshotStatusText.Text = "Source Snapshot：正在抓取 HTML 与生成资源清单...";
-        var result = await _sourceSnapshotService.CaptureAsync(project, url, renderedEvidence);
+        SourceSnapshotStatusText.Text = "Source Snapshot：正在抓取 HTML、前端文本资源并生成重建证据图谱...";
+        var result = await _sourceSnapshotService.CaptureAsync(
+            project,
+            url,
+            capture.Evidence,
+            new SourceSnapshotCaptureOptions
+            {
+                Viewport = viewport,
+                FirstScreenPngBytes = capture.FirstScreenPngBytes
+            });
 
         _lastSourceSnapshotResult = result;
         SourceSnapshotStatusText.Text =
-            $"Source Snapshot：已生成 {result.Paths.Root}，资源 {CountResources(result.ResourceManifest)} 个，元素 {renderedEvidence.Elements.Count} 个，警告 {result.Analysis.Warnings.Count} 个。";
+            $"Source Snapshot：已生成 {result.Paths.Root}，视口 {capture.Evidence.Viewport.Width}×{capture.Evidence.Viewport.Height}，资源 {CountResources(result.ResourceManifest)} 个，元素 {capture.Evidence.Elements.Count} 个，警告 {result.Analysis.Warnings.Count} 个。";
         _logger.Info($"Source Snapshot completed: {result.Paths.Root}");
         UpdateButtonStates();
+    }
+
+    private SourceSnapshotViewportPreset GetSelectedSourceSnapshotViewport()
+    {
+        if (SourceSnapshotViewportCombo.SelectedItem is ComboBoxItem item
+            && item.Tag is string tag)
+        {
+            return tag switch
+            {
+                "1920x1080" => new SourceSnapshotViewportPreset
+                {
+                    Name = "Desktop 1920x1080",
+                    Width = 1920,
+                    Height = 1080
+                },
+                "1366x768" => new SourceSnapshotViewportPreset
+                {
+                    Name = "Laptop 1366x768",
+                    Width = 1366,
+                    Height = 768
+                },
+                _ => new SourceSnapshotViewportPreset
+                {
+                    Name = "Desktop 1440x900",
+                    Width = 1440,
+                    Height = 900
+                }
+            };
+        }
+
+        return new SourceSnapshotViewportPreset
+        {
+            Name = "Desktop 1440x900",
+            Width = 1440,
+            Height = 900
+        };
+    }
+
+    private async Task<SourceSnapshotCaptureOutput> CaptureControlledSourceSnapshotEvidenceAsync(
+        string url,
+        SourceSnapshotViewportPreset viewport)
+    {
+        var window = new SourceSnapshotCaptureWindow(_logger)
+        {
+            Owner = this
+        };
+
+        try
+        {
+            return await window.CaptureAsync(
+                url,
+                viewport,
+                SourceSnapshotRenderedEvidenceScript,
+                TimeSpan.FromSeconds(45));
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     private async Task<SourceSnapshotRenderedEvidence> CaptureRenderedSnapshotEvidenceAsync(string url)

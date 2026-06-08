@@ -1,10 +1,53 @@
 # PROJECT_MEMORY_FULL.md
 
-## 2026-06-07 P2A-1 Internal Source Snapshot MVP
+## 2026-06-08 P2A-1.2 controlled desktop Source Snapshot reconstruction evidence
 
-P2A-1 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
+P2A-1.2-A implements controlled desktop Source Snapshot capture and core reconstruction evidence graph.
+
+P2A-1.2 was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation.
 
 WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
+
+It fixes the previous embedded viewport problem by using a dedicated WebView2 capture window. The old embedded `587 x 359` preview surface is not used as the primary reconstruction evidence path.
+
+Implementation:
+
+- `SourceSnapshotReconstructionModels.cs` defines viewport, capture options, text resource, dependency graph, section/media/behavior/CSS/JS evidence, and reconstruction graph models.
+- `SourceSnapshotReconstructionAnalyzer.cs` builds dependency, section, media placement, responsive media, behavior, animation signal, CSS rule, JS behavior reference, reconstruction graph, and AI reconstruction brief outputs.
+- `SourceSnapshotCaptureWindow.xaml/cs` performs controlled WebView2 navigation and `CapturePreviewAsync` screenshot capture.
+- `SourceSnapshotService.cs` writes `rendered/first-screen.png`, captures bounded frontend text resources, and persists the P2A-1.2 analysis outputs.
+- `MainWindow.xaml` adds a Source Snapshot viewport selector.
+- `MainWindow.xaml.cs` routes the Source Snapshot main path through the controlled capture window while preserving the older preview and package workflows.
+
+Runtime evidence generated for `https://aircenter.space/`:
+
+- viewport: `1440 x 900`;
+- `rendered/first-screen.png` exists and visually shows the AirCenter first screen, not the Windows lock screen;
+- bounded text resource manifest includes CSS, JavaScript, and SVG resources;
+- AirCenter hero/Vimeo evidence, responsive `picture/source`, preloader/AIR SVG, parallax/reveal/contentAnimation, carousel/slider clues, and DOM/CSS/JS/effect relationships are represented in the generated analysis;
+- `analysis/ai-reconstruction-brief.md` exists.
+
+Runtime review package:
+
+```text
+aircenter-p2a-1-2-reconstruction-review_<timestamp>.zip
+```
+
+The runtime package remains outside WebMuse and is not committed here.
+
+Scope boundary:
+
+- no Codex CLI execution;
+- no OpenAI API calls;
+- no local model calls;
+- no website generation;
+- no recursive crawler;
+- no original binary image/font/video downloads;
+- no `output-site/current/index.html` write.
+
+Next recommendation is review-gated: if the P2A-1.2 runtime package passes, proceed to P2A-2 Codex CLI Single Page Generation; otherwise continue with P2A-1.2-B evidence graph gap fixes.
+
+## 2026-06-07 P2A-1 Internal Source Snapshot MVP
 
 P2A-1 implements Internal Source Snapshot MVP.
 
@@ -1408,7 +1451,7 @@ true / false
 - 是否包含本地绝对路径；
 - 是否包含 API Key、Token、Cookie、账号密码；
 - 是否包含用户隐私数据；
-- 是否引用 `C:\Users\xxx`、`E:\Work\xxx` 等本地路径。
+- 是否引用本机绝对路径或用户目录。
 
 ---
 

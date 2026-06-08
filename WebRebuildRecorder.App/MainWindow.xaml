@@ -816,6 +816,20 @@
                                         Click="OpenSourceSnapshotDirectoryButton_Click"
                                         Padding="12,6" />
                             </WrapPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,10,0,0">
+                                <TextBlock Text="采集视口"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0" />
+                                <ComboBox x:Name="SourceSnapshotViewportCombo"
+                                          SelectedIndex="0"
+                                          Width="160"
+                                          Margin="0,0,8,0">
+                                    <ComboBoxItem Content="Desktop 1440×900" Tag="1440x900" />
+                                    <ComboBoxItem Content="Desktop 1920×1080" Tag="1920x1080" />
+                                    <ComboBoxItem Content="Laptop 1366×768" Tag="1366x768" />
+                                </ComboBox>
+                            </StackPanel>
                             <TextBlock x:Name="SourceSnapshotStatusText"
                                        Text="Source Snapshot：尚未生成"
                                        Foreground="#57606A"

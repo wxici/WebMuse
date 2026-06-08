@@ -13,6 +13,10 @@ public sealed class SourceSnapshotResult
     public SourceSnapshotPaths Paths { get; set; } = new();
     public SourceSnapshotResourceManifest ResourceManifest { get; set; } = new();
     public SourceSnapshotAnalysis Analysis { get; set; } = new();
+    public SourceSnapshotViewportPreset CaptureViewport { get; set; } = new();
+    public List<SourceSnapshotTextResource> TextResources { get; set; } = [];
+    public SourceSnapshotDependencyGraph DependencyGraph { get; set; } = new();
+    public SourceSnapshotReconstructionEvidenceGraph ReconstructionGraph { get; set; } = new();
 }
 
 public sealed class SourceSnapshotPaths
@@ -24,7 +28,19 @@ public sealed class SourceSnapshotPaths
     public string VisibleText { get; set; } = string.Empty;
     public string Viewport { get; set; } = string.Empty;
     public string ElementMap { get; set; } = string.Empty;
+    public string FirstScreenPng { get; set; } = string.Empty;
     public string ResourceManifest { get; set; } = string.Empty;
+    public string TextResourceManifest { get; set; } = string.Empty;
+    public string DependencyGraph { get; set; } = string.Empty;
+    public string SectionMap { get; set; } = string.Empty;
+    public string MediaPlacementMap { get; set; } = string.Empty;
+    public string ResponsiveMediaMap { get; set; } = string.Empty;
+    public string BehaviorMap { get; set; } = string.Empty;
+    public string AnimationSignalMap { get; set; } = string.Empty;
+    public string CssRuleMap { get; set; } = string.Empty;
+    public string JsBehaviorReferenceMap { get; set; } = string.Empty;
+    public string ReconstructionEvidenceGraph { get; set; } = string.Empty;
+    public string AiReconstructionBrief { get; set; } = string.Empty;
     public string ReportMarkdown { get; set; } = string.Empty;
     public string ReportJson { get; set; } = string.Empty;
 }
@@ -74,6 +90,9 @@ public sealed class SourceSnapshotElementItem
     public string Text { get; set; } = string.Empty;
     public string Href { get; set; } = string.Empty;
     public string Src { get; set; } = string.Empty;
+    public string Selector { get; set; } = string.Empty;
+    public Dictionary<string, string> DataAttributes { get; set; } = [];
+    public List<string> CssClasses { get; set; } = [];
     public double X { get; set; }
     public double Y { get; set; }
     public double Width { get; set; }

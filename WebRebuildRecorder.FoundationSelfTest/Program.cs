@@ -46,6 +46,7 @@ try
     await CheckP173ExecutionPreconditionsAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP180AlphaValidationProbeAsync(project.ProjectDirectory, project.ProjectId, failures);
     await CheckP2A1SourceSnapshotAsync(project.ProjectDirectory, project.ProjectId, failures);
+    await CheckP2A12ReconstructionEvidenceAsync(project.ProjectDirectory, project.ProjectId, failures);
 
     if (failures.Count > 0)
     {
@@ -120,6 +121,9 @@ try
     Console.WriteLine("[P2A-1] Source Snapshot deterministic persistence verified.");
     Console.WriteLine("[P2A-1] Source Snapshot resource manifest verified.");
     Console.WriteLine("[P2A-1] Source Snapshot report and non-execution boundary verified.");
+    Console.WriteLine("[P2A-1.2] Controlled Source Snapshot reconstruction outputs verified.");
+    Console.WriteLine("[P2A-1.2] Frontend text-resource and behavior evidence verified.");
+    Console.WriteLine("[P2A-1.2] AI reconstruction brief and non-execution boundary verified.");
     Console.WriteLine($"Temporary project: {project.ProjectDirectory}");
     return 0;
 }
@@ -4017,6 +4021,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         && File.ReadAllText(currentTaskPath).Contains("P2A-0.1 Detached WebView2 Preview Window", StringComparison.Ordinal);
     var isP2A1SourceSnapshot = File.Exists(currentTaskPath)
         && File.ReadAllText(currentTaskPath).Contains("P2A-1 Internal Source Snapshot MVP", StringComparison.Ordinal);
+    var isP2A12SourceSnapshot = File.Exists(currentTaskPath)
+        && File.ReadAllText(currentTaskPath).Contains("P2A-1.2 Controlled Desktop Source Snapshot", StringComparison.Ordinal);
     var p2A0AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "WebRebuildRecorder/WebRebuildRecorder.App/WebRebuildRecorder.App.csproj",
@@ -4036,6 +4042,18 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
         "WebRebuildRecorder/WebRebuildRecorder.App/Core/ProjectSystem/WrbProjectManifest.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/Models/SourceSnapshotModels.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/Services/SourceSnapshotService.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.FoundationSelfTest/Program.cs"
+    };
+    var p2A12AllowedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "WebRebuildRecorder/WebRebuildRecorder.App/Models/SourceSnapshotModels.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Models/SourceSnapshotReconstructionModels.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Services/SourceSnapshotService.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Services/SourceSnapshotReconstructionAnalyzer.cs",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Views/SourceSnapshotCaptureWindow.xaml",
+        "WebRebuildRecorder/WebRebuildRecorder.App/Views/SourceSnapshotCaptureWindow.xaml.cs",
         "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml",
         "WebRebuildRecorder/WebRebuildRecorder.App/MainWindow.xaml.cs",
         "WebRebuildRecorder/WebRebuildRecorder.FoundationSelfTest/Program.cs"
@@ -4083,7 +4101,8 @@ static void CheckP180NoForbiddenScopeDiff(List<string> failures)
             .Where(path =>
                 !((isP2A0PreviewShell && p2A0AllowedFiles.Contains(path))
                     || (isP2A01DetachedPreview && p2A01AllowedFiles.Contains(path))
-                    || (isP2A1SourceSnapshot && p2A1AllowedFiles.Contains(path)))
+                    || (isP2A1SourceSnapshot && p2A1AllowedFiles.Contains(path))
+                    || (isP2A12SourceSnapshot && p2A12AllowedFiles.Contains(path)))
                 && (path.Contains("WebRebuildRecorder.App/Views/", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith("MainWindow.xaml.cs", StringComparison.OrdinalIgnoreCase)
@@ -4370,6 +4389,341 @@ static async Task CheckP2A1SourceSnapshotAsync(
     if (File.Exists(Path.Combine(projectDirectory, "output-site", "current", "index.html")))
     {
         failures.Add("P2A-1 Source Snapshot must not generate output-site/current/index.html.");
+    }
+}
+
+static async Task CheckP2A12ReconstructionEvidenceAsync(
+    string projectDirectory,
+    string projectId,
+    List<string> failures)
+{
+    var logger = new AppLogger();
+    var service = new SourceSnapshotService(logger);
+    var project = new RebuildProject
+    {
+        ProjectId = projectId,
+        ProjectName = "Foundation Self Check",
+        Slug = "foundation-self-check",
+        ReferenceUrl = "https://aircenter.space/",
+        ProjectDirectory = projectDirectory,
+        RootDirectory = Directory.GetParent(projectDirectory)?.FullName ?? projectDirectory
+    };
+
+    var html = """
+<!doctype html>
+<html>
+<head>
+<title>AIR business center</title>
+<meta name="description" content="Class (A) premium business center">
+<link rel="stylesheet" href="/assets/stylesheets/global.css?v=1">
+<link rel="stylesheet" href="/assets/stylesheets/landing.css?v=1">
+<script src="/assets/javascripts/shared.js?v=1"></script>
+<script src="/assets/javascripts/landing.js?v=1"></script>
+</head>
+<body>
+<div class="preloader" data-plugin="preloader">
+  <svg class="air-preloader-logo"><use href="/assets/images/common/air.svg#logo"></use></svg>
+</div>
+<main id="top">
+<section class="section hero landing-intro ui-light"
+         data-plugin="parallax iframeSize contentAnimation"
+         data-parallax-pattern="landingIntroMove landingIntroFade"
+         data-content-animation-animations='{"changeShow":{"name":"text","delay":0.25},"changeHide":{"name":"textOut"}}'
+         data-scroll-section
+         data-scroll-snap-point>
+  <picture>
+    <source media="(min-width: 1024px)" srcset="/media/hero-desktop.webp 1x, /media/hero-desktop@2x.webp 2x">
+    <source media="(max-width: 767px)" srcset="/media/hero-mobile.webp 1x">
+    <img class="hero__image" src="/media/hero-fallback.webp" alt="AIR business center">
+  </picture>
+  <iframe class="hero__video"
+          data-iframe-size
+          src="https://player.vimeo.com/video/123456789?background=1&amp;autoplay=1&amp;muted=1&amp;loop=1"></iframe>
+  <h1>THE ARCHITECTURE OF NEW SUCCESS</h1>
+  <button class="btn btn--primary">Choose an office</button>
+</section>
+<section class="section sticky image-clip-slider"
+         data-plugin="reveal carousel"
+         data-reveal
+         data-scroll-sticky
+         data-carousel-web-gl-images='["/media/image-1.webp","/media/image-2.webp"]'>
+  <h2>THE MOMENTUM TO RISE HIGHER</h2>
+  <img class="slider__image" src="/media/image-1.webp" alt="Tower">
+</section>
+</main>
+</body>
+</html>
+""";
+    var rendered = new SourceSnapshotRenderedEvidence
+    {
+        RenderSucceeded = true,
+        DomHtml = html,
+        VisibleText = "THE ARCHITECTURE OF NEW SUCCESS Choose an office THE MOMENTUM TO RISE HIGHER",
+        Viewport = new SourceSnapshotViewport
+        {
+            Width = 1440,
+            Height = 900,
+            DevicePixelRatio = 1,
+            ScrollHeight = 2400
+        },
+        Elements =
+        [
+            new SourceSnapshotElementItem
+            {
+                Tag = "section",
+                Selector = "section.hero.landing-intro",
+                ClassName = "section hero landing-intro ui-light",
+                CssClasses = ["section", "hero", "landing-intro", "ui-light"],
+                Text = "THE ARCHITECTURE OF NEW SUCCESS Choose an office",
+                DataAttributes = new Dictionary<string, string>
+                {
+                    ["data-plugin"] = "parallax iframeSize contentAnimation",
+                    ["data-parallax-pattern"] = "landingIntroMove landingIntroFade",
+                    ["data-content-animation-animations"] = "{\"changeShow\":{\"name\":\"text\",\"delay\":0.25},\"changeHide\":{\"name\":\"textOut\"}}",
+                    ["data-scroll-section"] = "",
+                    ["data-scroll-snap-point"] = ""
+                },
+                Width = 1440,
+                Height = 900
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "h1",
+                Text = "THE ARCHITECTURE OF NEW SUCCESS",
+                CssClasses = ["hero__title"],
+                Width = 900,
+                Height = 160
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "iframe",
+                Selector = "iframe.hero__video",
+                ClassName = "hero__video",
+                CssClasses = ["hero__video"],
+                Src = "https://player.vimeo.com/video/123456789?background=1&autoplay=1&muted=1&loop=1",
+                DataAttributes = new Dictionary<string, string> { ["data-iframe-size"] = "" },
+                Width = 1440,
+                Height = 900
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "img",
+                Selector = "img.hero__image",
+                ClassName = "hero__image",
+                CssClasses = ["hero__image"],
+                Src = "https://aircenter.space/media/hero-fallback.webp",
+                Width = 1440,
+                Height = 900
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "button",
+                ClassName = "btn btn--primary",
+                CssClasses = ["btn", "btn--primary"],
+                Text = "Choose an office",
+                Width = 200,
+                Height = 48
+            },
+            new SourceSnapshotElementItem
+            {
+                Tag = "section",
+                Selector = "section.sticky.image-clip-slider",
+                ClassName = "section sticky image-clip-slider",
+                CssClasses = ["section", "sticky", "image-clip-slider"],
+                Text = "THE MOMENTUM TO RISE HIGHER",
+                DataAttributes = new Dictionary<string, string>
+                {
+                    ["data-plugin"] = "reveal carousel",
+                    ["data-reveal"] = "",
+                    ["data-scroll-sticky"] = "",
+                    ["data-carousel-web-gl-images"] = "[\"/media/image-1.webp\",\"/media/image-2.webp\"]"
+                },
+                Y = 900,
+                Width = 1440,
+                Height = 900
+            }
+        ],
+        StyleSamples =
+        [
+            new SourceSnapshotStyleSignal
+            {
+                Selector = "section.hero",
+                Color = "rgb(255, 255, 255)",
+                BackgroundColor = "rgb(0, 0, 0)",
+                FontFamily = "Onest, Helvetica, Arial, sans-serif",
+                FontSize = "72px",
+                FontWeight = "400"
+            },
+            new SourceSnapshotStyleSignal
+            {
+                Selector = ".btn",
+                Color = "rgb(0, 0, 0)",
+                BackgroundColor = "rgb(255, 255, 255)",
+                FontFamily = "Onest",
+                FontSize = "14px",
+                FontWeight = "500"
+            }
+        ]
+    };
+
+    var firstScreenPng = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lwC6VwAAAABJRU5ErkJggg==");
+    var knownResources = new List<SourceSnapshotTextResource>
+    {
+        new()
+        {
+            Url = "https://aircenter.space/assets/stylesheets/global.css?v=1",
+            Kind = "css",
+            Fetched = true,
+            StatusCode = 200,
+            ContentType = "text/css",
+            ContentPreview = ".hero{position:relative;min-height:100vh;color:#fff}.btn{display:inline-flex}.air-preloader-logo{width:80px;height:40px}.image-clip-slider{position:sticky;top:0}"
+        },
+        new()
+        {
+            Url = "https://aircenter.space/assets/stylesheets/landing.css?v=1",
+            Kind = "css",
+            Fetched = true,
+            StatusCode = 200,
+            ContentType = "text/css",
+            ContentPreview = ".landing-intro{overflow:hidden}.hero__video{position:absolute;inset:0;width:100%;height:100%}.slider__image{clip-path:inset(0);transition:transform .6s}"
+        },
+        new()
+        {
+            Url = "https://aircenter.space/assets/javascripts/shared.js?v=1",
+            Kind = "js",
+            Fetched = true,
+            StatusCode = 200,
+            ContentType = "application/javascript",
+            ContentPreview = "const dataPlugin='data-plugin'; function iframeSize(){} function preloader(){}"
+        },
+        new()
+        {
+            Url = "https://aircenter.space/assets/javascripts/landing.js?v=1",
+            Kind = "js",
+            Fetched = true,
+            StatusCode = 200,
+            ContentType = "application/javascript",
+            ContentPreview = "const contentAnimation='data-content-animation-animations'; const parallax='data-parallax-pattern'; const reveal='data-reveal'; const sticky='data-scroll-sticky'; const carousel='data-carousel-web-gl-images'; const landingIntroMove=true;"
+        }
+    };
+
+    var result = await service.CaptureFromKnownHtmlAsync(
+        project,
+        project.ReferenceUrl,
+        html,
+        new Dictionary<string, string> { ["content-type"] = "text/html" },
+        rendered,
+        new SourceSnapshotCaptureOptions
+        {
+            Viewport = new SourceSnapshotViewportPreset
+            {
+                Name = "Desktop 1440x900",
+                Width = 1440,
+                Height = 900
+            },
+            FirstScreenPngBytes = firstScreenPng,
+            KnownTextResources = knownResources
+        });
+
+    var root = Path.Combine(projectDirectory, ProjectDirectoryV2.SourceSnapshot);
+    var requiredFiles = new[]
+    {
+        Path.Combine(root, "rendered", "first-screen.png"),
+        Path.Combine(root, "analysis", "dependency-graph.json"),
+        Path.Combine(root, "analysis", "section-map.json"),
+        Path.Combine(root, "analysis", "media-placement-map.json"),
+        Path.Combine(root, "analysis", "responsive-media-map.json"),
+        Path.Combine(root, "analysis", "behavior-map.json"),
+        Path.Combine(root, "analysis", "animation-signal-map.json"),
+        Path.Combine(root, "analysis", "css-rule-map.json"),
+        Path.Combine(root, "analysis", "js-behavior-reference-map.json"),
+        Path.Combine(root, "analysis", "reconstruction-evidence-graph.json"),
+        Path.Combine(root, "analysis", "ai-reconstruction-brief.md")
+    };
+
+    foreach (var file in requiredFiles)
+    {
+        if (!File.Exists(file))
+        {
+            failures.Add($"P2A-1.2 Source Snapshot missing reconstruction file: {file}");
+        }
+    }
+
+    if (result.CaptureViewport.Width != 1440 || result.CaptureViewport.Height != 900)
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not persist the controlled desktop capture viewport.");
+    }
+
+    if (!result.ResourceManifest.Videos.Any(item =>
+            item.Url.Contains("player.vimeo.com", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not detect the Vimeo iframe background.");
+    }
+
+    if (result.TextResources.Count < 4
+        || result.TextResources.Any(item => !item.Fetched || string.IsNullOrWhiteSpace(item.LocalRelativePath)))
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not preserve known bounded frontend text resources.");
+    }
+
+    if (result.ReconstructionGraph.Media.All(item =>
+            !item.Role.Contains("responsive", StringComparison.OrdinalIgnoreCase)
+            && item.ResponsiveVariants.Count == 0))
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not map responsive picture/source evidence.");
+    }
+
+    if (result.ReconstructionGraph.Behaviors.Count == 0
+        || !result.ReconstructionGraph.Behaviors.Any(item =>
+            item.RawDeclaration.Contains("data-parallax-pattern", StringComparison.OrdinalIgnoreCase))
+        || !result.ReconstructionGraph.Behaviors.Any(item =>
+            item.RawDeclaration.Contains("data-content-animation-animations", StringComparison.OrdinalIgnoreCase))
+        || !result.ReconstructionGraph.Behaviors.Any(item =>
+            item.RawDeclaration.Contains("data-scroll-sticky", StringComparison.OrdinalIgnoreCase)))
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not map sticky/parallax/reveal/contentAnimation declarations.");
+    }
+
+    if (result.ReconstructionGraph.CssRules.Count == 0
+        || result.ReconstructionGraph.JsReferences.Count == 0)
+    {
+        failures.Add("P2A-1.2 Source Snapshot did not produce MVP DOM/CSS/JS relationship evidence.");
+    }
+
+    var brief = File.Exists(Path.Combine(root, "analysis", "ai-reconstruction-brief.md"))
+        ? File.ReadAllText(Path.Combine(root, "analysis", "ai-reconstruction-brief.md"))
+        : string.Empty;
+    foreach (var required in new[] { "Vimeo", "Hero", "parallax", "contentAnimation", "responsive", "rebuild" })
+    {
+        if (!brief.Contains(required, StringComparison.OrdinalIgnoreCase))
+        {
+            failures.Add($"P2A-1.2 AI reconstruction brief missing required term: {required}");
+        }
+    }
+
+    var downloadedAsset = Directory
+        .EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        .FirstOrDefault(path =>
+        {
+            if (path.EndsWith(Path.Combine("rendered", "first-screen.png"), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return Path.GetExtension(path).ToLowerInvariant()
+                is ".css" or ".js" or ".jpg" or ".jpeg" or ".png" or ".webp"
+                or ".gif" or ".svg" or ".avif" or ".woff" or ".woff2" or ".ttf"
+                or ".otf" or ".eot" or ".mp4" or ".webm" or ".mov" or ".m4v";
+        });
+    if (downloadedAsset is not null)
+    {
+        failures.Add($"P2A-1.2 Source Snapshot downloaded a forbidden binary/source asset: {downloadedAsset}");
+    }
+
+    if (File.Exists(Path.Combine(projectDirectory, "output-site", "current", "index.html")))
+    {
+        failures.Add("P2A-1.2 Source Snapshot must not generate output-site/current/index.html.");
     }
 }
 
