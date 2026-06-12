@@ -333,3 +333,38 @@ Every future Codex construction instruction for this repository should include t
 3. Commit source and documentation changes to the WebMuse repository.
 4. Do not commit `bin/`, `obj/`, generated output, local logs, screenshots, recordings, extracted frames, zips, customer materials, secrets, tokens, cookies, or local absolute-path configuration.
 5. Push to `wxici/WebMuse` on the correct branch when the working tree is clean and the task state is accurately recorded.
+
+## 2026-06 Addendum: Asset Slot Map + Motion Slot Map
+
+The asset slot map must now also serve as the boundary layer for future AI-generated replacement images and videos.
+
+Each slot should provide not only ratio and size, but also position, crop behavior, dominant colors, brightness, contrast, visual role, text-overlay safety, user-facing upload guidance, and AI prompt boundary.
+
+Reference-observed resources default to:
+
+```json
+{
+  "sourceKind": "reference_observed",
+  "safeUsage": "reference_only",
+  "replacementRequired": true,
+  "canExport": false
+}
+```
+
+Motion should be tracked separately through Motion Slot Map and Motion Variants. Source CSS/JavaScript motion may be analyzed for semantics, but implementation code must not be copied by default.
+
+The first-stage evidence pipeline is now:
+
+```text
+controlled source snapshot
+  -> DOM/CSS/resource analysis
+  -> section map
+  -> asset slot map
+  -> color / typography / spacing / layout tokens
+  -> motion slot map
+  -> generation brief
+  -> Codex construction package
+  -> branded output
+```
+
+See `PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md`.

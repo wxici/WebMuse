@@ -2,19 +2,51 @@
 
 ## Current Recommended Next Stage
 
-P2A-2-A Single Page Generation Package Builder is the current narrow implementation step.
+P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief is now the required next implementation stage.
+
+P2A-2-B Controlled Codex CLI Single Page Generation is blocked until P2A-1.3 produces a structured evidence package and passes build, FoundationSelfTest, review package verification, and sample output verification.
+
+Updated P2A roadmap:
+
+1. P2A-1 Internal Source Snapshot MVP - implemented.
+2. P2A-1.2 Controlled Desktop Source Snapshot + Frontend Reconstruction Evidence Graph - implemented/verified in prototype worktree.
+3. P2A-2-A Single Page Generation Package Builder - implemented/verified as package preparation only.
+4. P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief - next required step.
+5. P2A-2-B Controlled Codex CLI Single Page Generation - postponed until P2A-1.3 passes.
+6. P2A-3 Output Validation + WebView2 Preview.
+7. P2A-4 Minimal Tuning / Color Controls.
+
+P2A-1.3 must generate or prepare:
+
+```text
+maps/
+  section-map.json
+  asset-slots.json
+  color-tokens.json
+  typography-tokens.json
+  spacing-tokens.json
+  layout-rules.json
+  motion-slots.json
+  motion-variants.json
+  interaction-map.json
+
+analysis/
+  generation-brief.md
+  motion-brief.md
+  legal-risk-report.md
+```
+
+It should reuse, extend, or transform the existing media placement, behavior, animation signal, section, and AI reconstruction evidence instead of creating duplicate semantic files.
+
+P2A-1.3 does not execute Codex CLI, call OpenAI API, call local models, generate a website, or write `output-site/current/index.html`.
+
+## Historical Context: Previous Recommended Next Stage
+
+P2A-2-A Single Page Generation Package Builder was the previous narrow implementation step.
 
 P2A-2-A was implemented and verified first in `wxici/codex/WebRebuildRecorder`, then synchronized here as public-safe source and documentation. WebMuse remains an OSS-safe result extraction repository, not the primary construction worktree.
 
 P2A-2-A only creates a Codex single-page generation package from P2A-1.2 reconstruction evidence. It does not execute Codex CLI, call OpenAI API, generate website output, or write `output-site/current/index.html`.
-
-It prepares:
-
-```text
-P2A-2-B Controlled Codex CLI Single Page Generation
-```
-
-P2A-2-B should start only after the package builder and runtime review package pass.
 
 Current verification status: P2A-2-A build, FoundationSelfTest, UI smoke, and runtime review package export have passed in the prototype worktree. The runtime review zip is outside Git:
 

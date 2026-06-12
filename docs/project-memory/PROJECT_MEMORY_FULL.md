@@ -1,5 +1,63 @@
 # PROJECT_MEMORY_FULL.md
 
+## 2026-06 Asset Slot Map + Motion Slot Map Strategy
+
+WebMuse's first-stage observation package is upgraded into a machine-readable construction plan.
+
+The primary flow is:
+
+```text
+controlled Source Snapshot
+  -> DOM/CSS/resource analysis
+  -> Section Map
+  -> Asset Slot Map
+  -> Design Tokens
+  -> Motion Slot Map
+  -> Generation Brief
+  -> Codex Construction Package
+  -> branded output
+```
+
+Recording, frame extraction, and screenshots remain supporting evidence for complex motion, video backgrounds, hover, scroll, canvas, WebGL, masks, and special interactions.
+
+Reference-site images, videos, logos, fonts, SVG files, copy, brand names, and proprietary CSS/JavaScript implementations are analysis-only by default:
+
+```json
+{
+  "sourceKind": "reference_observed",
+  "safeUsage": "reference_only",
+  "replacementRequired": true,
+  "canExport": false
+}
+```
+
+Asset Slot Map describes what the generated branded site needs. It constrains page generation, guides user uploads, and defines boundaries for future AI-generated replacement images and videos. Slots should include size, aspect ratio, position, fit/crop behavior, dominant colors, brightness, contrast, visual role, text-overlay safety, crop risk, user-facing guidance, AI prompt boundaries, provenance, and export eligibility.
+
+Observed color, typography, spacing, and layout relationships must be stored in structured token maps. Unknown values must remain unknown rather than being invented.
+
+Motion Slot Map extracts trigger, role, observed pattern, direction, timing, intensity, source evidence, and implementation safety. It does not copy source CSS/JavaScript code by default. Safe motion can use WebMuse-owned presets; derived motion must be reimplemented; risky distinctive motion is recorded only at a high level. Each suitable motion slot should offer two or three WebMuse-owned variants.
+
+P2A-1.3 must produce or prepare:
+
+```text
+maps/section-map.json
+maps/asset-slots.json
+maps/color-tokens.json
+maps/typography-tokens.json
+maps/spacing-tokens.json
+maps/layout-rules.json
+maps/motion-slots.json
+maps/motion-variants.json
+maps/interaction-map.json
+analysis/generation-brief.md
+analysis/motion-brief.md
+analysis/legal-risk-report.md
+```
+
+Existing media placement, behavior, animation signal, and AI reconstruction brief evidence should be reused, extended, or transformed.
+
+P2A-2-B real Codex page generation must wait until P2A-1.3 passes build, FoundationSelfTest, review package verification, and sample output verification.
+
 ## 2026-06-08 P2A-2-A single page generation package builder
 
 P2A-2-A only creates a Codex single-page generation package.

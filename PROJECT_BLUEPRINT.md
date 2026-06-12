@@ -70,6 +70,34 @@ Captured reference-site assets and code are analysis inputs only by default. The
 
 The generated preview should support asset slot overlays: missing image/media regions show required ratio, size, tone, count, and purpose. When a user clicks a slot, the WPF host opens a file picker, copies the selected file into the project's user-assets directory, updates the asset map, and refreshes WebView2 preview in place.
 
+## Asset Slot Map And Motion Slot Map Addendum
+
+The detailed direction is recorded in:
+
+`PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md`
+
+This addendum is now part of the required blueprint set.
+
+Before real Codex website generation, WebMuse must first produce structured Asset Slot Map, Motion Slot Map, Design Token maps, and Generation Brief outputs from the controlled Source Snapshot evidence.
+
+The required pipeline is:
+
+```text
+controlled source snapshot
+  -> DOM/CSS/resource analysis
+  -> section map
+  -> asset slot map
+  -> color / typography / spacing / layout tokens
+  -> motion slot map
+  -> generation brief
+  -> Codex construction package
+  -> branded output
+```
+
+Reference-observed resources remain analysis-only by default and require replacement before export. Motion semantics may be analyzed, but source CSS/JavaScript implementation code must not be copied by default.
+
+P2A-2-B Controlled Codex CLI Single Page Generation is blocked until P2A-1.3 passes build, FoundationSelfTest, review package verification, and sample structured-output verification.
+
 ## Main Product Workflow
 
 The intended closed loop is:

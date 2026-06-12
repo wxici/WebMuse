@@ -1,5 +1,47 @@
 # Project Status
 
+## Current Strategic State
+
+Snapshot time: 2026-06-12.
+
+P2A-1.3 is now inserted before P2A-2-B.
+
+The required next implementation stage is:
+
+```text
+P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief
+```
+
+Current implementation state:
+
+```text
+Documentation/memory update only. Code implementation has not started.
+```
+
+The first-stage evidence route is:
+
+```text
+controlled source snapshot
+  -> DOM/CSS/resource analysis
+  -> section map
+  -> asset slot map
+  -> color / typography / spacing / layout tokens
+  -> motion slot map
+  -> generation brief
+  -> Codex construction package
+  -> branded output
+```
+
+Reference-observed assets default to `reference_only`, `replacementRequired = true`, and `canExport = false`.
+
+Motion should be extracted as semantics and WebMuse-owned variants. Source CSS/JavaScript implementation code must not be copied by default.
+
+Blocked:
+
+```text
+P2A-2-B Controlled Codex CLI Single Page Generation remains blocked until P2A-1.3 verification passes.
+```
+
 ## Latest P2A-2-A Single Page Generation Package Builder
 
 Snapshot time: 2026-06-08.
