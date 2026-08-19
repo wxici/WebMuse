@@ -2,6 +2,26 @@
 
 These rules keep WebMuse repository work traceable across Codex sessions.
 
+## Canonical Repository / Push Path — Highest Priority
+
+Before any source-changing task, read and obey:
+
+```text
+docs/project-memory/CANONICAL_REPOSITORY_AND_PUSH_PATH_2026_08_19.md
+```
+
+After the mandatory one-time cutover, the only normal construction identity is:
+
+```text
+Local root: E:\GitHub\WebMuse
+Remote: https://github.com/wxici/WebMuse.git
+Branch: main
+```
+
+The old `E:\GitHub\codex` monorepo, `E:\GitHub\codex\WebRebuildRecorder`, `E:\GitHub\codex-worktrees\WebRebuildRecorder-stage1`, and `wxici/codex` remote are legacy and forbidden for new normal WebRebuildRecorder/WebMuse construction after cutover.
+
+The already-running A1D-6R-2 task is the sole temporary legacy-worktree exception. Its return must be followed by a bounded source-promotion/cutover into this repository before any new production task.
+
 ## Startup
 
 Before changing application code or repository structure, read these files in order:
