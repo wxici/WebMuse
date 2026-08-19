@@ -18,6 +18,42 @@ WebMuse is a public OSS repository at `wxici/WebMuse`.
 
 The repository contains selected migrated source from the historical `WebRebuildRecorder` project. Internal solution, project, namespace, and folder names still use `WebRebuildRecorder`; this is intentional for now to avoid unnecessary build risk.
 
+## Current Strategic State
+
+P2A-1.3 is now inserted before P2A-2-B.
+
+The first-stage observation package is being upgraded from a recording/frame/observation-first package into a machine-readable construction plan:
+
+```text
+Source Snapshot
+  -> Section Map
+  -> Asset Slot Map
+  -> Design Tokens
+  -> Motion Slot Map
+  -> Generation Brief
+  -> Codex Construction Package
+```
+
+Reference-observed assets are analysis-only by default and must not enter final export without explicit authorization and provenance.
+
+## Current Implementation State
+
+Documentation/memory update only. P2A-1.3 code implementation has not started.
+
+Next allowed implementation:
+
+```text
+P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief
+```
+
+Blocked:
+
+```text
+P2A-2-B Controlled Codex CLI Single Page Generation
+```
+
+P2A-2-B remains blocked until P2A-1.3 verification passes.
+
 ## Completed Modules
 
 - Public OSS foundation completed.
@@ -67,6 +103,8 @@ The repository contains selected migrated source from the historical `WebRebuild
 
 ## Recent Modification Summary
 
+2026-06-12: Recorded the Asset Slot Map + Motion Slot Map strategy and inserted P2A-1.3 before P2A-2-B. The new route makes controlled Source Snapshot evidence feed section maps, asset slots, design token maps, motion slots, motion variants, generation briefs, and legal-risk reporting before any real Codex generation. This is a documentation-only update; no C# source, Codex CLI execution, API call, local model call, or website generation was added.
+
 2026-06-03: Completed P1.7.1 proof-check package models and manifest. Added `ProofCheckPackage.cs`, `ProofCheckPackageService.cs`, and FoundationSelfTest coverage for proof package creation, loading, validation, path safety, and non-execution boundaries. This round generates only package/instruction/validation files under `codex-task/proof/` at runtime; it does not execute Codex CLI, call OpenAI API, call local model engines, generate websites, write `output-site/current/index.html`, or create future runtime result files.
 
 2026-06-03: Updated the product direction at blueprint level from recording/frame-extraction-first to controlled Source Snapshot first with rendered DOM/resource/style/code-readability analysis, asset slot map generation, clickable asset slot overlays, user-owned asset import, real-time preview replacement, and copyright-safe export policy. This is documentation-only and does not implement source crawling, WebView2, Codex execution, OpenAI API calls, website generation, recording changes, frame extraction changes, or asset slot UI.
@@ -90,9 +128,9 @@ Round 0.2 issues:
 
 ## Next Priorities
 
-1. P1.7.2 Approval gate models and persistence, still non-executing.
-2. External public-readiness review.
-3. Prepare `v0.1.0-alpha` after review.
+1. Implement P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief.
+2. Verify structured sample outputs, build, FoundationSelfTest, and review package.
+3. Keep P2A-2-B blocked until P2A-1.3 passes.
 
 ## Known Risks
 

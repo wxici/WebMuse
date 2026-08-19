@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-12
+
+- Added blueprint direction for Asset Slot Map + Motion Slot Map.
+- Inserted P2A-1.3 before P2A-2-B.
+- Recorded that reference-observed assets are analysis-only by default.
+- Recorded that motion should be extracted as semantics and variants, not copied source code.
+- Updated roadmap, current task, project state, project status, and long-term memory so the next implementation starts from P2A-1.3.
+
 ## Unreleased
 
 ### Added

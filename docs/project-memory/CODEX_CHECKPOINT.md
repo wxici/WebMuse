@@ -637,3 +637,91 @@
 - Project run: Required verification was run.
 - Tests passed: `dotnet build WebRebuildRecorder.slnx` passed with 0 warnings and 0 errors; `dotnet run --project WebRebuildRecorder.FoundationSelfTest\WebRebuildRecorder.FoundationSelfTest.csproj` passed and printed all required P1.7.1 proof-check lines.
 - Next recommendation: Continue with P1.7.2 Approval gate models and persistence. P1.7.2 must still not execute Codex CLI, call OpenAI API, call local model engines, or generate websites.
+
+## Previous Task Confirmation
+
+- Time: 2026-06-12 17:41:44 +08:00
+- Previous task status: Completed. Remote `main` is at `6fb0a38a51ad74da234e181bd1f61cff4043af27`, which records the synchronized P2A-2-A Single Page Generation Package Builder.
+- Confirmed complete: Yes. `CURRENT_TASK.md`, `PROJECT_STATUS.md`, `PROJECT_ROADMAP.md`, and `docs/project-memory/PROJECT_MEMORY_FULL.md` record P2A-2-A as implemented and verified.
+- Remaining issues: P2A-2-B real Codex generation has not started. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are not present in this public repository and will not be fabricated; equivalent long-term memory updates will be written to existing project memory, blueprint, state, status, roadmap, and current-task files.
+- Can this task begin: Yes. This round is documentation and project-memory preparation only.
+
+## Current Checkpoint
+
+- Update time: 2026-06-12 17:41:44 +08:00
+- Current task: P2A-1.3 Documentation Preparation: Asset Slot Map + Motion Slot Map + Generation Brief.
+- Current stage: Startup checks completed; preparing scoped Markdown edits.
+- Completed: Read the user task attachment; read repository startup, construction, task, state, status, blueprint, roadmap, long-term memory, review-package, and checkpoint files; confirmed `wxici/WebMuse` remote access; confirmed authenticated GitHub account `wxici`; cloned clean `origin/main`; confirmed the working tree is clean and the only remote branch is `main`.
+- In progress: Updating blueprint, roadmap, current task, state/status, long-term memory, changelog, and a small documentation review package.
+- Not completed: Markdown edits, review package, build/self-test decision and verification, diff audit, commit, push, and final completion marker.
+- Modified files: `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Added files: None yet.
+- Deleted files: None.
+- Can currently run: Expected yes; no application source has changed.
+- Tested: Startup repository and Git checks only.
+- Test result: `git status --short --branch` was clean at `main...origin/main`; remote HEAD and default branch are `main`.
+- Current errors/warnings: The original working directory is an outdated non-Git snapshot. Work continues in a clean Git checkout of `wxici/WebMuse`. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are missing from the public repository.
+- If interrupted, continue from: Update the requested Markdown files in the clean `wxici/WebMuse` checkout, then create `review_package/p2a-1-3-blueprint-memory-update/`.
+- Notes: Do not modify C# source or tests; do not execute Codex CLI; do not call OpenAI API or local models; do not generate a website; do not write `output-site/current/index.html`; do not download reference assets; do not modify generated output, logs, binaries, or zips.
+
+## Current Checkpoint
+
+- Update time: 2026-06-12 17:41:44 +08:00
+- Current task: P2A-1.3 Documentation Preparation: Asset Slot Map + Motion Slot Map + Generation Brief.
+- Current stage: Core blueprint, roadmap, task, state/status, memory, and changelog updates completed; review package and verification pending.
+- Completed: Added `PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md`; updated the main blueprint and Source Snapshot asset-slot blueprint; changed the roadmap hard gate to P2A-1.3; replaced the current task with documentation preparation and the next implementation entry; updated project state/status; added the long-term strategy entry to `docs/project-memory/PROJECT_MEMORY_FULL.md`; updated `CHANGELOG.md`.
+- In progress: Creating `review_package/p2a-1-3-blueprint-memory-update/`.
+- Not completed: Review package, build/FoundationSelfTest verification, full diff audit, commit, push, and final completion marker.
+- Modified files: `CHANGELOG.md`, `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files: `PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md`.
+- Deleted files: None.
+- Can currently run: Expected yes; no source code has changed.
+- Tested: Markdown section presence and Git scope check only.
+- Test result: Required new headings and P2A-1.3 route text are present. `git status` shows Markdown files only.
+- Current errors/warnings: Git reports expected LF-to-CRLF normalization warnings for touched Markdown files. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` remain absent and are being handled through equivalent updates to existing repository memory/state files.
+- If interrupted, continue from: Create the four requested review package files, then run build/self-test and Markdown/diff verification.
+- Notes: No C# source, generated output, binary, log, media, zip, reference download, API call, local model call, Codex CLI run, or website output was created.
+
+## Interruption / Error Record
+
+- Time: 2026-06-12 17:56:24 +08:00
+- Stage: Documentation-round verification.
+- Files in progress: `review_package/p2a-1-3-blueprint-memory-update/summary.md` and `docs/project-memory/CODEX_CHECKPOINT.md`.
+- Completed part: All requested blueprint/memory/review-package text was written; `dotnet build WebRebuildRecorder.slnx --configuration Release` passed with 0 warnings and 0 errors; Markdown presence and `git diff --check` checks completed.
+- Incomplete part: FoundationSelfTest verification and final review-package result update.
+- Error symptom: FoundationSelfTest did not return output before the shell command timeout.
+- Error message: `dotnet run --configuration Release --no-build --project WebRebuildRecorder.FoundationSelfTest/WebRebuildRecorder.FoundationSelfTest.csproj` timed out after approximately 244 seconds.
+- Initial judgment: The repository history records earlier self-test runs that can exceed shorter shell timeouts. No test failure output was returned, so the result is unknown rather than failed or passed.
+- Must check before continuing: Confirm no orphaned FoundationSelfTest process remains. If none remains, rerun once with a longer timeout and capture the actual exit result.
+- Suggested next step: Inspect `dotnet` and `WebRebuildRecorder.FoundationSelfTest` processes, terminate only a confirmed orphan from this timed-out run if necessary, then rerun with a longer timeout.
+
+## Current Checkpoint
+
+- Update time: 2026-06-12 17:56:24 +08:00
+- Current task: P2A-1.3 Documentation Preparation: Asset Slot Map + Motion Slot Map + Generation Brief.
+- Current stage: Documentation and verification completed; final diff audit, staging, commit, and push pending.
+- Completed: Created the four requested review package files; passed Release build with 0 warnings and 0 errors; resolved the first self-test wrapper timeout by terminating only the confirmed orphaned test process tree; ran the already-built Release FoundationSelfTest executable directly; FoundationSelfTest passed with exit code 0 and printed P2A-1, P2A-1.2, and P2A-2-A verification lines.
+- In progress: Updating final verification text, auditing the complete staged diff, and preparing the documentation commit.
+- Not completed: Staging, commit, push, remote confirmation, and final completion marker.
+- Modified files: `CHANGELOG.md`, `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files: `PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md` and four files under `review_package/p2a-1-3-blueprint-memory-update/`.
+- Deleted files: None.
+- Can currently run: Yes.
+- Tested: Yes.
+- Test result: `dotnet build WebRebuildRecorder.slnx --configuration Release` passed with 0 warnings and 0 errors. FoundationSelfTest passed with exit code 0 when the Release executable was run directly with a longer timeout.
+- Current errors/warnings: The initial `dotnet run --no-build` wrapper exceeded a 244-second shell timeout; this was recorded and resolved. Git line-ending normalization warnings remain informational. `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` are absent and were not fabricated.
+- If interrupted, continue from: Stage only the requested documentation files, using `git add -f` only for the ignored four-file review package, inspect `git diff --cached`, then commit and push `main`.
+- Notes: Build created only ignored `bin/` and `obj/` artifacts. No source, website output, reference asset, log, zip, credential, API call, local model call, or Codex CLI execution was added.
+
+## Task Completion Marker
+
+- Status: Completed for repository content and verification; commit and push are the immediate remaining transport steps.
+- Completed in this task: Added the Asset Slot Map + Motion Slot Map blueprint addendum; inserted P2A-1.3 before P2A-2-B; recorded the reference-only asset policy, structured design token maps, Motion Slot Map safety classes and variants, Generation Brief and Legal Risk Report requirements; updated roadmap, current task, project state/status, full long-term memory, changelog, and the documentation review package.
+- Modified files this task: `CHANGELOG.md`, `CURRENT_TASK.md`, `PROJECT_BLUEPRINT.md`, `PROJECT_BLUEPRINT_SOURCE_SNAPSHOT_ASSET_SLOTS.md`, `PROJECT_ROADMAP.md`, `PROJECT_STATE.md`, `PROJECT_STATUS.md`, `docs/project-memory/CODEX_CHECKPOINT.md`, `docs/project-memory/PROJECT_MEMORY_FULL.md`.
+- Added files this task: `PROJECT_BLUEPRINT_ASSET_SLOT_MOTION_SLOT_ADDENDUM.md` and four text files under `review_package/p2a-1-3-blueprint-memory-update/`.
+- Deleted files this task: None.
+- Existing functionality preserved: No application source, service, model, test, UI, WebView2 behavior, recording, frame extraction, package builder, Codex execution, API integration, local model integration, or website output was modified.
+- Known issues: `PROJECT_MEMORY_INDEX.md` and `CODEX_PROJECT_MEMORY.md` do not exist in the public repository and were not fabricated. The first FoundationSelfTest wrapper run timed out, but the confirmed orphaned process tree was terminated and the direct Release self-test executable then passed with exit code 0.
+- Project run: The WPF application was not launched because this was a documentation-only round.
+- Tests passed: Release build passed with 0 warnings and 0 errors. FoundationSelfTest passed with exit code 0. Required file checks and `git diff --check` passed.
+- Next recommendation: Start `P2A-1.3 Asset Slot Map + Motion Slot Map + Generation Brief`. Do not start P2A-2-B yet.
