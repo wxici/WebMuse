@@ -2,25 +2,11 @@
 
 These rules keep WebMuse repository work traceable across Codex sessions.
 
-## Canonical Repository / Push Path — Highest Priority
+## Project Identity Boundary
 
-Before any source-changing task, read and obey:
+WebMuse is a separate public OSS/showcase project derived from an earlier historical WebRebuildRecorder state. It is not the canonical source repository, checkpoint authority, development baseline, or push target for the actively developed WebRebuildRecorder project.
 
-```text
-docs/project-memory/CANONICAL_REPOSITORY_AND_PUSH_PATH_2026_08_19.md
-```
-
-After the mandatory one-time cutover, the only normal construction identity is:
-
-```text
-Local root: E:\GitHub\WebMuse
-Remote: https://github.com/wxici/WebMuse.git
-Branch: main
-```
-
-The old `E:\GitHub\codex` monorepo, `E:\GitHub\codex\WebRebuildRecorder`, `E:\GitHub\codex-worktrees\WebRebuildRecorder-stage1`, and `wxici/codex` remote are legacy and forbidden for new normal WebRebuildRecorder/WebMuse construction after cutover.
-
-The already-running A1D-6R-2 task is the sole temporary legacy-worktree exception. Its return must be followed by a bounded source-promotion/cutover into this repository before any new production task.
+Do not import current WebRebuildRecorder repository governance into WebMuse merely because historical source names overlap. WebMuse must follow its own repository lifecycle.
 
 ## Startup
 
